@@ -91,7 +91,9 @@ section{padding:5rem var(--px);}
 .card-img-placeholder svg{width:70%;height:70%;}
 .card-overlay{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;opacity:0;transition:opacity .25s;}
 .product-card:hover .card-overlay{opacity:1;}
-@media(hover:none){.card-overlay{opacity:1;background:rgba(0,0,0,.3);}}
+.product-card.touched .card-overlay{opacity:1;background:rgba(0,0,0,.3);}
+@media(hover:none){.card-overlay{opacity:0;background:rgba(0,0,0,.3);}}
+@media(hover:none){.product-card.touched .card-overlay{opacity:1;}}
 .view-btn{background:#fff;color:#1c1917;border:none;border-radius:99px;padding:8px 20px;font-size:.82rem;font-weight:600;cursor:pointer;}
 .add-btn{background:var(--accent);color:#fff;border:none;border-radius:99px;padding:8px 20px;font-size:.82rem;font-weight:600;cursor:pointer;}
 .badge{position:absolute;top:10px;left:10px;border-radius:99px;padding:3px 10px;font-size:.7rem;font-weight:700;z-index:2;}
