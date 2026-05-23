@@ -6,105 +6,64 @@
 <title>Carr3D – Impresión 3D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<script src="script.js"></script>
 <link rel="icon" href="favicon.png">
-<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- ═══════════════════════ CONTENIDO ═══════════════════════ -->
-
 <div id="progress-bar"></div>
-<div id="toast"><span id="t-icon">🎉</span><span id="t-msg">¡Añadido al carrito!</span></div>
+<div id="toast"><span id="t-icon">🎉</span><span id="t-msg">¡Añadido!</span></div>
 
-<!-- ─── MODAL RESUMEN PEDIDO ─── -->
+<!-- MODAL RESUMEN PEDIDO -->
 <div id="order-summary-overlay">
   <div class="order-summary-modal">
     <div class="osm-header">
       <h3>Resumen de tu solicitud</h3>
       <div style="display:flex;align-items:center;gap:.75rem;">
-        <span class="osm-header-icon">📋</span>
+        <span style="font-size:1.75rem;">📋</span>
         <button class="osm-close-x" onclick="closeOrderSummary()">✕</button>
       </div>
     </div>
     <div class="osm-body">
       <div class="osm-badge">✓ Solicitud recibida</div>
-      <p class="osm-intro">¡Gracias! Hemos recibido tu solicitud. Para poder prepararte el mejor presupuesto, necesitamos un poco más de información.</p>
-
-      <!-- Resumen compacto -->
+      <p class="osm-intro">¡Gracias! Para prepararte el mejor presupuesto, envíanos una foto por WhatsApp.</p>
       <div class="osm-row"><span class="osm-label">Nombre</span><span class="osm-value" id="osm-nombre">—</span></div>
       <div class="osm-row"><span class="osm-label">Objeto</span><span class="osm-value" id="osm-objeto">—</span></div>
       <div class="osm-row"><span class="osm-label">Material</span><span class="osm-value" id="osm-material">—</span></div>
       <div class="osm-row"><span class="osm-label">Cantidad</span><span class="osm-value" id="osm-cantidad">—</span></div>
-
-      <!-- Caja destacada de acción -->
-      <div style="
-        background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);
-        border:2px solid #f59e0b;
-        border-radius:14px;
-        padding:1.25rem 1.5rem;
-        display:flex;flex-direction:column;gap:.6rem;
-        margin-top:.5rem;
-      ">
-        <div style="display:flex;align-items:center;gap:.6rem;">
-          <span style="font-size:1.6rem;">📸</span>
-          <span style="font-weight:700;font-size:.95rem;color:#92400e;">Último paso — ¡casi listo!</span>
-        </div>
-        <p style="font-size:.9rem;color:#78350f;line-height:1.65;">
-          Manda una foto de tu producto o referencia a este número de WhatsApp para que podamos ver exactamente lo que necesitas y enviarte el presupuesto en menos de 24 h:
-        </p>
-        <div style="
-          background:#fff;border-radius:10px;padding:.75rem 1rem;
-          display:flex;align-items:center;justify-content:space-between;gap:1rem;
-          border:1px solid #f59e0b;
-        ">
+      <div style="display:none"><span id="osm-email">—</span><span id="osm-dims">—</span><span id="osm-desc">—</span></div>
+      <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:14px;padding:1.1rem 1.25rem;display:flex;flex-direction:column;gap:.5rem;margin-top:.25rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;"><span style="font-size:1.4rem;">📸</span><span style="font-weight:700;font-size:.9rem;color:#92400e;">Último paso — ¡casi listo!</span></div>
+        <p style="font-size:.86rem;color:#78350f;line-height:1.6;">Mándanos una foto o referencia a WhatsApp y te enviamos el presupuesto en menos de 24 h:</p>
+        <div style="background:#fff;border-radius:10px;padding:.625rem .875rem;display:flex;align-items:center;justify-content:space-between;gap:.875rem;border:1px solid #f59e0b;">
           <div>
-            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a16207;">WhatsApp Carr3D</div>
-            <div style="font-family:'DM Serif Display',serif;font-size:1.4rem;color:#92400e;letter-spacing:.02em;" id="osm-phone">+34 600 000 000</div>
+            <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a16207;">WhatsApp Carr3D</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:#92400e;" id="osm-phone">+34 600 000 000</div>
           </div>
-          <button onclick="copyPhone()" style="
-            background:#f59e0b;color:#fff;border:none;border-radius:99px;
-            padding:8px 18px;font-size:.82rem;font-weight:700;cursor:pointer;
-            transition:opacity .2s;white-space:nowrap;
-          " onmouseenter="this.style.opacity='.8'" onmouseleave="this.style.opacity='1'">
-            Copiar número
-          </button>
+          <button onclick="copyPhone()" style="background:#f59e0b;color:#fff;border:none;border-radius:99px;padding:7px 15px;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">Copiar</button>
         </div>
-        <p style="font-size:.78rem;color:#92400e;opacity:.75;">
-          💡 Si ya adjuntaste un archivo en el formulario, también puedes enviarlo por WhatsApp para mayor claridad.
-        </p>
       </div>
     </div>
     <div class="osm-footer">
-      <button class="btn-filled" onclick="confirmOrder()">Entendido, ¡gracias! ✓</button>
-      <button class="btn-soft" onclick="closeOrderSummary()">Volver a editar</button>
+      <button class="btn-filled" onclick="confirmOrder()">Entendido ✓</button>
+      <button class="btn-soft" onclick="closeOrderSummary()">Volver</button>
     </div>
   </div>
 </div>
 
-<!-- ─── PANEL LATERAL CARRITO ─── -->
+<!-- PANEL CARRITO -->
 <div id="cart-panel-overlay">
   <div id="cart-panel">
-    <div class="cp-header">
-      <span class="cp-title">Tu carrito 🛒</span>
-      <button class="cp-close" onclick="closeCartPanel()">✕</button>
-    </div>
-    <div class="cp-items" id="cp-items">
-      <div class="cp-empty"><div class="cp-empty-icon">🛒</div><span>Tu carrito está vacío</span></div>
-    </div>
+    <div class="cp-header"><span class="cp-title">Tu carrito 🛒</span><button class="cp-close" onclick="closeCartPanel()">✕</button></div>
+    <div class="cp-items" id="cp-items"><div class="cp-empty"><div class="cp-empty-icon">🛒</div><span>Tu carrito está vacío</span></div></div>
     <div class="cp-footer" id="cp-footer" style="display:none">
-      <div class="cp-total-row">
-        <span class="cp-total-label">Total</span>
-        <span class="cp-total-price" id="cp-total-price">€0.00</span>
-      </div>
+      <div class="cp-total-row"><span class="cp-total-label">Total</span><span class="cp-total-price" id="cp-total-price">€0.00</span></div>
       <button class="cp-checkout" onclick="showToast('¡Pedido realizado! Te contactamos pronto ✓');clearCart();">Finalizar pedido →</button>
       <button class="cp-clear" onclick="clearCart()">Vaciar carrito</button>
     </div>
   </div>
 </div>
 
-<!-- ─── MODAL PRODUCTO ─── -->
+<!-- MODAL PRODUCTO -->
 <div id="modal-overlay">
   <div class="modal">
     <div class="modal-img">
@@ -118,6 +77,7 @@
       <div class="modal-price" id="modal-price"></div>
       <p class="modal-desc" id="modal-desc"></p>
       <div class="modal-specs" id="modal-specs"></div>
+      <div id="modal-colors"></div>
       <div class="modal-actions">
         <button class="btn-filled" id="modal-add-btn">+ Añadir al carrito</button>
         <button class="btn-soft" onclick="closeModal()">Cerrar</button>
@@ -126,12 +86,17 @@
   </div>
 </div>
 
+<!-- MOBILE MENU -->
+<div id="mobile-menu">
+  <a href="#stock">Catálogo</a>
+  <a href="#season">Temporada</a>
+  <a href="#custom">Personalizado</a>
+  <a href="#custom" class="mobile-menu-cta">Pedir ahora</a>
+</div>
+
 <!-- NAV -->
 <nav>
-  <a class="logo" href="#">
-    <img class="logo-img" src="favicon.png" alt="Carr3D logo">
-    Carr<span class="three">3D</span>
-  </a>
+  <a class="logo" href="#"><img class="logo-img" src="favicon.png" alt="Carr3D logo">Carr<span class="three">3D</span></a>
   <ul class="nav-links">
     <li><a href="#stock">Catálogo</a></li>
     <li><a href="#season">Temporada</a></li>
@@ -144,10 +109,11 @@
     </div>
     <button class="theme-btn" id="theme-toggle" title="Cambiar tema">🌙</button>
     <button class="nav-cta" onclick="scroll2('#custom')">Pedir ahora</button>
+    <button class="hamburger" id="hamburger-btn" title="Menú">☰</button>
   </div>
 </nav>
 
-<!-- HERO SCROLL SEQUENCE -->
+<!-- HERO -->
 <div id="hero-sticky-wrapper">
   <div id="hero-sticky">
     <div class="hero-glow"></div>
@@ -155,11 +121,7 @@
       <img id="seq-img" src="" alt="Pieza 3D impresa">
       <div id="seq-placeholder">
         <div class="icon">📷</div>
-        <p>
-          Aquí aparecerán tus <strong>30 imágenes</strong> sincronizadas con el scroll.<br><br>
-          Crea una carpeta <code>img/</code> junto a este archivo y guarda las imágenes como<br>
-          <code>frame_001.jpg</code> → <code>frame_030.jpg</code>
-        </p>
+        <p>Guarda tus imágenes como<br><code>fotos/frame_001.jpg</code> → <code>frame_045.jpg</code></p>
       </div>
     </div>
     <div class="hero-text-overlay">
@@ -167,7 +129,7 @@
       <h1 class="hero-title">Carr<span class="three">3D</span></h1>
       <p class="hero-sub">Objetos únicos, creados capa a capa con precisión y cariño.</p>
     </div>
-    <div id="frame-counter">1 / 30</div>
+    <div id="frame-counter">1 / 45</div>
     <div class="hero-scroll-hint">Desliza para ver <span class="scroll-arrow">↓</span></div>
     <div id="hero-cta">
       <button class="btn-filled" onclick="scroll2('#stock')">Ver catálogo</button>
@@ -179,9 +141,9 @@
 <!-- STATS -->
 <div id="stats">
   <div class="stats-grid">
-    <div class="stat"><div class="stat-num" data-target="50" data-suf="+">0+</div><div class="stat-label">Objetos vendidos</div></div>
+    <div class="stat"><div class="stat-num" data-target="500" data-suf="+">0+</div><div class="stat-label">Objetos vendidos</div></div>
     <div class="stat"><div class="stat-num" data-target="48" data-suf="h">0h</div><div class="stat-label">Tiempo de entrega</div></div>
-    <div class="stat"><div class="stat-num" data-target="20" data-suf="">0</div><div class="stat-label">Colores disponibles</div></div>
+    <div class="stat"><div class="stat-num" data-target="12" data-suf="">0</div><div class="stat-label">Materiales disponibles</div></div>
     <div class="stat"><div class="stat-num" data-target="100" data-suf="%">0%</div><div class="stat-label">Clientes satisfechos</div></div>
   </div>
 </div>
@@ -190,170 +152,16 @@
 <section id="stock">
   <div class="section-wrap">
     <div class="stock-head reveal">
-      <div>
-        <p class="section-kicker">01 — Siempre disponible</p>
-        <h2 class="section-title">Catálogo permanente</h2>
-        <p class="section-sub">Piezas listas para enviar en 24–48 horas. Stock renovado cada semana.</p>
-      </div>
+      <p class="section-kicker">01 — Siempre disponible</p>
+      <h2 class="section-title">Catálogo permanente</h2>
+      <p class="section-sub">Piezas listas para enviar en 24–48 horas. Stock renovado cada semana.</p>
     </div>
-    <div class="product-grid reveal">
-
-      <!-- ─ TARJETA 1 ─ -->
-      <div class="product-card" onclick="openProduct({img:'',svgPlaceholder:'<svg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'><polygon points=\'100,28 178,158 22,158\' fill=\'none\' stroke=\'var(--accent)\' stroke-width=\'2.5\' stroke-linejoin=\'round\'/><polygon points=\'100,55 152,148 48,148\' fill=\'var(--accent-s)\'/><circle cx=\'100\' cy=\'28\' r=\'3\' fill=\'var(--accent)\'/></svg>',kicker:'PLA · Naranja',name:'Pirámide geométrica',price:'€12.00',desc:'Escultura geométrica de precisión impresa en PLA naranja. Perfecta como elemento decorativo de escritorio o como regalo original.',specs:[['Material','PLA'],['Color','Naranja'],['Dimensiones','10 × 10 × 12 cm'],['Peso aprox.','85 g'],['Tiempo de envío','24–48 h']]})">
-        <span class="badge badge-new">Nuevo</span>
-        <div class="card-img">
-          <div class="card-img-placeholder">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="100,28 178,158 22,158" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>
-              <polygon points="100,55 152,148 48,148" fill="var(--accent-s)"/>
-              <polygon points="100,82 126,138 74,138" fill="var(--accent)" opacity=".25"/>
-              <circle cx="100" cy="28" r="3" fill="var(--accent)"/>
-            </svg>
-          </div>
-          <div class="card-overlay">
-            <button class="view-btn" onclick="event.stopPropagation();this.closest('.product-card').click()">Ver detalles</button>
-            <button class="add-btn" onclick="event.stopPropagation();addToCart('Pirámide geométrica','€12.00','')">+ Carrito</button>
-          </div>
-        </div>
-        <div class="card-info">
-          <div class="card-name">Pirámide geométrica</div>
-          <div class="card-meta"><span class="card-price">€12.00</span><span class="card-mat">PLA · Naranja</span></div>
-        </div>
-      </div>
-
-      <!-- ─ TARJETA 2 ─ -->
-      <div class="product-card" onclick="openProduct({img:'',svgPlaceholder:'<svg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'><rect x=\'45\' y=\'78\' width=\'110\' height=\'84\' rx=\'5\' fill=\'none\' stroke=\'var(--accent2)\' stroke-width=\'2\'/><rect x=\'62\' y=\'48\' width=\'76\' height=\'30\' rx=\'3\' fill=\'none\' stroke=\'var(--accent2)\' stroke-width=\'1.8\'/><rect x=\'55\' y=\'86\' width=\'28\' height=\'28\' rx=\'3\' fill=\'var(--accent2-s)\'/><rect x=\'117\' y=\'86\' width=\'28\' height=\'28\' rx=\'3\' fill=\'var(--accent2-s)\'/><rect x=\'86\' y=\'116\' width=\'28\' height=\'46\' rx=\'3\' fill=\'var(--accent2-s)\'/></svg>',kicker:'PETG · Turquesa',name:'Soporte de escritorio',price:'€18.50',desc:'Soporte multiusos para escritorio impreso en PETG turquesa de alta resistencia. Ideal para móvil, tablet o papelería.',specs:[['Material','PETG'],['Color','Turquesa'],['Dimensiones','14 × 8 × 16 cm'],['Peso aprox.','140 g'],['Tiempo de envío','24–48 h']]})">
-        <span class="badge badge-low">Pocas unidades</span>
-        <div class="card-img">
-          <div class="card-img-placeholder">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              <rect x="45" y="78" width="110" height="84" rx="5" fill="none" stroke="var(--accent2)" stroke-width="2"/>
-              <rect x="62" y="48" width="76" height="30" rx="3" fill="none" stroke="var(--accent2)" stroke-width="1.8"/>
-              <line x1="62" y1="48" x2="45" y2="78" stroke="var(--accent2)" stroke-width="1.5" opacity=".5"/>
-              <line x1="138" y1="48" x2="155" y2="78" stroke="var(--accent2)" stroke-width="1.5" opacity=".5"/>
-              <rect x="55" y="86" width="28" height="28" rx="3" fill="var(--accent2-s)"/>
-              <rect x="117" y="86" width="28" height="28" rx="3" fill="var(--accent2-s)"/>
-              <rect x="86" y="116" width="28" height="46" rx="3" fill="var(--accent2-s)"/>
-            </svg>
-          </div>
-          <div class="card-overlay">
-            <button class="view-btn" onclick="event.stopPropagation();this.closest('.product-card').click()">Ver detalles</button>
-            <button class="add-btn" onclick="event.stopPropagation();addToCart('Soporte de escritorio','€18.50','')">+ Carrito</button>
-          </div>
-        </div>
-        <div class="card-info">
-          <div class="card-name">Soporte de escritorio</div>
-          <div class="card-meta"><span class="card-price">€18.50</span><span class="card-mat">PETG · Turquesa</span></div>
-        </div>
-      </div>
-
-      <!-- ─ TARJETA 3 ─ -->
-      <div class="product-card" onclick="openProduct({img:'',svgPlaceholder:'<svg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'><circle cx=\'100\' cy=\'100\' r=\'62\' fill=\'none\' stroke=\'var(--accent)\' stroke-width=\'2\'/><circle cx=\'100\' cy=\'100\' r=\'42\' fill=\'none\' stroke=\'var(--accent)\' stroke-width=\'1.2\' stroke-dasharray=\'5,4\'/><circle cx=\'100\' cy=\'100\' r=\'22\' fill=\'var(--accent-s)\'/><circle cx=\'100\' cy=\'100\' r=\'7\' fill=\'var(--accent)\'/></svg>',kicker:'PLA · Coral',name:'Mandala decorativo',price:'€22.00',desc:'Mandala de pared impreso en PLA coral. Diseño de alta precisión con capas de 0,1 mm para máximo detalle. Incluye anclaje trasero.',specs:[['Material','PLA'],['Color','Coral'],['Diámetro','28 cm'],['Peso aprox.','110 g'],['Tiempo de envío','24–48 h']]})">
-        <div class="card-img">
-          <div class="card-img-placeholder">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="100" cy="100" r="62" fill="none" stroke="var(--accent)" stroke-width="2"/>
-              <circle cx="100" cy="100" r="42" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="5,4"/>
-              <circle cx="100" cy="100" r="22" fill="var(--accent-s)"/>
-              <circle cx="100" cy="100" r="7" fill="var(--accent)"/>
-              <g stroke="var(--accent)" stroke-width="1.2" opacity=".3">
-                <line x1="100" y1="38" x2="100" y2="162"/>
-                <line x1="38" y1="100" x2="162" y2="100"/>
-                <line x1="56" y1="56" x2="144" y2="144"/>
-                <line x1="144" y1="56" x2="56" y2="144"/>
-              </g>
-            </svg>
-          </div>
-          <div class="card-overlay">
-            <button class="view-btn" onclick="event.stopPropagation();this.closest('.product-card').click()">Ver detalles</button>
-            <button class="add-btn" onclick="event.stopPropagation();addToCart('Mandala decorativo','€22.00','')">+ Carrito</button>
-          </div>
-        </div>
-        <div class="card-info">
-          <div class="card-name">Mandala decorativo</div>
-          <div class="card-meta"><span class="card-price">€22.00</span><span class="card-mat">PLA · Coral</span></div>
-        </div>
-      </div>
-
-      <!-- ─ TARJETA 4 ─ -->
-      <div class="product-card" onclick="openProduct({img:'',svgPlaceholder:'<svg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M72,162 Q50,142 56,112 Q46,90 62,68 Q74,52 100,48 Q126,52 138,68 Q154,90 144,112 Q150,142 128,162 Z\' fill=\'var(--accent-s)\' stroke=\'var(--accent)\' stroke-width=\'2\'/></svg>',kicker:'PLA · Terracota',name:'Jarrón espiral',price:'€34.00',desc:'Jarrón de forma orgánica impreso en modo espiral (vase mode) para paredes ultrafinas y translúcidas. Impermeable con tratamiento interior.',specs:[['Material','PLA'],['Color','Terracota'],['Dimensiones','12 × 12 × 22 cm'],['Capacidad','~800 ml'],['Tiempo de envío','24–48 h']]})">
-        <div class="card-img">
-          <div class="card-img-placeholder">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              <path d="M72,162 Q50,142 56,112 Q46,90 62,68 Q74,52 100,48 Q126,52 138,68 Q154,90 144,112 Q150,142 128,162 Z" fill="var(--accent-s)" stroke="var(--accent)" stroke-width="2"/>
-              <ellipse cx="100" cy="78" rx="24" ry="6" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".4"/>
-              <ellipse cx="100" cy="100" rx="33" ry="7" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".4"/>
-              <ellipse cx="100" cy="122" rx="35" ry="7" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".4"/>
-              <ellipse cx="100" cy="144" rx="30" ry="6" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".4"/>
-            </svg>
-          </div>
-          <div class="card-overlay">
-            <button class="view-btn" onclick="event.stopPropagation();this.closest('.product-card').click()">Ver detalles</button>
-            <button class="add-btn" onclick="event.stopPropagation();addToCart('Jarrón espiral','€34.00','')">+ Carrito</button>
-          </div>
-        </div>
-        <div class="card-info">
-          <div class="card-name">Jarrón espiral</div>
-          <div class="card-meta"><span class="card-price">€34.00</span><span class="card-mat">PLA · Terracota</span></div>
-        </div>
-      </div>
-
-      <!-- ─ TARJETA 5 ─ -->
-      <div class="product-card" onclick="openProduct({img:'',svgPlaceholder:'<svg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'><polygon points=\'100,40 158,100 100,160 42,100\' fill=\'var(--accent2-s)\' stroke=\'var(--accent2)\' stroke-width=\'2.5\' stroke-linejoin=\'round\'/><circle cx=\'100\' cy=\'100\' r=\'5\' fill=\'var(--accent2)\'/></svg>',kicker:'PETG · Transparente',name:'Octaedro decorativo',price:'€15.00',desc:'Octaedro geométrico en PETG transparente de alta claridad. La luz lo atraviesa creando reflejos únicos. Ideal para lámparas o móviles decorativos.',specs:[['Material','PETG'],['Color','Transparente'],['Dimensiones','9 × 9 × 9 cm'],['Peso aprox.','60 g'],['Tiempo de envío','24–48 h']]})">
-        <span class="badge badge-new">Nuevo</span>
-        <div class="card-img">
-          <div class="card-img-placeholder">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              <polygon points="100,40 158,100 100,160 42,100" fill="var(--accent2-s)" stroke="var(--accent2)" stroke-width="2.5" stroke-linejoin="round"/>
-              <line x1="100" y1="40" x2="100" y2="160" stroke="var(--accent2)" stroke-width="1.2" stroke-dasharray="5,5" opacity=".5"/>
-              <line x1="42" y1="100" x2="158" y2="100" stroke="var(--accent2)" stroke-width="1.2" stroke-dasharray="5,5" opacity=".5"/>
-              <circle cx="100" cy="100" r="5" fill="var(--accent2)"/>
-            </svg>
-          </div>
-          <div class="card-overlay">
-            <button class="view-btn" onclick="event.stopPropagation();this.closest('.product-card').click()">Ver detalles</button>
-            <button class="add-btn" onclick="event.stopPropagation();addToCart('Octaedro decorativo','€15.00','')">+ Carrito</button>
-          </div>
-        </div>
-        <div class="card-info">
-          <div class="card-name">Octaedro decorativo</div>
-          <div class="card-meta"><span class="card-price">€15.00</span><span class="card-mat">PETG · Transparente</span></div>
-        </div>
-      </div>
-
-      <!-- ─ TARJETA 6 ─ -->
-      <div class="product-card" onclick="openProduct({img:'',svgPlaceholder:'<svg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'><circle cx=\'100\' cy=\'100\' r=\'44\' fill=\'none\' stroke=\'var(--accent)\' stroke-width=\'2.5\'/><circle cx=\'100\' cy=\'100\' r=\'20\' fill=\'var(--accent-s)\' stroke=\'var(--accent)\' stroke-width=\'2\'/><circle cx=\'100\' cy=\'100\' r=\'6\' fill=\'var(--accent)\'/></svg>',kicker:'PLA · Plata',name:'Engranaje decorativo',price:'€9.60',desc:'Engranaje decorativo de pared impreso en PLA gris plata metalizado. Perfecto para decoración industrial o steampunk. Precio con descuento del 20%.',specs:[['Material','PLA'],['Color','Plata metalizado'],['Diámetro','18 cm'],['Peso aprox.','75 g'],['Tiempo de envío','24–48 h']]})">
-        <span class="badge badge-sale">−20%</span>
-        <div class="card-img">
-          <div class="card-img-placeholder">
-            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="100" cy="100" r="44" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
-              <circle cx="100" cy="100" r="20" fill="var(--accent-s)" stroke="var(--accent)" stroke-width="2"/>
-              <circle cx="100" cy="100" r="6" fill="var(--accent)"/>
-              <g stroke="var(--accent)" stroke-width="6" stroke-linecap="round" opacity=".45">
-                <line x1="100" y1="48" x2="100" y2="38"/>
-                <line x1="100" y1="162" x2="100" y2="152"/>
-                <line x1="48" y1="100" x2="38" y2="100"/>
-                <line x1="162" y1="100" x2="152" y2="100"/>
-                <line x1="65" y1="65" x2="58" y2="58"/>
-                <line x1="142" y1="65" x2="149" y2="58"/>
-                <line x1="65" y1="135" x2="58" y2="142"/>
-                <line x1="142" y1="135" x2="149" y2="142"/>
-              </g>
-            </svg>
-          </div>
-          <div class="card-overlay">
-            <button class="view-btn" onclick="event.stopPropagation();this.closest('.product-card').click()">Ver detalles</button>
-            <button class="add-btn" onclick="event.stopPropagation();addToCart('Engranaje decorativo','€9.60','')">+ Carrito</button>
-          </div>
-        </div>
-        <div class="card-info">
-          <div class="card-name">Engranaje decorativo</div>
-          <div class="card-meta"><span class="card-price">€9.60</span><span class="card-mat">PLA · Plata</span></div>
-        </div>
-      </div>
-
+    <div class="filter-bar reveal">
+      <span class="filter-label">Filtrar por material</span>
+      <select class="filter-select" id="material-filter"></select>
+      <span class="filter-count" id="filter-count"></span>
     </div>
+    <div class="product-grid reveal" id="product-grid"></div>
   </div>
 </section>
 
@@ -365,141 +173,30 @@
       <h2 class="section-title">Colección verano '25</h2>
     </div>
     <div class="season-grid reveal">
-
-      <!-- Producto destacado -->
-      <div class="season-featured">
-        <div class="season-feat-img">
-          <svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="140" cy="140" r="88" fill="var(--accent2-s)" stroke="var(--accent2)" stroke-width="2"/>
-            <circle cx="140" cy="140" r="60" fill="none" stroke="var(--accent2)" stroke-width="1.2" stroke-dasharray="7,5" opacity=".6"/>
-            <g stroke="var(--accent2)" stroke-width="2" opacity=".4">
-              <line x1="140" y1="52" x2="140" y2="36"/><line x1="200" y1="80" x2="212" y2="68"/>
-              <line x1="228" y1="140" x2="244" y2="140"/><line x1="200" y1="200" x2="212" y2="212"/>
-              <line x1="140" y1="228" x2="140" y2="244"/><line x1="80" y1="200" x2="68" y2="212"/>
-              <line x1="52" y1="140" x2="36" y2="140"/><line x1="80" y1="80" x2="68" y2="68"/>
-            </g>
-            <circle cx="140" cy="140" r="30" fill="var(--accent2)" opacity=".18"/>
-            <circle cx="140" cy="140" r="14" fill="var(--accent2)" opacity=".6"/>
-            <circle cx="140" cy="140" r="5" fill="var(--accent2)"/>
-          </svg>
-        </div>
-        <div class="season-feat-info">
-          <span class="season-tag">Edición limitada · 50 uds</span>
-          <h3 class="season-feat-title">Sol &amp; Mar Collection</h3>
-          <p class="season-feat-desc">Escultura decorativa inspirada en el Mediterráneo. Impresa en PETG premium con acabado satinado.</p>
-          <div class="season-feat-price">€45.00</div>
-          <button class="btn-filled" onclick="addToCart('Sol &amp; Mar Collection','€45.00','')">Añadir al carrito</button>
-        </div>
-      </div>
-
-      <!-- CAMBIO 2: 3 productos por fila -->
-      <div class="season-smalls">
-        <div class="product-card" onclick="openProduct({img:'',kicker:'PLA · Verde',name:'Cactus decorativo',price:'€16.00',desc:'Cactus decorativo de escritorio en PLA verde. Impresión de alta resolución con textura realista. Sin necesidad de riego.',specs:[['Material','PLA'],['Color','Verde'],['Altura','15 cm'],['Tiempo de envío','24–48 h']]})">
-          <div class="card-img" style="background:var(--bg3)">
-            <div class="card-img-placeholder">
-              <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <rect x="86" y="88" width="28" height="72" rx="5" fill="none" stroke="#22c55e" stroke-width="2.5"/>
-                <path d="M86,128 Q62,128 62,106 Q62,84 78,84" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
-                <path d="M114,118 Q138,118 138,96 Q138,74 122,74" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
-                <ellipse cx="100" cy="163" rx="22" ry="6" fill="none" stroke="#22c55e" stroke-width="1.5" opacity=".5"/>
-                <circle cx="100" cy="84" r="9" fill="#22c55e" opacity=".25"/>
-                <circle cx="100" cy="84" r="4.5" fill="#22c55e"/>
-              </svg>
-            </div>
-            <div class="card-overlay">
-              <button class="view-btn" onclick="event.stopPropagation();this.closest('.product-card').click()">Ver detalles</button>
-              <button class="add-btn" onclick="event.stopPropagation();addToCart('Cactus decorativo','€16.00','')">+ Carrito</button>
-            </div>
-          </div>
-          <div class="card-info">
-            <div class="card-name">Cactus decorativo</div>
-            <div class="card-meta"><span class="card-price">€16.00</span><span class="card-mat">PLA · Verde</span></div>
-          </div>
-        </div>
-
-        <div class="product-card" onclick="openProduct({img:'',kicker:'PETG · Agua',name:'Posavasos ola',price:'€8.00',desc:'Posavasos con forma de ola marina en PETG azul agua. Resistente al calor y a la humedad. Se vende en packs de 4.',specs:[['Material','PETG'],['Color','Azul agua'],['Diámetro','10 cm'],['Pack','4 unidades'],['Tiempo de envío','24–48 h']]})">
-          <div class="card-img" style="background:var(--bg3)">
-            <div class="card-img-placeholder">
-              <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <path d="M36,118 Q56,98 76,118 Q96,138 116,118 Q136,98 164,118" fill="none" stroke="var(--accent2)" stroke-width="3" stroke-linecap="round"/>
-                <path d="M36,130 Q56,110 76,130 Q96,150 116,130 Q136,110 164,130" fill="none" stroke="var(--accent2)" stroke-width="1.8" opacity=".45" stroke-linecap="round"/>
-                <ellipse cx="100" cy="154" rx="68" ry="9" fill="var(--accent2-s)"/>
-              </svg>
-            </div>
-            <div class="card-overlay">
-              <button class="view-btn" onclick="event.stopPropagation();this.closest('.product-card').click()">Ver detalles</button>
-              <button class="add-btn" onclick="event.stopPropagation();addToCart('Posavasos ola','€8.00','')">+ Carrito</button>
-            </div>
-          </div>
-          <div class="card-info">
-            <div class="card-name">Posavasos ola</div>
-            <div class="card-meta"><span class="card-price">€8.00</span><span class="card-mat">PETG · Agua</span></div>
-          </div>
-        </div>
-
-        <div class="product-card" onclick="openProduct({img:'',kicker:'PLA · Amarillo',name:'Sombrilla miniatura',price:'€11.00',desc:'Sombrilla decorativa en miniatura impresa en PLA amarillo. Ideal para decorar cócteles, plantas pequeñas o como souvenir veraniego.',specs:[['Material','PLA'],['Color','Amarillo'],['Diámetro','12 cm'],['Tiempo de envío','24–48 h']]})">
-          <div class="card-img" style="background:var(--bg3)">
-            <div class="card-img-placeholder">
-              <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                <path d="M100,72 Q142,72 158,102 Q142,132 100,132 Q58,132 42,102 Q58,72 100,72 Z" fill="#fef9c3" stroke="#ffc800" stroke-width="2.5"/>
-                <line x1="100" y1="102" x2="100" y2="160" stroke="#ffc800" stroke-width="3" stroke-linecap="round"/>
-                <path d="M100,160 Q112,160 112,170" fill="none" stroke="#ffc800" stroke-width="3" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="card-overlay">
-              <button class="view-btn" onclick="event.stopPropagation();this.closest('.product-card').click()">Ver detalles</button>
-              <button class="add-btn" onclick="event.stopPropagation();addToCart('Sombrilla miniatura','€11.00','')">+ Carrito</button>
-            </div>
-          </div>
-          <div class="card-info">
-            <div class="card-name">Sombrilla miniatura</div>
-            <div class="card-meta"><span class="card-price">€11.00</span><span class="card-mat">PLA · Amarillo</span></div>
-          </div>
-        </div>
-      </div>
+      <div id="season-featured-wrap"></div>
+      <div class="season-smalls" id="season-smalls"></div>
     </div>
   </div>
 </section>
 
+<!-- HUCHA -->
 <section id="piggy-goal">
   <div class="piggy-grid reveal">
-
-    <!-- IZQUIERDA: descripción -->
     <div class="piggy-info">
       <p class="piggy-kicker">🐷 Meta de recaudación</p>
       <h2 class="piggy-title">Ayúdanos a crecer</h2>
-      <p class="piggy-desc">
-        Cada compra contribuye directamente a nuestra meta: adquirir una nueva impresora 3D de mayor precisión para poder ofrecerte acabados todavía mejores, nuevos materiales y tiempos de entrega más rápidos.<br><br>
-        Gracias a vosotros, seguimos creciendo capa a capa. ¡Sois increíbles! 🧡
-      </p>
+      <p class="piggy-desc">Cada compra contribuye directamente a nuestra meta: adquirir una nueva impresora 3D de mayor precisión para poder ofrecerte acabados todavía mejores, nuevos materiales y tiempos de entrega más rápidos.<br><br>Gracias a vosotros, seguimos creciendo capa a capa. ¡Sois increíbles! 🧡</p>
       <div class="piggy-amounts">
-        <div class="piggy-amount-block">
-          <span class="piggy-amount-label">Recaudado</span>
-          <span class="piggy-amount-value" id="piggy-current-val">€0</span>
-        </div>
-        <div class="piggy-amount-block">
-          <span class="piggy-amount-label">Meta</span>
-          <span class="piggy-amount-value goal" id="piggy-goal-val">€2.000</span>
-        </div>
+        <div class="piggy-amount-block"><span class="piggy-amount-label">Recaudado</span><span class="piggy-amount-value" id="piggy-current-val">€0</span></div>
+        <div class="piggy-amount-block"><span class="piggy-amount-label">Meta</span><span class="piggy-amount-value goal" id="piggy-goal-val">€2.000</span></div>
       </div>
-      <div class="piggy-progress-bar">
-        <div class="piggy-progress-fill" id="piggy-fill-bar" style="width:0%"></div>
-      </div>
-      <p class="piggy-percent-label" id="piggy-pct-label" style="margin-top:.75rem;font-size:.9rem;color:var(--text3);">67% completado</p>
+      <div class="piggy-progress-bar"><div class="piggy-progress-fill" id="piggy-fill-bar" style="width:0%"></div></div>
+      <p id="piggy-pct-label" style="margin-top:.625rem;font-size:.88rem;color:var(--text3);">67% completado</p>
     </div>
-
-    <!-- DERECHA: cerdo hucha animado -->
     <div class="piggy-visual">
-      <div class="piggy-svg-wrap">
-        <svg id="piggy-svg" viewBox="40 44 220 240" width="280" height="280" xmlns="http://www.w3.org/2000/svg">
-          <!-- Renderizado por JS -->
-        </svg>
-      </div>
-      <p style="font-size:.8rem;color:var(--text3);text-align:center;max-width:200px;line-height:1.5;">
-        El nivel de llenado representa el % de la meta alcanzado
-      </p>
+      <div class="piggy-svg-wrap"><svg id="piggy-svg" viewBox="40 44 220 240" width="260" height="260" xmlns="http://www.w3.org/2000/svg"></svg></div>
+      <p style="font-size:.78rem;color:var(--text3);text-align:center;max-width:180px;line-height:1.5;">El nivel de llenado representa el % de la meta alcanzado</p>
     </div>
-
   </div>
 </section>
 
@@ -558,11 +255,10 @@
             <label class="form-label">Archivo de referencia (opcional)</label>
             <div class="upload-area" onclick="document.getElementById('file-input').click()">
               <div class="upload-icon">📎</div>
-              <div class="upload-text">Arrastra o <strong>selecciona</strong> tu archivo STL, OBJ o imagen de referencia</div>
+              <div class="upload-text">Arrastra o <strong>selecciona</strong> tu archivo STL, OBJ o imagen</div>
               <input type="file" id="file-input" style="display:none" accept=".stl,.obj,.png,.jpg,.jpeg,.pdf">
             </div>
           </div>
-          <!-- CAMBIO 4: abre modal de resumen en lugar de enviar directamente -->
           <button class="submit-btn" onclick="submitOrder()">Revisar y enviar solicitud →</button>
         </div>
       </div>
@@ -575,22 +271,16 @@
   <div class="footer-inner">
     <div class="footer-top">
       <div class="footer-brand">
-        <!-- CAMBIO 1: logo con favicon en footer también -->
-        <a class="logo" href="#" style="color:var(--bg);">
-          <img class="logo-img" src="favicon.png" alt="Carr3D logo" style="border-radius:6px;">
-          Carr<span class="three">3D</span>
-        </a>
+        <a class="logo" href="#" style="color:var(--bg);"><img class="logo-img" src="favicon.png" alt="Carr3D logo">Carr<span class="three">3D</span></a>
         <p>Creando objetos únicos capa a capa desde Extremadura. Impresión 3D de calidad para todos.</p>
         <div class="socials">
-          <a class="social-btn" href="#">IG</a>
-          <a class="social-btn" href="#">TK</a>
-          <a class="social-btn" href="#">TW</a>
-          <a class="social-btn" href="#">WA</a>
+          <a class="social-btn" href="#">IG</a><a class="social-btn" href="#">TK</a>
+          <a class="social-btn" href="#">TW</a><a class="social-btn" href="#">WA</a>
         </div>
       </div>
-      <div class="footer-col"><h5>Tienda</h5><ul><li><a href="#stock">Catálogo</a></li><li><a href="#season">Temporada</a></li><li><a href="#custom">Personalizado</a></li><li><a href="#">Novedades</a></li></ul></div>
-      <div class="footer-col"><h5>Información</h5><ul><li><a href="#">Materiales</a></li><li><a href="#">Tiempos de entrega</a></li><li><a href="#">Envíos y devoluciones</a></li><li><a href="#">FAQ</a></li></ul></div>
-      <div class="footer-col"><h5>Legal</h5><ul><li><a href="#">Aviso legal</a></li><li><a href="#">Privacidad</a></li><li><a href="#">Cookies</a></li><li><a href="#">Contacto</a></li></ul></div>
+      <div class="footer-col"><h5>Tienda</h5><ul><li><a href="#stock">Catálogo</a></li><li><a href="#season">Temporada</a></li><li><a href="#custom">Personalizado</a></li></ul></div>
+      <div class="footer-col"><h5>Información</h5><ul><li><a href="#">Materiales</a></li><li><a href="#">Envíos</a></li><li><a href="#">FAQ</a></li></ul></div>
+      <div class="footer-col"><h5>Legal</h5><ul><li><a href="#">Aviso legal</a></li><li><a href="#">Privacidad</a></li><li><a href="#">Contacto</a></li></ul></div>
     </div>
     <div class="footer-bottom">
       <span class="footer-copy">© 2025 Carr3D — Todos los derechos reservados</span>
