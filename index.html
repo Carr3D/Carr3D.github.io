@@ -30,6 +30,7 @@
       <div class="osm-row"><span class="osm-label">Nombre</span><span class="osm-value" id="osm-nombre">—</span></div>
       <div class="osm-row"><span class="osm-label">Objeto</span><span class="osm-value" id="osm-objeto">—</span></div>
       <div class="osm-row"><span class="osm-label">Material</span><span class="osm-value" id="osm-material">—</span></div>
+      <div class="osm-row"><span class="osm-label">Color</span><span class="osm-value" id="osm-color">—</span></div>
       <div class="osm-row"><span class="osm-label">Cantidad</span><span class="osm-value" id="osm-cantidad">—</span></div>
       <div style="display:none"><span id="osm-email">—</span><span id="osm-dims">—</span><span id="osm-desc">—</span></div>
       <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:14px;padding:1.1rem 1.25rem;display:flex;flex-direction:column;gap:.5rem;margin-top:.25rem;">
@@ -158,8 +159,20 @@
       <p class="section-sub">Piezas listas para enviar en 24–48 horas. Stock renovado cada semana.</p>
     </div>
     <div class="filter-bar reveal">
-      <span class="filter-label">Filtrar por categoría</span>
+      <span class="filter-label">Categoría</span>
       <select class="filter-select" id="material-filter"></select>
+      <div class="filter-sep"></div>
+      <span class="filter-label">Precio</span>
+      <div class="price-range-wrap">
+        <div class="price-inputs">
+          <input type="number" class="price-input" id="price-min" placeholder="Min" min="0" step="0.5" oninput="onPriceInput()">
+          <span class="price-dash">—</span>
+          <input type="number" class="price-input" id="price-max" placeholder="Max" min="0" step="0.5" oninput="onPriceInput()">
+          <span class="price-symbol">€</span>
+        </div>
+        <input type="range" class="price-slider" id="price-slider-max" min="0" max="50" value="50" step="0.5" oninput="onSliderInput(this.value)">
+      </div>
+      <button class="filter-reset hidden" id="price-reset" onclick="resetPriceFilter()" title="Limpiar filtro de precio">✕</button>
       <span class="filter-count" id="filter-count"></span>
     </div>
     <div class="product-grid reveal" id="product-grid"></div>
@@ -228,23 +241,11 @@
               <label class="form-label">Material</label>
               <div class="mat-pills">
                 <div class="mat-pill active" onclick="selectMat(this)">PLA</div>
-                <div class="mat-pill" onclick="selectMat(this)">PETG</div>
-                <div class="mat-pill" onclick="selectMat(this)">ABS</div>
-                <div class="mat-pill" onclick="selectMat(this)">TPU</div>
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Color principal</label>
-              <div class="color-options">
-                <div class="color-dot active" style="background:#e8541a" onclick="selectColor(this)"></div>
-                <div class="color-dot" style="background:#0891b2" onclick="selectColor(this)"></div>
-                <div class="color-dot" style="background:#f5f2ec;border:1px solid #ccc" onclick="selectColor(this)"></div>
-                <div class="color-dot" style="background:#1c1917" onclick="selectColor(this)"></div>
-                <div class="color-dot" style="background:#22c55e" onclick="selectColor(this)"></div>
-                <div class="color-dot" style="background:#fbbf24" onclick="selectColor(this)"></div>
-                <div class="color-dot" style="background:#a855f7" onclick="selectColor(this)"></div>
-                <div class="color-dot" style="background:#ef4444" onclick="selectColor(this)"></div>
-              </div>
+              <label class="form-label">Color</label>
+              <input type="text" class="form-input" placeholder="Ej: Naranja, Azul turquesa, Rojo, Personalizado..." id="custom-color-input">
             </div>
           </div>
           <div class="form-row">

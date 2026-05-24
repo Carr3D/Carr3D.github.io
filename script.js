@@ -1,244 +1,181 @@
 /* ================================================================
-   ██████╗ ██████╗  ██████╗ ██████╗ ██╗   ██╗ ██████╗████████╗ ██████╗ ███████╗
-   ╚════╝  ╚════╝  ╚═════╝ ╚═════╝  ╚═════╝  ╚═════╝  ╚═══╝  ╚═════╝ ╚══════╝
- 
    EDITA AQUÍ TUS PRODUCTOS — Todo en un único sitio
-   ================================================================
- 
-   Campos por producto:
-   ─────────────────────
-   nombre           → Nombre del producto
-   imgPrincipal     → Ruta imagen tarjeta.   Ej: 'fotos/piramide.jpg'   ('' = SVG)
-   imgSecundaria    → Ruta imagen modal.      Ej: 'fotos/piramide2.jpg'  ('' = usa principal)
-   svgPlaceholder   → SVG de respaldo si no hay imagen (deja el que hay o pon '')
-   precio           → Precio con símbolo.     Ej: '€12.00'
-   destacado        → 'nuevo' | 'pocas' | 'descuento' | ''
-   categoria        → Texto libre que aparece sobre el nombre en la tarjeta. Ej: 'Decoración' | 'Juguete' | 'Utilidad'
-   materiales       → Array de materiales.    Ej: ['PLA','PETG']
-   colores          → Array de hex.           Ej: ['#e8541a','#0891b2'] — deja [] para mostrar "Todos"
-   descripcion      → Texto descriptivo
-   peso             → Peso del producto.      Ej: '85 g'
-   tiempoProduccion → Tiempo de fabricación.  Ej: '2–3 días'
-   seccion          → 'stock' | 'temporada-principal' | 'temporada-secundaria'
    ================================================================ */
- 
+
 const PRODUCTOS = [
- 
-  /* ── CATÁLOGO CONSTANTE ──────────────────────────────── */
   {
     nombre: 'Pirámide geométrica',
-    imgPrincipal: '',
-    imgSecundaria: '',
+    imgPrincipal: '',imgSecundaria: '',
     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="100,28 178,158 22,158" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/><polygon points="100,55 152,148 48,148" fill="var(--accent-s)"/><polygon points="100,82 126,138 74,138" fill="var(--accent)" opacity=".25"/><circle cx="100" cy="28" r="3" fill="var(--accent)"/></svg>`,
-    precio: '€12.00',
-    destacado: 'nuevo',
-    categoria: 'Decoración',        /* ← CAMBIA AQUÍ la categoría */
-    materiales: ['PLA'],
-    colores: ['#e8541a', '#fbbf24', '#ffffff'],
+    precio: '€12.00',destacado: 'nuevo',categoria: 'Decoración',materiales: ['PLA'],
+    colores: ['#e8541a','#fbbf24','#ffffff'],
     descripcion: 'Escultura geométrica de precisión impresa en PLA naranja. Perfecta como elemento decorativo de escritorio o como regalo original.',
-    peso: '85 g',
-    tiempoProduccion: '1–2 días',
-    seccion: 'stock',
+    peso: '85 g',tiempoProduccion: '1–2 días',seccion: 'stock',
   },
   {
     nombre: 'Soporte de escritorio',
-    imgPrincipal: '',
-    imgSecundaria: '',
+    imgPrincipal: '',imgSecundaria: '',
     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="45" y="78" width="110" height="84" rx="5" fill="none" stroke="var(--accent2)" stroke-width="2"/><rect x="62" y="48" width="76" height="30" rx="3" fill="none" stroke="var(--accent2)" stroke-width="1.8"/><rect x="55" y="86" width="28" height="28" rx="3" fill="var(--accent2-s)"/><rect x="117" y="86" width="28" height="28" rx="3" fill="var(--accent2-s)"/><rect x="86" y="116" width="28" height="46" rx="3" fill="var(--accent2-s)"/></svg>`,
-    precio: '€18.50',
-    destacado: 'pocas',
-    categoria: 'Utilidad',
-    materiales: ['PETG'],
-    colores: ['#0891b2', '#22c55e'],
+    precio: '€18.50',destacado: 'pocas',categoria: 'Utilidad',materiales: ['PETG'],
+    colores: ['#0891b2','#22c55e'],
     descripcion: 'Soporte multiusos para escritorio impreso en PETG turquesa de alta resistencia. Ideal para móvil, tablet o papelería.',
-    peso: '140 g',
-    tiempoProduccion: '2–3 días',
-    seccion: 'stock',
+    peso: '140 g',tiempoProduccion: '2–3 días',seccion: 'stock',
   },
   {
     nombre: 'Mandala decorativo',
-    imgPrincipal: '',
-    imgSecundaria: '',
+    imgPrincipal: '',imgSecundaria: '',
     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="62" fill="none" stroke="var(--accent)" stroke-width="2"/><circle cx="100" cy="100" r="42" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-dasharray="5,4"/><circle cx="100" cy="100" r="22" fill="var(--accent-s)"/><circle cx="100" cy="100" r="7" fill="var(--accent)"/><g stroke="var(--accent)" stroke-width="1.2" opacity=".3"><line x1="100" y1="38" x2="100" y2="162"/><line x1="38" y1="100" x2="162" y2="100"/><line x1="56" y1="56" x2="144" y2="144"/><line x1="144" y1="56" x2="56" y2="144"/></g></svg>`,
-    precio: '€22.00',
-    destacado: '',
-    categoria: 'Decoración',
-    materiales: ['PLA'],
-    colores: ['#e8541a', '#ef4444', '#a855f7'],
+    precio: '€22.00',destacado: '',categoria: 'Decoración',materiales: ['PLA'],
+    colores: ['#e8541a','#ef4444','#a855f7'],
     descripcion: 'Mandala de pared impreso en PLA coral. Diseño de alta precisión con capas de 0,1 mm para máximo detalle. Incluye anclaje trasero.',
-    peso: '110 g',
-    tiempoProduccion: '3–4 días',
-    seccion: 'stock',
+    peso: '110 g',tiempoProduccion: '3–4 días',seccion: 'stock',
   },
   {
     nombre: 'Jarrón espiral',
-    imgPrincipal: '',
-    imgSecundaria: '',
+    imgPrincipal: '',imgSecundaria: '',
     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M72,162 Q50,142 56,112 Q46,90 62,68 Q74,52 100,48 Q126,52 138,68 Q154,90 144,112 Q150,142 128,162 Z" fill="var(--accent-s)" stroke="var(--accent)" stroke-width="2"/><ellipse cx="100" cy="78" rx="24" ry="6" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".4"/><ellipse cx="100" cy="100" rx="33" ry="7" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".4"/><ellipse cx="100" cy="122" rx="35" ry="7" fill="none" stroke="var(--accent)" stroke-width="1" opacity=".4"/></svg>`,
-    precio: '€34.00',
-    destacado: '',
-    categoria: 'Decoración',
-    materiales: ['PLA'],
-    colores: ['#e8541a', '#1c1917', '#22c55e'],
+    precio: '€34.00',destacado: '',categoria: 'Decoración',materiales: ['PLA'],
+    colores: ['#e8541a','#1c1917','#22c55e'],
     descripcion: 'Jarrón de forma orgánica impreso en modo espiral (vase mode) para paredes ultrafinas y translúcidas. Impermeable con tratamiento interior.',
-    peso: '~180 g',
-    tiempoProduccion: '4–5 días',
-    seccion: 'stock',
+    peso: '~180 g',tiempoProduccion: '4–5 días',seccion: 'stock',
   },
   {
     nombre: 'Octaedro decorativo',
-    imgPrincipal: '',
-    imgSecundaria: '',
+    imgPrincipal: '',imgSecundaria: '',
     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="100,40 158,100 100,160 42,100" fill="var(--accent2-s)" stroke="var(--accent2)" stroke-width="2.5" stroke-linejoin="round"/><line x1="100" y1="40" x2="100" y2="160" stroke="var(--accent2)" stroke-width="1.2" stroke-dasharray="5,5" opacity=".5"/><line x1="42" y1="100" x2="158" y2="100" stroke="var(--accent2)" stroke-width="1.2" stroke-dasharray="5,5" opacity=".5"/><circle cx="100" cy="100" r="5" fill="var(--accent2)"/></svg>`,
-    precio: '€15.00',
-    destacado: 'nuevo',
-    categoria: 'Decoración',
-    materiales: ['PETG'],
-    colores: ['#f5f2ec', '#cffafe', '#0891b2'],
+    precio: '€15.00',destacado: 'nuevo',categoria: 'Decoración',materiales: ['PETG'],
+    colores: ['#f5f2ec','#cffafe','#0891b2'],
     descripcion: 'Octaedro geométrico en PETG transparente de alta claridad. La luz lo atraviesa creando reflejos únicos. Ideal para lámparas o móviles decorativos.',
-    peso: '60 g',
-    tiempoProduccion: '1–2 días',
-    seccion: 'stock',
+    peso: '60 g',tiempoProduccion: '1–2 días',seccion: 'stock',
   },
   {
     nombre: 'Engranaje decorativo',
-    imgPrincipal: '',
-    imgSecundaria: '',
+    imgPrincipal: '',imgSecundaria: '',
     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="44" fill="none" stroke="var(--accent)" stroke-width="2.5"/><circle cx="100" cy="100" r="20" fill="var(--accent-s)" stroke="var(--accent)" stroke-width="2"/><circle cx="100" cy="100" r="6" fill="var(--accent)"/><g stroke="var(--accent)" stroke-width="6" stroke-linecap="round" opacity=".45"><line x1="100" y1="48" x2="100" y2="38"/><line x1="100" y1="162" x2="100" y2="152"/><line x1="48" y1="100" x2="38" y2="100"/><line x1="162" y1="100" x2="152" y2="100"/></g></svg>`,
-    precio: '€9.60',
-    destacado: 'descuento',
-    categoria: 'Decoración',
-    materiales: ['PLA'],
-    colores: ['#a8a29e', '#1c1917'],
-    descripcion: 'Engranaje decorativo de pared impreso en PLA gris plata metalizado. Perfecto para decoración industrial o steampunk. Precio con descuento del 20%.',
-    peso: '75 g',
-    tiempoProduccion: '1–2 días',
-    seccion: 'stock',
+    precioOriginal: '€12.00',descuentoProducto: 0.20,
+    destacado: 'descuento',categoria: 'Decoración',materiales: ['PLA'],
+    colores: ['#a8a29e','#1c1917'],
+    descripcion: 'Engranaje decorativo de pared impreso en PLA gris plata metalizado. Perfecto para decoración industrial o steampunk.',
+    peso: '75 g',tiempoProduccion: '1–2 días',seccion: 'stock',
   },
- 
-  /* ── TEMPORADA ────────────────────────────────────────── */
   {
     nombre: 'Sol & Mar Collection',
-    imgPrincipal: '',
-    imgSecundaria: '',
+    imgPrincipal: '',imgSecundaria: '',
     svgPlaceholder: `<svg viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg"><circle cx="140" cy="140" r="88" fill="var(--accent2-s)" stroke="var(--accent2)" stroke-width="2"/><circle cx="140" cy="140" r="60" fill="none" stroke="var(--accent2)" stroke-width="1.2" stroke-dasharray="7,5" opacity=".6"/><circle cx="140" cy="140" r="30" fill="var(--accent2)" opacity=".18"/><circle cx="140" cy="140" r="14" fill="var(--accent2)" opacity=".6"/><circle cx="140" cy="140" r="5" fill="var(--accent2)"/></svg>`,
-    precio: '€45.00',
-    destacado: 'nuevo',
-    categoria: 'Decoración',
-    materiales: ['PETG'],
-    colores: ['#0891b2', '#fbbf24'],
+    precio: '€45.00',destacado: 'nuevo',categoria: 'Decoración',materiales: ['PETG'],
+    colores: ['#0891b2','#fbbf24'],
     descripcion: 'Escultura decorativa inspirada en el Mediterráneo. Impresa en PETG premium con acabado satinado. Edición limitada de 50 unidades.',
-    peso: '200 g',
-    tiempoProduccion: '3–5 días',
-    seccion: 'temporada-principal',
+    peso: '200 g',tiempoProduccion: '3–5 días',seccion: 'temporada-principal',
   },
   {
     nombre: 'Cactus decorativo',
-    imgPrincipal: '',
-    imgSecundaria: '',
+    imgPrincipal: '',imgSecundaria: '',
     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><rect x="86" y="88" width="28" height="72" rx="5" fill="none" stroke="#22c55e" stroke-width="2.5"/><path d="M86,128 Q62,128 62,106 Q62,84 78,84" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><path d="M114,118 Q138,118 138,96 Q138,74 122,74" fill="none" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/><circle cx="100" cy="84" r="4.5" fill="#22c55e"/></svg>`,
-    precio: '€16.00',
-    destacado: '',
-    categoria: 'Decoración',
-    materiales: ['PLA'],
-    colores: ['#22c55e', '#16a34a'],
-    descripcion: 'Cactus decorativo de escritorio en PLA verde. Impresión de alta resolución con textura realista. Sin necesidad de riego.',
-    peso: '90 g',
-    tiempoProduccion: '2–3 días',
-    seccion: 'temporada-secundaria',
+    precio: '€16.00',precioOriginal: '€16.00',destacado: '',categoria: 'Decoración',materiales: ['PLA'],
+    colores: ['#22c55e','#16a34a'],
+    descripcion: 'Cactus decorativo de escritorio en PLA verde. Impresión de alta resolución con textura realista. Sin necesidad de riego. A partir de 11 unidades: 25% descuento.',
+    peso: '90 g',tiempoProduccion: '2–3 días',seccion: 'stock',
+    descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
   },
   {
     nombre: 'Posavasos ola',
-    imgPrincipal: '',
-    imgSecundaria: '',
+    imgPrincipal: '',imgSecundaria: '',
     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M36,118 Q56,98 76,118 Q96,138 116,118 Q136,98 164,118" fill="none" stroke="var(--accent2)" stroke-width="3" stroke-linecap="round"/><ellipse cx="100" cy="154" rx="68" ry="9" fill="var(--accent2-s)"/></svg>`,
-    precio: '€8.00',
-    destacado: '',
-    categoria: 'Utilidad',
-    materiales: ['PETG'],
-    colores: ['#0891b2', '#cffafe'],
-    descripcion: 'Posavasos con forma de ola marina en PETG azul agua. Resistente al calor y a la humedad. Se vende en packs de 4.',
-    peso: '40 g x4',
-    tiempoProduccion: '1–2 días',
-    seccion: 'temporada-secundaria',
+    precio: '€8.00',precioOriginal: '€8.00',destacado: '',categoria: 'Utilidad',materiales: ['PETG'],
+    colores: ['#0891b2','#cffafe'],
+    descripcion: 'Posavasos con forma de ola marina en PETG azul agua. Resistente al calor y a la humedad. Se vende en packs de 4. A partir de 11 unidades: 50% descuento.',
+    peso: '40 g x4',tiempoProduccion: '1–2 días',seccion: 'stock',
+    descuentoEscalonado: { unidades: 10, porcentaje: 0.50 },
   },
   {
     nombre: 'Sombrilla miniatura',
-    imgPrincipal: '',
-    imgSecundaria: '',
+    imgPrincipal: '',imgSecundaria: '',
     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><path d="M100,72 Q142,72 158,102 Q142,132 100,132 Q58,132 42,102 Q58,72 100,72 Z" fill="#fef9c3" stroke="#ffc800" stroke-width="2.5"/><line x1="100" y1="102" x2="100" y2="160" stroke="#ffc800" stroke-width="3" stroke-linecap="round"/></svg>`,
-    precio: '€11.00',
-    destacado: '',
-    categoria: 'Decoración',
-    materiales: ['PLA'],
-    colores: ['#fbbf24', '#ef4444', '#0891b2'],
+    precio: '€11.00',destacado: '',categoria: 'Decoración',materiales: ['PLA'],
+    colores: ['#fbbf24','#ef4444','#0891b2'],
     descripcion: 'Sombrilla decorativa en miniatura impresa en PLA amarillo. Ideal para decorar cócteles, plantas pequeñas o como souvenir veraniego.',
-    peso: '35 g',
-    tiempoProduccion: '1 día',
-    seccion: 'temporada-secundaria',
+    peso: '35 g',tiempoProduccion: '1 día',seccion: 'temporada-secundaria',
   },
 ];
-/* ================================================================
-   FIN PRODUCTOS — No toques nada de aquí para abajo
-   ================================================================ */
- 
+
+/* Procesar descuentos */
+PRODUCTOS.forEach(p=>{
+  if(p.precioOriginal&&p.descuentoProducto&&!p.precio){
+    const original=parseFloat(p.precioOriginal.replace(/[^0-9.,]/g,'').replace(',','.'))||0;
+    const precioConDescuento=original*(1-p.descuentoProducto);
+    const simbolo=p.precioOriginal.match(/[€$]/)?.[0]||'€';
+    p.precio=simbolo+precioConDescuento.toFixed(2);
+  }
+});
+
 const BADGE_MAP = {
-  nuevo:     { cls:'badge-new',  txt:'Nuevo'          },
-  pocas:     { cls:'badge-low',  txt:'Pocas unidades' },
-  descuento: { cls:'badge-sale', txt:'−20%'            },
+  nuevo:{cls:'badge-new',txt:'Nuevo'},
+  pocas:{cls:'badge-low',txt:'Pocas unidades'},
+  descuento:{cls:'badge-sale',txt:'−20%'},
 };
-function badgeHTML(d){ return (!d||!BADGE_MAP[d])?'':'<span class="badge '+BADGE_MAP[d].cls+'">'+BADGE_MAP[d].txt+'</span>'; }
-function matsLabel(arr){ return (arr||[]).join(' · '); }
-function safeQ(s){ return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function badgeHTML(d,descuentoEscalonado){
+  if(descuentoEscalonado&&descuentoEscalonado.porcentaje){
+    const pct=(descuentoEscalonado.porcentaje*100|0);
+    const unidades=descuentoEscalonado.unidades||10;
+    return '<span class="badge badge-sale">+'+unidades+' = −'+pct+'%</span>';
+  }
+  return (!d||!BADGE_MAP[d])?'':'<span class="badge '+BADGE_MAP[d].cls+'">'+BADGE_MAP[d].txt+'</span>';
+}
+function matsLabel(arr){return (arr||[]).join(' · ');}
+function safeQ(s){return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 function coloresHTML(arr,cls){
   return (arr||[]).map(c=>'<span class="'+cls+'" style="background:'+c+';'+((c==='#ffffff'||c==='#f5f2ec')?'border:1.5px solid #ccc;':'')+'" title="'+c+'"></span>').join('');
 }
- 
+
 /* ── CARRITO ── */
 let cartItems=[];
-function openCartPanel(){ renderCartPanel(); document.getElementById('cart-panel-overlay').classList.add('open'); document.body.style.overflow='hidden'; }
-function closeCartPanel(){ document.getElementById('cart-panel-overlay').classList.remove('open'); document.body.style.overflow=''; }
+function openCartPanel(){renderCartPanel();document.getElementById('cart-panel-overlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeCartPanel(){document.getElementById('cart-panel-overlay').classList.remove('open');document.body.style.overflow='';}
 function renderCartPanel(){
   const itemsEl=document.getElementById('cp-items'),totalEl=document.getElementById('cp-total-price'),footerEl=document.getElementById('cp-footer');
   itemsEl.innerHTML='';
-  if(!cartItems.length){
-    itemsEl.innerHTML='<div class="cp-empty"><div class="cp-empty-icon">🛒</div><span>Tu carrito está vacío</span></div>';
-    footerEl.style.display='none'; return;
-  }
+  if(!cartItems.length){itemsEl.innerHTML='<div class="cp-empty"><div class="cp-empty-icon">🛒</div><span>Tu carrito está vacío</span></div>';footerEl.style.display='none';return;}
   footerEl.style.display='flex';
   let total=0;
   cartItems.forEach((item,idx)=>{
-    total+=item.price*item.qty;
+    let itemTotal=0,discount=0,unidades=10;
+    if(item.descuentoEscalonado&&item.descuentoEscalonado.porcentaje&&item.qty>item.descuentoEscalonado.unidades){
+      discount=item.descuentoEscalonado.porcentaje;unidades=item.descuentoEscalonado.unidades;
+      itemTotal=(item.price*unidades)+(item.price*(item.qty-unidades)*(1-discount));
+    }else{itemTotal=item.price*item.qty;}
+    total+=itemTotal;
     const thumbInner=item.img
       ?('<img src="'+item.img+'" alt="'+safeQ(item.name)+'" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'">'+'<span class="cp-thumb-fallback" style="display:none">📦</span>')
-      :(item.svg
-        ?('<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:6px;">'+item.svg+'</div>')
-        :'<span class="cp-thumb-fallback">📦</span>');
-    itemsEl.innerHTML+='<div class="cp-item"><div class="cp-item-thumb">'+thumbInner+'</div><div class="cp-item-info"><div class="cp-item-name">'+item.name+'</div><div class="cp-item-price">€'+(item.price*item.qty).toFixed(2)+'</div><div class="cp-item-qty"><button class="cp-qty-btn" onclick="changeQty('+idx+',-1)">−</button><span class="cp-qty-num">'+item.qty+'</span><button class="cp-qty-btn" onclick="changeQty('+idx+',1)">+</button></div></div><button class="cp-remove" onclick="removeItem('+idx+')" title="Eliminar">✕</button></div>';
+      :(item.svg?('<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:6px;">'+item.svg+'</div>'):'<span class="cp-thumb-fallback">📦</span>');
+    const discountLabel=discount>0?'<div style="font-size:.7rem;color:#22c55e;font-weight:700;">-'+(discount*100|0)+'% a partir de la '+(unidades+1)+'ª</div>':'';
+    itemsEl.innerHTML+='<div class="cp-item"><div class="cp-item-thumb">'+thumbInner+'</div><div class="cp-item-info"><div class="cp-item-name">'+item.name+'</div><div class="cp-item-price">€'+(itemTotal).toFixed(2)+'</div>'+discountLabel+'<div class="cp-item-qty"><button class="cp-qty-btn" onclick="changeQty('+idx+',-1)">−</button><span class="cp-qty-num">'+item.qty+'</span><button class="cp-qty-btn" onclick="changeQty('+idx+',1)">+</button></div></div><button class="cp-remove" onclick="removeItem('+idx+')" title="Eliminar">✕</button></div>';
   });
   totalEl.textContent='€'+total.toFixed(2);
 }
-function changeQty(idx,delta){ cartItems[idx].qty+=delta; if(cartItems[idx].qty<=0)cartItems.splice(idx,1); updateBadge();renderCartPanel(); }
-function removeItem(idx){ cartItems.splice(idx,1); updateBadge();renderCartPanel(); }
-function clearCart(){ cartItems=[];updateBadge();renderCartPanel(); }
-function updateBadge(){ const t=cartItems.reduce((s,i)=>s+i.qty,0),b=document.getElementById('cart-badge'); b.textContent=t;b.style.display=t>0?'flex':'none'; }
+function changeQty(idx,delta){cartItems[idx].qty+=delta;if(cartItems[idx].qty<=0)cartItems.splice(idx,1);updateBadge();renderCartPanel();}
+function removeItem(idx){cartItems.splice(idx,1);updateBadge();renderCartPanel();}
+function clearCart(){cartItems=[];updateBadge();renderCartPanel();}
+function updateBadge(){const t=cartItems.reduce((s,i)=>s+i.qty,0),b=document.getElementById('cart-badge');b.textContent=t;b.style.display=t>0?'flex':'none';}
 function addToCart(name,priceStr,img,idx){
   const price=parseFloat((priceStr||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||0;
   const svg=(idx!==undefined&&PRODUCTOS[idx])?PRODUCTOS[idx].svgPlaceholder||'':'';
+  const descuentoEscalonado=(idx!==undefined&&PRODUCTOS[idx])?PRODUCTOS[idx].descuentoEscalonado||null:null;
+  const precioReal=(idx!==undefined&&PRODUCTOS[idx]&&PRODUCTOS[idx].descuentoProducto)
+    ?parseFloat((PRODUCTOS[idx].precioOriginal||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||price:price;
   const ex=cartItems.find(i=>i.name===name);
-  if(ex){ex.qty++;}else{cartItems.push({name:name||'Producto',price,img:img||'',svg,qty:1});}
+  if(ex){ex.qty++;}else{cartItems.push({name:name||'Producto',price:precioReal,img:img||'',svg,descuentoEscalonado,qty:1});}
   const b=document.getElementById('cart-badge');updateBadge();
   b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump');
   setTimeout(()=>b.classList.remove('bump'),300);
   showToast((name||'Producto')+' añadido 🎉');
 }
- 
+
 /* ── RENDER TARJETAS ── */
 function cardHTML(p,idx){
   const img=p.imgPrincipal?('<img src="'+p.imgPrincipal+'" alt="'+safeQ(p.nombre)+'" onerror="this.style.display=\'none\'">'):'<div class="card-img-placeholder">'+p.svgPlaceholder+'</div>';
   const catHTML=p.categoria?('<div class="card-categoria">'+p.categoria+'</div>'):'';
   const matPill='<span class="card-mat-pill">'+(p.materiales||[]).join(' · ')+'</span>';
-  return '<div class="product-card" data-cat="'+(p.categoria||'')+'" onclick="handleCardClick(event, '+idx+')">'+badgeHTML(p.destacado)+'<div class="card-img">'+img+'<div class="card-overlay"><button class="view-btn" onclick="event.stopPropagation();openProduct('+idx+')">Ver detalles</button><button class="add-btn" onclick="event.stopPropagation();addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">+ Carrito</button></div></div><div class="card-info">'+catHTML+'<div class="card-name">'+p.nombre+'</div><div class="card-meta"><span class="card-price">'+p.precio+'</span>'+matPill+'</div></div></div>';
+  return '<div class="product-card" data-cat="'+(p.categoria||'')+'" data-idx="'+idx+'" onclick="handleCardClick(event,'+idx+')">'+badgeHTML(p.destacado,p.descuentoEscalonado)+'<div class="card-img">'+img+'<div class="card-overlay"><button class="view-btn" onclick="event.stopPropagation();openProduct('+idx+')">Ver detalles</button><button class="add-btn" onclick="event.stopPropagation();addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">+ Carrito</button></div></div><div class="card-info">'+catHTML+'<div class="card-name">'+p.nombre+'</div><div class="card-meta"><span class="card-price">'+p.precio+'</span>'+matPill+'</div></div></div>';
 }
 function seasonSmallHTML(p,idx){
   const img=p.imgPrincipal?('<img src="'+p.imgPrincipal+'" alt="'+safeQ(p.nombre)+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">'):'<div class="card-img-placeholder">'+p.svgPlaceholder+'</div>';
@@ -250,7 +187,7 @@ function seasonFeaturedHTML(p,idx){
   const imgBlock=p.imgPrincipal?('<img src="'+p.imgPrincipal+'" alt="'+safeQ(p.nombre)+'" style="width:100%;height:100%;object-fit:cover;">'):'<div class="season-feat-img-placeholder">'+p.svgPlaceholder+'</div>';
   return '<div class="season-featured"><div class="season-feat-img">'+imgBlock+'</div><div class="season-feat-info"><span class="season-tag">Edición limitada · '+matsLabel(p.materiales)+'</span><h3 class="season-feat-title">'+p.nombre+'</h3><p class="season-feat-desc">'+p.descripcion+'</p><div class="season-feat-price">'+p.precio+'</div><button class="btn-filled" onclick="addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">Añadir al carrito</button></div></div>';
 }
- 
+
 /* ── FILTRO ── */
 function buildFilter(){
   const cats=new Set();
@@ -259,63 +196,120 @@ function buildFilter(){
   sel.innerHTML='<option value="">Todas las categorías</option>';
   [...cats].sort().forEach(c=>{sel.innerHTML+='<option value="'+c+'">'+c+'</option>';});
 }
+
+/* ── FILTRO PRECIO (NUEVO) ── */
+let _priceMin=null,_priceMax=null;
+
+function getCardPrice(card){
+  const idx=parseInt(card.getAttribute('data-idx')??'-1');
+  if(idx<0||!PRODUCTOS[idx])return 0;
+  const raw=PRODUCTOS[idx].precio||'0';
+  return parseFloat(raw.replace(/[^0-9.,]/g,'').replace(',','.'))||0;
+}
+
 function applyFilter(){
-  const val=document.getElementById('material-filter').value;
+  const cat=document.getElementById('material-filter').value;
+  const minV=_priceMin!==null?_priceMin:null;
+  const maxV=_priceMax!==null?_priceMax:null;
   const cards=document.querySelectorAll('#product-grid .product-card');
   let vis=0;
-  cards.forEach(c=>{const show=!val||c.dataset.cat===val;c.classList.toggle('hidden',!show);if(show)vis++;});
+  cards.forEach(c=>{
+    const catOk=!cat||c.dataset.cat===cat;
+    const price=getCardPrice(c);
+    const minOk=minV===null||price>=minV;
+    const maxOk=maxV===null||price<=maxV;
+    const show=catOk&&minOk&&maxOk;
+    c.classList.toggle('hidden',!show);
+    if(show)vis++;
+  });
   document.getElementById('filter-count').textContent=vis+' producto'+(vis!==1?'s':'');
+  const seasonCards=document.querySelectorAll('.season-small-item');
+  seasonCards.forEach(c=>{const show=!cat||c.dataset.cat===cat;c.classList.toggle('hidden',!show);});
+  const resetBtn=document.getElementById('price-reset');
+  if(resetBtn)resetBtn.classList.toggle('hidden',minV===null&&maxV===null);
 }
- 
+
+function onSliderInput(val){
+  const f=parseFloat(val);
+  _priceMax=f;
+  const maxEl=document.getElementById('price-max');
+  if(maxEl)maxEl.value=f.toFixed(0);
+  updateSliderTrack(f);
+  applyFilter();
+}
+
+function onPriceInput(){
+  const minEl=document.getElementById('price-min'),maxEl=document.getElementById('price-max');
+  const minV=minEl.value!==''?parseFloat(minEl.value):null;
+  const maxV=maxEl.value!==''?parseFloat(maxEl.value):null;
+  _priceMin=minV;_priceMax=maxV;
+  const slider=document.getElementById('price-slider-max');
+  if(slider&&maxV!==null){slider.value=Math.min(maxV,parseFloat(slider.max));updateSliderTrack(parseFloat(slider.value));}
+  applyFilter();
+}
+
+function updateSliderTrack(val){
+  const slider=document.getElementById('price-slider-max');if(!slider)return;
+  const pct=((val-parseFloat(slider.min))/(parseFloat(slider.max)-parseFloat(slider.min)))*100;
+  slider.style.background='linear-gradient(90deg,var(--accent) '+pct+'%,var(--border) '+pct+'%)';
+}
+
+function resetPriceFilter(){
+  _priceMin=null;_priceMax=null;
+  const minEl=document.getElementById('price-min'),maxEl=document.getElementById('price-max'),slider=document.getElementById('price-slider-max');
+  if(minEl)minEl.value='';
+  if(maxEl)maxEl.value='';
+  if(slider){slider.value=slider.max;slider.style.background='var(--border)';}
+  applyFilter();
+}
+
+function initPriceFilter(){
+  let maxPrice=0;
+  PRODUCTOS.filter(p=>p.seccion==='stock').forEach(p=>{
+    const raw=p.precio||'0';
+    const v=parseFloat(raw.replace(/[^0-9.,]/g,'').replace(',','.'))||0;
+    if(v>maxPrice)maxPrice=v;
+  });
+  const ceiling=Math.ceil(maxPrice/5)*5+5;
+  const slider=document.getElementById('price-slider-max');
+  if(slider){slider.max=ceiling;slider.value=ceiling;slider.style.background='var(--border)';}
+}
+
 /* ── COMPORTAMIENTO TACTIL VS MOUSE ── */
 const isTouchDevice=()=>window.matchMedia('(hover:none)').matches;
-function handleCardClick(e, idx){
+function handleCardClick(e,idx){
   const card=e.currentTarget;
   if(isTouchDevice()){
     e.preventDefault();
-    if(card.classList.contains('touched')){
-      openProduct(idx);card.classList.remove('touched');
-    }else{
-      document.querySelectorAll('#product-grid .product-card.touched').forEach(c=>c.classList.remove('touched'));
-      card.classList.add('touched');
-    }
-  }else{
-    openProduct(idx);
-  }
+    if(card.classList.contains('touched')){openProduct(idx);card.classList.remove('touched');}
+    else{document.querySelectorAll('#product-grid .product-card.touched').forEach(c=>c.classList.remove('touched'));card.classList.add('touched');}
+  }else{openProduct(idx);}
 }
- 
+
 /* ── MODAL PRODUCTO ── */
 function openProduct(idx){
-  const p=PRODUCTOS[idx]; if(!p)return;
+  const p=PRODUCTOS[idx];if(!p)return;
   const overlay=document.getElementById('modal-overlay');
   const imgEl=document.getElementById('modal-img-tag'),phEl=document.getElementById('modal-img-ph');
   const src=p.imgSecundaria||p.imgPrincipal;
-  if(src){
-    imgEl.src=src;imgEl.style.display='block';phEl.style.display='none';
-    imgEl.onerror=()=>{imgEl.style.display='none';phEl.innerHTML=p.svgPlaceholder||'';phEl.style.display='flex';};
-  } else if(p.svgPlaceholder){
-    imgEl.style.display='none';phEl.innerHTML=p.svgPlaceholder;phEl.style.display='flex';
-  } else {
-    imgEl.style.display='none';phEl.innerHTML='<div style="font-size:3rem;opacity:.3">📦</div>';phEl.style.display='flex';
-  }
+  if(src){imgEl.src=src;imgEl.style.display='block';phEl.style.display='none';imgEl.onerror=()=>{imgEl.style.display='none';phEl.innerHTML=p.svgPlaceholder||'';phEl.style.display='flex';};}
+  else if(p.svgPlaceholder){imgEl.style.display='none';phEl.innerHTML=p.svgPlaceholder;phEl.style.display='flex';}
+  else{imgEl.style.display='none';phEl.innerHTML='<div style="font-size:3rem;opacity:.3">📦</div>';phEl.style.display='flex';}
   document.getElementById('modal-kicker').textContent=matsLabel(p.materiales);
   document.getElementById('modal-title').textContent=p.nombre;
   document.getElementById('modal-price').textContent=p.precio;
   document.getElementById('modal-desc').textContent=p.descripcion;
-  const specsEl=document.getElementById('modal-specs');
-  specsEl.innerHTML='';
+  const specsEl=document.getElementById('modal-specs');specsEl.innerHTML='';
   [['Material',matsLabel(p.materiales)],['Peso',p.peso],['Tiempo de producción',p.tiempoProduccion]].forEach(s=>{
     if(s[1])specsEl.innerHTML+='<div class="modal-spec"><span>'+s[0]+'</span><span>'+s[1]+'</span></div>';
   });
-  const coloresContent=(p.colores||[]).length
-    ? coloresHTML(p.colores,'modal-color-dot')
-    : '<span style="font-size:.85rem;font-weight:600;color:var(--text2)">Todos</span>';
+  const coloresContent=(p.colores||[]).length?coloresHTML(p.colores,'modal-color-dot'):'<span style="font-size:.85rem;font-weight:600;color:var(--text2)">Todos</span>';
   document.getElementById('modal-colors').innerHTML='<div class="modal-spec"><span>Colores disponibles</span><div class="modal-colors-row">'+coloresContent+'</div></div>';
   document.getElementById('modal-add-btn').onclick=()=>{addToCart(p.nombre,p.precio,p.imgPrincipal||'',idx);closeModal();};
   overlay.classList.add('open');document.body.style.overflow='hidden';
 }
-function closeModal(){ document.getElementById('modal-overlay').classList.remove('open'); document.body.style.overflow=''; }
- 
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');document.body.style.overflow='';}
+
 /* ── MODAL PEDIDO ── */
 function submitOrder(){
   const g=s=>document.querySelector(s)?.value.trim()||'—';
@@ -325,16 +319,17 @@ function submitOrder(){
   document.getElementById('osm-material').textContent=document.querySelector('.mat-pill.active')?.textContent||'—';
   document.getElementById('osm-dims').textContent=g('.order-form .form-input[placeholder="Alto × Ancho × Largo"]');
   document.getElementById('osm-cantidad').textContent=g('.order-form .form-input[placeholder="1"]')||'1';
+  document.getElementById('osm-color').textContent=document.getElementById('custom-color-input')?.value.trim()||'—';
   const d=g('.order-form .form-textarea');
   document.getElementById('osm-desc').textContent=d.length>120?d.slice(0,120)+'…':d;
   document.getElementById('order-summary-overlay').classList.add('open');document.body.style.overflow='hidden';
 }
-function closeOrderSummary(){ document.getElementById('order-summary-overlay').classList.remove('open'); document.body.style.overflow=''; }
-function confirmOrder(){ closeOrderSummary(); showToast('¡Solicitud enviada! Te contactamos en 24 h ✓'); }
-function copyPhone(){ navigator.clipboard?.writeText(document.getElementById('osm-phone').textContent); showToast('Número copiado ✓'); }
- 
+function closeOrderSummary(){document.getElementById('order-summary-overlay').classList.remove('open');document.body.style.overflow='';}
+function confirmOrder(){closeOrderSummary();showToast('¡Solicitud enviada! Te contactamos en 24 h ✓');}
+function copyPhone(){navigator.clipboard?.writeText(document.getElementById('osm-phone').textContent);showToast('Número copiado ✓');}
+
 /* ── HUCHA ── */
-const piggyFilled=67, piggyGoal=2000, piggyCurrent=Math.round(piggyGoal*piggyFilled/100);
+const piggyFilled=67,piggyGoal=2000,piggyCurrent=Math.round(piggyGoal*piggyFilled/100);
 function renderPiggy(){
   document.getElementById('piggy-fill-bar').style.width=piggyFilled+'%';
   document.getElementById('piggy-current-val').textContent='€'+piggyCurrent.toLocaleString('es-ES');
@@ -373,8 +368,8 @@ function buildPiggySVG(pct){
     +'<circle cx="150" cy="175" r="46" fill="url(#sG)"/>'
     +'<circle cx="150" cy="175" r="46" fill="url(#gP)" opacity="0.9"/>'
     +'<circle cx="150" cy="175" r="46" fill="none" stroke="#c8940c" stroke-width="2.5" opacity="0.6"/>'
-    +'<ellipse cx="136" cy="170" rx="12" ry="14" fill="#1a0e00" opacity="0.88" transform="rotate(180 136 170)"/>'
-    +'<ellipse cx="164" cy="170" rx="12" ry="14" fill="#1a0e00" opacity="0.88" transform="rotate(180 164 170)"/>'
+    +'<ellipse cx="136" cy="178" rx="12" ry="14" fill="#1a0e00" opacity="0.88"/>'
+    +'<ellipse cx="164" cy="178" rx="12" ry="14" fill="#1a0e00" opacity="0.88"/>'
     +'<path d="M108,112 L116,120 L124,112" fill="none" stroke="#1a0e00" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>'
     +'<path d="M176,112 L184,120 L192,112" fill="none" stroke="#1a0e00" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>'
     +'<ellipse cx="98" cy="256" rx="18" ry="13" fill="url(#lG)"/><rect x="80" y="243" width="36" height="16" fill="url(#lG)"/>'
@@ -387,7 +382,7 @@ function buildPiggySVG(pct){
     +'<ellipse cx="108" cy="98" rx="14" ry="9" fill="rgba(255,255,230,0.38)" transform="rotate(-20,108,98)"/>'
     +'<ellipse cx="111" cy="96" rx="6" ry="4" fill="rgba(255,255,255,0.55)" transform="rotate(-20,111,96)"/>';
 }
- 
+
 /* ── DOM READY ── */
 document.addEventListener('DOMContentLoaded',function(){
   /* Theme */
@@ -421,12 +416,13 @@ document.addEventListener('DOMContentLoaded',function(){
   const ssm=document.getElementById('season-smalls');
   const sfw=document.getElementById('season-featured-wrap');
   PRODUCTOS.forEach((p,idx)=>{
-    if(p.seccion==='stock') grid.innerHTML+=cardHTML(p,idx);
-    if(p.seccion==='temporada-principal') sfw.innerHTML+=seasonFeaturedHTML(p,idx);
-    if(p.seccion==='temporada-secundaria') ssm.innerHTML+=seasonSmallHTML(p,idx);
+    if(p.seccion==='stock')grid.innerHTML+=cardHTML(p,idx);
+    if(p.seccion==='temporada-principal')sfw.innerHTML+=seasonFeaturedHTML(p,idx);
+    if(p.seccion==='temporada-secundaria')ssm.innerHTML+='<div class="product-card season-small-item" data-cat="'+(p.categoria||'')+'" onclick="openProduct('+idx+')">'+badgeHTML(p.destacado)+'<div class="card-img" style="background:var(--bg3)"><img src="'+safeQ(p.imgPrincipal)+'" alt="'+safeQ(p.nombre)+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'"><div class="card-img-placeholder" style="display:none;">'+p.svgPlaceholder+'</div><div class="card-overlay"><button class="view-btn" onclick="event.stopPropagation();openProduct('+idx+')">Ver</button><button class="add-btn" onclick="event.stopPropagation();addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">+ Carrito</button></div></div><div class="card-info"><div class="card-categoria">'+p.categoria+'</div><div class="card-name">'+p.nombre+'</div><div class="card-meta"><span class="card-price">'+p.precio+'</span><span class="card-mat-pill">'+(p.materiales||[]).join(' · ')+'</span></div></div></div>';
   });
   /* Filtro */
   buildFilter();
+  initPriceFilter();
   document.getElementById('material-filter').addEventListener('change',applyFilter);
   applyFilter();
   /* Reveal */
@@ -456,7 +452,7 @@ document.addEventListener('DOMContentLoaded',function(){
   const po=new IntersectionObserver(entries=>{if(entries[0].isIntersecting)setTimeout(()=>{document.getElementById('piggy-fill-bar').style.width=piggyFilled+'%';},200);},{threshold:.3});
   const ps=document.getElementById('piggy-goal');if(ps)po.observe(ps);
 });
- 
+
 function scroll2(s){document.querySelector(s)?.scrollIntoView({behavior:'smooth'});}
 function showToast(msg){document.getElementById('t-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function selectMat(el){document.querySelectorAll('.mat-pill').forEach(m=>m.classList.remove('active'));el.classList.add('active');}
