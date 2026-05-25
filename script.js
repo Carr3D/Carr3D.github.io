@@ -148,7 +148,7 @@ const PRODUCTOS = [
      peso: '10g',
      tiempoProduccion: '1 día',
      seccion: 'stock',
-     descuentoEscalonado: { unidades: 9, porcentaje: 0.25 },
+     descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
   },
   {
      nombre: 'Llavero gato tejido',
@@ -162,7 +162,7 @@ const PRODUCTOS = [
      peso: '10g',
      tiempoProduccion: '1 día',
      seccion: 'stock',
-     descuentoEscalonado: { unidades: 9, porcentaje: 0.25 },
+     descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
    },
    {
      nombre: 'Llavero baca tejida',
@@ -176,7 +176,7 @@ const PRODUCTOS = [
      peso: '10g',
      tiempoProduccion: '1 día',
      seccion: 'stock',
-     descuentoEscalonado: { unidades: 9, porcentaje: 0.25 },
+     descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
    },
    {
      nombre: 'Llavero capibara tejido',
@@ -190,7 +190,7 @@ const PRODUCTOS = [
      peso: '10g',
      tiempoProduccion: '1 día',
      seccion: 'stock',
-     descuentoEscalonado: { unidades: 9, porcentaje: 0.25 },
+     descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
    },
    /* Producto temporada principal */
    {
