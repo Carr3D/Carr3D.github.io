@@ -220,6 +220,20 @@ const PRODUCTOS = [
      seccion: 'temporada-principal',
    },
    /* Producto temporada secundarios */
+   {
+     nombre: 'Llavero de pelota',
+     imgPrincipal: 'productos/temporada/llavero_pelota.png',
+     svgPlaceholder: `<svg>...</svg>`,
+     precio: '€1.00',
+     categoria: 'LLAVERO',
+     materiales: ['PLA'],
+     colores: ['#ffffff', '#000000'],
+     descripcion: 'Pequeño llavero de pelota de futbol',
+     peso: '30g',
+     tiempoProduccion: '1 días',
+     seccion: 'temporada-secundaria', 
+     descuentoEscalonado: { unidades: 5, porcentaje: 0.10 },
+   },
 ];
  
 /* Procesar descuentos */
