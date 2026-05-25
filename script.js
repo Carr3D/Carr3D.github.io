@@ -136,13 +136,16 @@
  
 const PRODUCTOS = [
   {
-    nombre: 'Pirámide geométrica',
-    imgPrincipal: '',imgSecundaria: '',
-    svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="100,28 178,158 22,158" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/><polygon points="100,55 152,148 48,148" fill="var(--accent-s)"/><polygon points="100,82 126,138 74,138" fill="var(--accent)" opacity=".25"/><circle cx="100" cy="28" r="3" fill="var(--accent)"/></svg>`,
-    precio: '€12.00',destacado: 'nuevo',categoria: 'Decoración',materiales: ['PLA'],
-    colores: ['#e8541a','#fbbf24','#ffffff'],
-    descripcion: 'Escultura geométrica de precisión impresa en PLA naranja. Perfecta como elemento decorativo de escritorio o como regalo original.',
-    peso: '85 g',tiempoProduccion: '1–2 días',seccion: 'stock',
+     nombre: 'Llavaro perro tejido',
+     imgPrincipal: 'productos/constante/llavero_perro_cosido.jpg',
+     svgPlaceholder: `<svg>...</svg>`,
+     precio: '€2.00',
+     categoria: 'Llavero',
+     materiales: ['#E8BEAC'],
+     descripcion: 'Llavero de un perro con acabado de tejido',
+     peso: '?g',
+     tiempoProduccion: '1 día',
+     seccion: 'stock',
   },
   {
     nombre: 'Soporte de escritorio',
