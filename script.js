@@ -195,7 +195,7 @@ const PRODUCTOS = [
    /* Producto temporada principal */
    {
      nombre: 'World Cup',
-     imgPrincipal: 'productos/temporada/world_cup.jpg',
+     imgPrincipal: 'productos/temporada/world_cup.png',
      svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="100,30 160,80 140,150 60,150 40,80" fill="none" stroke="#FFD700" stroke-width="2.5"/><circle cx="100" cy="100" r="30" fill="#FFD700" opacity="0.2"/></svg>`,
      precio: '€30.00',
      categoria: 'Decoración',
