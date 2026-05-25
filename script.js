@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded',function(){
   /* Progress */
   window.addEventListener('scroll',()=>{document.getElementById('progress-bar').style.width=(window.scrollY/(document.body.scrollHeight-window.innerHeight)*100)+'%';},{passive:true});
   /* Seq images */
-  const TOTAL=45,PREFIX='fotos/frame_',EXT='.jpg';
+  const TOTAL=45,PREFIX='img/frame_',EXT='.jpg';
   const frames=[];
   for(let i=1;i<=TOTAL;i++){const img=new Image();img.src=PREFIX+String(i).padStart(3,'0')+EXT;frames.push(img);}
   const wr=document.getElementById('hero-sticky-wrapper'),si=document.getElementById('seq-img'),pl=document.getElementById('seq-placeholder'),ct=document.getElementById('frame-counter'),hc=document.getElementById('hero-cta');
