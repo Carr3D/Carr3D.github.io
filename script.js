@@ -137,7 +137,7 @@
 const PRODUCTOS = [
   {
      nombre: 'Llavaro perro tejido',
-     imgPrincipal: 'productos/constante/llavero_perro_cosido.jpg',
+     imgPrincipal: 'productos/constante/llavero_perro_cosido.png',
      svgPlaceholder: `<svg>...</svg>`,
      precio: '€2.00',
      categoria: 'Llavero',
