@@ -140,7 +140,7 @@ const PRODUCTOS = [
      imgPrincipal: 'productos/constante/llavero_perro_cosido.png',
      svgPlaceholder: `<svg>...</svg>`,
      precio: '€2.00',
-     categoria: 'Llavero',
+     categoria: 'LLAVERO',
      materiales: ['PLA'],
      colores: ['#e99573'],
      descripcion: 'Llavero de un perro con acabado de tejido',
