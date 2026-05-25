@@ -1,5 +1,137 @@
-/* ================================================================
-   EDITA AQUÍ TUS PRODUCTOS — Todo en un único sitio
+  /* ================================================================
+   🎯 GUÍA COMPLETA: CÓMO MODIFICAR TUS PRODUCTOS
+   ================================================================
+   
+   Aquí tienes 3 secciones diferentes donde puedes añadir productos.
+   Sigue los pasos para cada tipo:
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   📦 STOCK CONSTANTE (Catálogo principal - arriba)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   Estos productos SIEMPRE están disponibles y aparecen en el catálogo.
+   Se aplican filtros de categoría y precio.
+
+   Pasos:
+   1. Copia el bloque { } de un producto existente
+   2. Modifica estos campos:
+      - nombre: "Tu producto"
+      - precio: "€XX.XX"
+      - categoria: "Decoración" o "Utilidad"
+      - materiales: ['PLA'], ['PETG'], etc.
+      - colores: ['#e8541a', '#fbbf24'] (códigos hex)
+      - descripcion: "Texto descriptivo..."
+      - peso: "XXg"
+      - tiempoProduccion: "X-X días"
+      - seccion: 'stock'  ← ¡IMPORTANTE!
+   
+   3. Para imágenes:
+      - imgPrincipal: "ruta/a/tu/imagen.jpg"
+      - Si NO pones imagen, usa svgPlaceholder con un SVG
+      - Si pones imagen pero falla, mostrará el SVG de fallback
+
+   Ejemplo mínimo:
+   {
+     nombre: 'Mi producto',
+     imgPrincipal: 'images/mi-producto.jpg',
+     svgPlaceholder: `<svg>...</svg>`,
+     precio: '€25.00',
+     categoria: 'Decoración',
+     materiales: ['PLA'],
+     colores: ['#e8541a'],
+     descripcion: 'Descripción corta',
+     peso: '100g',
+     tiempoProduccion: '2-3 días',
+     seccion: 'stock',
+   },
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   🌟 TEMPORADA - PRODUCTO PRINCIPAL (Destacado grande)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   Este es el producto ESTRELLA que aparece grande en la sección.
+   NO se filtra por precio (siempre visible).
+   Es edición limitada.
+
+   Pasos:
+   1. Copia un producto existente con seccion: 'temporada-principal'
+   2. Modifica los mismos campos que stock
+   3. ¡IMPORTANTE! Usa: seccion: 'temporada-principal'
+   
+   Campos específicos:
+   - nombre: "Sol & Mar Collection" (tu nombre de edición)
+   - descripcion: "Texto sobre esta edición limitada..."
+   - precio: "€XX.XX" (puede ser alto, sin filtro)
+
+   Ejemplo:
+   {
+     nombre: 'Edición Navidad 2025',
+     imgPrincipal: 'images/navidad.jpg',
+     svgPlaceholder: `<svg>...</svg>`,
+     precio: '€55.00',
+     categoria: 'Decoración',
+     materiales: ['PETG'],
+     colores: ['#ef4444', '#22c55e'],
+     descripcion: 'Edición limitada navideña...',
+     peso: '250g',
+     tiempoProduccion: '5-7 días',
+     seccion: 'temporada-principal',  ← ¡CLAVE!
+   },
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   🎨 TEMPORADA - PRODUCTOS SECUNDARIOS (Grid pequeña)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   Estos aparecen en la grid de 3 columnas bajo el principal.
+   SÍ se filtran por categoría y precio.
+   Ideales para complementos o variaciones.
+
+   Pasos:
+   1. Copia un producto con seccion: 'temporada-secundaria'
+   2. Rellena los campos normales
+   3. IMPORTANTE: seccion: 'temporada-secundaria'
+   
+   Opciones avanzadas (DESCUENTOS POR CANTIDAD):
+   {
+     nombre: 'Cactus decorativo',
+     ...
+     descuentoEscalonado: { 
+       unidades: 10,  // A partir de la unidad 11
+       porcentaje: 0.25  // 25% descuento
+     },
+   }
+
+   Ejemplo:
+   {
+     nombre: 'Pack primavera',
+     imgPrincipal: 'images/pack-primavera.jpg',
+     svgPlaceholder: `<svg>...</svg>`,
+     precio: '€18.00',
+     categoria: 'Utilidad',
+     materiales: ['PLA'],
+     colores: ['#fbbf24'],
+     descripcion: 'Pack de 3 piezas primavera',
+     peso: '150g',
+     tiempoProduccion: '2-3 días',
+     seccion: 'temporada-secundaria',  ← ¡CLAVE!
+     descuentoEscalonado: { unidades: 5, porcentaje: 0.15 },
+   },
+
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   💡 CONSEJOS GENERALES
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   
+   • Colores: Usa códigos HEX (#e8541a). Más de 3 colores = flexible
+   • SVG: Si no tienes imagen, el SVG se muestra automáticamente
+   • Imágenes: Resuelve proporción 1:1 (cuadradas) para mejor visual
+   • Precios: Formato "€XX.XX" o "€XX.50"
+   • Tiempos: "1 día", "2-3 días", "3-5 días", etc.
+   • Descripciones: Máx 150 caracteres (se trunca en card)
+
    ================================================================ */
 
 const PRODUCTOS = [
@@ -74,7 +206,7 @@ const PRODUCTOS = [
     precio: '€16.00',precioOriginal: '€16.00',destacado: '',categoria: 'Decoración',materiales: ['PLA'],
     colores: ['#22c55e','#16a34a'],
     descripcion: 'Cactus decorativo de escritorio en PLA verde. Impresión de alta resolución con textura realista. Sin necesidad de riego. A partir de 11 unidades: 25% descuento.',
-    peso: '90 g',tiempoProduccion: '2–3 días',seccion: 'stock',
+    peso: '90 g',tiempoProduccion: '2–3 días',seccion: 'temporada-secundaria',
     descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
   },
   {
@@ -84,7 +216,7 @@ const PRODUCTOS = [
     precio: '€8.00',precioOriginal: '€8.00',destacado: '',categoria: 'Utilidad',materiales: ['PETG'],
     colores: ['#0891b2','#cffafe'],
     descripcion: 'Posavasos con forma de ola marina en PETG azul agua. Resistente al calor y a la humedad. Se vende en packs de 4. A partir de 11 unidades: 50% descuento.',
-    peso: '40 g x4',tiempoProduccion: '1–2 días',seccion: 'stock',
+    peso: '40 g x4',tiempoProduccion: '1–2 días',seccion: 'temporada-secundaria',
     descuentoEscalonado: { unidades: 10, porcentaje: 0.50 },
   },
   {
@@ -181,10 +313,10 @@ function seasonSmallHTML(p,idx){
   const img=p.imgPrincipal?('<img src="'+p.imgPrincipal+'" alt="'+safeQ(p.nombre)+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">'):'<div class="card-img-placeholder">'+p.svgPlaceholder+'</div>';
   const catHTML=p.categoria?('<div class="card-categoria">'+p.categoria+'</div>'):'';
   const matPill='<span class="card-mat-pill">'+(p.materiales||[]).join(' · ')+'</span>';
-  return '<div class="product-card" onclick="openProduct('+idx+')">'+badgeHTML(p.destacado)+'<div class="card-img" style="background:var(--bg3)">'+img+'<div class="card-overlay"><button class="view-btn" onclick="event.stopPropagation();openProduct('+idx+')">Ver</button><button class="add-btn" onclick="event.stopPropagation();addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">+ Carrito</button></div></div><div class="card-info">'+catHTML+'<div class="card-name">'+p.nombre+'</div><div class="card-meta"><span class="card-price">'+p.precio+'</span>'+matPill+'</div></div></div>';
+  return '<div class="product-card season-small-item" data-cat="'+(p.categoria||'')+'" data-idx="'+idx+'" onclick="openProduct('+idx+')">'+badgeHTML(p.destacado)+'<div class="card-img" style="background:var(--bg3)">'+img+'<div class="card-img-placeholder" style="display:none;">'+p.svgPlaceholder+'</div><div class="card-overlay"><button class="view-btn" onclick="event.stopPropagation();openProduct('+idx+')">Ver</button><button class="add-btn" onclick="event.stopPropagation();addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">+ Carrito</button></div></div><div class="card-info">'+catHTML+'<div class="card-name">'+p.nombre+'</div><div class="card-meta"><span class="card-price">'+p.precio+'</span>'+matPill+'</div></div></div>';
 }
 function seasonFeaturedHTML(p,idx){
-  const imgBlock=p.imgPrincipal?('<img src="'+p.imgPrincipal+'" alt="'+safeQ(p.nombre)+'" style="width:100%;height:100%;object-fit:cover;">'):'<div class="season-feat-img-placeholder">'+p.svgPlaceholder+'</div>';
+  const imgBlock=p.imgPrincipal?('<img src="'+p.imgPrincipal+'" alt="'+safeQ(p.nombre)+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="season-feat-img-placeholder" style="display:none;">'+p.svgPlaceholder+'</div>'):'<div class="season-feat-img-placeholder">'+p.svgPlaceholder+'</div>';
   return '<div class="season-featured"><div class="season-feat-img">'+imgBlock+'</div><div class="season-feat-info"><span class="season-tag">Edición limitada · '+matsLabel(p.materiales)+'</span><h3 class="season-feat-title">'+p.nombre+'</h3><p class="season-feat-desc">'+p.descripcion+'</p><div class="season-feat-price">'+p.precio+'</div><button class="btn-filled" onclick="addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">Añadir al carrito</button></div></div>';
 }
 
@@ -223,8 +355,18 @@ function applyFilter(){
     if(show)vis++;
   });
   document.getElementById('filter-count').textContent=vis+' producto'+(vis!==1?'s':'');
+  
+  // Los productos secundarios de temporada SÍ se filtran por precio
   const seasonCards=document.querySelectorAll('.season-small-item');
-  seasonCards.forEach(c=>{const show=!cat||c.dataset.cat===cat;c.classList.toggle('hidden',!show);});
+  seasonCards.forEach(c=>{
+    const catOk=!cat||c.dataset.cat===cat;
+    const price=getCardPrice(c);
+    const minOk=minV===null||price>=minV;
+    const maxOk=maxV===null||price<=maxV;
+    const show=catOk&&minOk&&maxOk;
+    c.classList.toggle('hidden',!show);
+  });
+  
   const resetBtn=document.getElementById('price-reset');
   if(resetBtn)resetBtn.classList.toggle('hidden',minV===null&&maxV===null);
 }
@@ -265,10 +407,13 @@ function resetPriceFilter(){
 
 function initPriceFilter(){
   let maxPrice=0;
-  PRODUCTOS.filter(p=>p.seccion==='stock').forEach(p=>{
-    const raw=p.precio||'0';
-    const v=parseFloat(raw.replace(/[^0-9.,]/g,'').replace(',','.'))||0;
-    if(v>maxPrice)maxPrice=v;
+  // Ignorar temporada-principal, calcular maxPrice solo de stock y temporada-secundaria
+  PRODUCTOS.forEach(p=>{
+    if(p.seccion==='stock'||p.seccion==='temporada-secundaria'){
+      const raw=p.precio||'0';
+      const v=parseFloat(raw.replace(/[^0-9.,]/g,'').replace(',','.'))||0;
+      if(v>maxPrice)maxPrice=v;
+    }
   });
   const ceiling=Math.ceil(maxPrice/5)*5+5;
   const slider=document.getElementById('price-slider-max');
@@ -418,7 +563,7 @@ document.addEventListener('DOMContentLoaded',function(){
   PRODUCTOS.forEach((p,idx)=>{
     if(p.seccion==='stock')grid.innerHTML+=cardHTML(p,idx);
     if(p.seccion==='temporada-principal')sfw.innerHTML+=seasonFeaturedHTML(p,idx);
-    if(p.seccion==='temporada-secundaria')ssm.innerHTML+='<div class="product-card season-small-item" data-cat="'+(p.categoria||'')+'" onclick="openProduct('+idx+')">'+badgeHTML(p.destacado)+'<div class="card-img" style="background:var(--bg3)"><img src="'+safeQ(p.imgPrincipal)+'" alt="'+safeQ(p.nombre)+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'"><div class="card-img-placeholder" style="display:none;">'+p.svgPlaceholder+'</div><div class="card-overlay"><button class="view-btn" onclick="event.stopPropagation();openProduct('+idx+')">Ver</button><button class="add-btn" onclick="event.stopPropagation();addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">+ Carrito</button></div></div><div class="card-info"><div class="card-categoria">'+p.categoria+'</div><div class="card-name">'+p.nombre+'</div><div class="card-meta"><span class="card-price">'+p.precio+'</span><span class="card-mat-pill">'+(p.materiales||[]).join(' · ')+'</span></div></div></div>';
+    if(p.seccion==='temporada-secundaria')ssm.innerHTML+='<div class="product-card season-small-item" data-cat="'+(p.categoria||'')+'" data-idx="'+idx+'" onclick="openProduct('+idx+')">'+badgeHTML(p.destacado)+'<div class="card-img" style="background:var(--bg3)"><img src="'+safeQ(p.imgPrincipal)+'" alt="'+safeQ(p.nombre)+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'"><div class="card-img-placeholder" style="display:none;">'+p.svgPlaceholder+'</div><div class="card-overlay"><button class="view-btn" onclick="event.stopPropagation();openProduct('+idx+')">Ver</button><button class="add-btn" onclick="event.stopPropagation();addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">+ Carrito</button></div></div><div class="card-info"><div class="card-categoria">'+p.categoria+'</div><div class="card-name">'+p.nombre+'</div><div class="card-meta"><span class="card-price">'+p.precio+'</span><span class="card-mat-pill">'+(p.materiales||[]).join(' · ')+'</span></div></div></div>';
   });
   /* Filtro */
   buildFilter();
