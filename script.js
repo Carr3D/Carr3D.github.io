@@ -4,15 +4,15 @@
    
    Aquí tienes 3 secciones diferentes donde puedes añadir productos.
    Sigue los pasos para cada tipo:
-
+ 
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+ 
    📦 STOCK CONSTANTE (Catálogo principal - arriba)
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    
    Estos productos SIEMPRE están disponibles y aparecen en el catálogo.
    Se aplican filtros de categoría y precio.
-
+ 
    Pasos:
    1. Copia el bloque { } de un producto existente
    2. Modifica estos campos:
@@ -30,7 +30,7 @@
       - imgPrincipal: "ruta/a/tu/imagen.jpg"
       - Si NO pones imagen, usa svgPlaceholder con un SVG
       - Si pones imagen pero falla, mostrará el SVG de fallback
-
+ 
    Ejemplo mínimo:
    {
      nombre: 'Mi producto',
@@ -45,16 +45,16 @@
      tiempoProduccion: '2-3 días',
      seccion: 'stock',
    },
-
+ 
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+ 
    🌟 TEMPORADA - PRODUCTO PRINCIPAL (Destacado grande)
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    
    Este es el producto ESTRELLA que aparece grande en la sección.
    NO se filtra por precio (siempre visible).
    Es edición limitada.
-
+ 
    Pasos:
    1. Copia un producto existente con seccion: 'temporada-principal'
    2. Modifica los mismos campos que stock
@@ -64,7 +64,7 @@
    - nombre: "Sol & Mar Collection" (tu nombre de edición)
    - descripcion: "Texto sobre esta edición limitada..."
    - precio: "€XX.XX" (puede ser alto, sin filtro)
-
+ 
    Ejemplo:
    {
      nombre: 'Edición Navidad 2025',
@@ -79,16 +79,16 @@
      tiempoProduccion: '5-7 días',
      seccion: 'temporada-principal',  ← ¡CLAVE!
    },
-
+ 
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+ 
    🎨 TEMPORADA - PRODUCTOS SECUNDARIOS (Grid pequeña)
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    
    Estos aparecen en la grid de 3 columnas bajo el principal.
    SÍ se filtran por categoría y precio.
    Ideales para complementos o variaciones.
-
+ 
    Pasos:
    1. Copia un producto con seccion: 'temporada-secundaria'
    2. Rellena los campos normales
@@ -103,7 +103,7 @@
        porcentaje: 0.25  // 25% descuento
      },
    }
-
+ 
    Ejemplo:
    {
      nombre: 'Pack primavera',
@@ -119,9 +119,9 @@
      seccion: 'temporada-secundaria',  ← ¡CLAVE!
      descuentoEscalonado: { unidades: 5, porcentaje: 0.15 },
    },
-
+ 
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
+ 
    💡 CONSEJOS GENERALES
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    
@@ -131,9 +131,9 @@
    • Precios: Formato "€XX.XX" o "€XX.50"
    • Tiempos: "1 día", "2-3 días", "3-5 días", etc.
    • Descripciones: Máx 150 caracteres (se trunca en card)
-
+ 
    ================================================================ */
-
+ 
 const PRODUCTOS = [
   {
     nombre: 'Pirámide geométrica',
@@ -229,7 +229,7 @@ const PRODUCTOS = [
     peso: '35 g',tiempoProduccion: '1 día',seccion: 'temporada-secundaria',
   },
 ];
-
+ 
 /* Procesar descuentos */
 PRODUCTOS.forEach(p=>{
   if(p.precioOriginal&&p.descuentoProducto&&!p.precio){
@@ -239,7 +239,33 @@ PRODUCTOS.forEach(p=>{
     p.precio=simbolo+precioConDescuento.toFixed(2);
   }
 });
-
+ 
+/* ================================================================
+   🐷 CONFIGURACIÓN DE LA HUCHA (Meta de recaudación)
+   ================================================================
+   
+   Edita estos valores para cambiar la meta y progreso de la hucha
+   que aparece en la sección "Ayúdanos a crecer".
+ 
+   Campos a modificar:
+   
+   • piggyFilled: Porcentaje completado (0-100)
+     Ejemplo: 67 = 67% completado
+   
+   • piggyGoal: Meta total en euros
+     Ejemplo: 2000 = €2.000
+   
+   La hucha se actualizará automáticamente con:
+   - Barra de progreso visual
+   - Dinero recaudado (calculado: goal × filled ÷ 100)
+   - Animación de líquido dentro del cerdo
+   
+   ================================================================ */
+ 
+const piggyFilled = 14;    // % completado (0-100)
+const piggyGoal = 500;    // Meta en euros (€)
+const piggyCurrent = Math.round(piggyGoal * piggyFilled / 100);  // Se calcula automáticamente
+ 
 const BADGE_MAP = {
   nuevo:{cls:'badge-new',txt:'Nuevo'},
   pocas:{cls:'badge-low',txt:'Pocas unidades'},
@@ -258,7 +284,7 @@ function safeQ(s){return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 function coloresHTML(arr,cls){
   return (arr||[]).map(c=>'<span class="'+cls+'" style="background:'+c+';'+((c==='#ffffff'||c==='#f5f2ec')?'border:1.5px solid #ccc;':'')+'" title="'+c+'"></span>').join('');
 }
-
+ 
 /* ── CARRITO ── */
 let cartItems=[];
 function openCartPanel(){renderCartPanel();document.getElementById('cart-panel-overlay').classList.add('open');document.body.style.overflow='hidden';}
@@ -301,7 +327,7 @@ function addToCart(name,priceStr,img,idx){
   setTimeout(()=>b.classList.remove('bump'),300);
   showToast((name||'Producto')+' añadido 🎉');
 }
-
+ 
 /* ── RENDER TARJETAS ── */
 function cardHTML(p,idx){
   const img=p.imgPrincipal?('<img src="'+p.imgPrincipal+'" alt="'+safeQ(p.nombre)+'" onerror="this.style.display=\'none\'">'):'<div class="card-img-placeholder">'+p.svgPlaceholder+'</div>';
@@ -319,7 +345,7 @@ function seasonFeaturedHTML(p,idx){
   const imgBlock=p.imgPrincipal?('<img src="'+p.imgPrincipal+'" alt="'+safeQ(p.nombre)+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="season-feat-img-placeholder" style="display:none;">'+p.svgPlaceholder+'</div>'):'<div class="season-feat-img-placeholder">'+p.svgPlaceholder+'</div>';
   return '<div class="season-featured"><div class="season-feat-img">'+imgBlock+'</div><div class="season-feat-info"><span class="season-tag">Edición limitada · '+matsLabel(p.materiales)+'</span><h3 class="season-feat-title">'+p.nombre+'</h3><p class="season-feat-desc">'+p.descripcion+'</p><div class="season-feat-price">'+p.precio+'</div><button class="btn-filled" onclick="addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">Añadir al carrito</button></div></div>';
 }
-
+ 
 /* ── FILTRO ── */
 function buildFilter(){
   const cats=new Set();
@@ -328,17 +354,17 @@ function buildFilter(){
   sel.innerHTML='<option value="">Todas las categorías</option>';
   [...cats].sort().forEach(c=>{sel.innerHTML+='<option value="'+c+'">'+c+'</option>';});
 }
-
+ 
 /* ── FILTRO PRECIO (NUEVO) ── */
 let _priceMin=null,_priceMax=null;
-
+ 
 function getCardPrice(card){
   const idx=parseInt(card.getAttribute('data-idx')??'-1');
   if(idx<0||!PRODUCTOS[idx])return 0;
   const raw=PRODUCTOS[idx].precio||'0';
   return parseFloat(raw.replace(/[^0-9.,]/g,'').replace(',','.'))||0;
 }
-
+ 
 function applyFilter(){
   const cat=document.getElementById('material-filter').value;
   const minV=_priceMin!==null?_priceMin:null;
@@ -370,7 +396,7 @@ function applyFilter(){
   const resetBtn=document.getElementById('price-reset');
   if(resetBtn)resetBtn.classList.toggle('hidden',minV===null&&maxV===null);
 }
-
+ 
 function onSliderInput(val){
   const f=parseFloat(val);
   _priceMax=f;
@@ -379,7 +405,7 @@ function onSliderInput(val){
   updateSliderTrack(f);
   applyFilter();
 }
-
+ 
 function onPriceInput(){
   const minEl=document.getElementById('price-min'),maxEl=document.getElementById('price-max');
   const minV=minEl.value!==''?parseFloat(minEl.value):null;
@@ -389,13 +415,13 @@ function onPriceInput(){
   if(slider&&maxV!==null){slider.value=Math.min(maxV,parseFloat(slider.max));updateSliderTrack(parseFloat(slider.value));}
   applyFilter();
 }
-
+ 
 function updateSliderTrack(val){
   const slider=document.getElementById('price-slider-max');if(!slider)return;
   const pct=((val-parseFloat(slider.min))/(parseFloat(slider.max)-parseFloat(slider.min)))*100;
   slider.style.background='linear-gradient(90deg,var(--accent) '+pct+'%,var(--border) '+pct+'%)';
 }
-
+ 
 function resetPriceFilter(){
   _priceMin=null;_priceMax=null;
   const minEl=document.getElementById('price-min'),maxEl=document.getElementById('price-max'),slider=document.getElementById('price-slider-max');
@@ -404,7 +430,7 @@ function resetPriceFilter(){
   if(slider){slider.value=slider.max;slider.style.background='var(--border)';}
   applyFilter();
 }
-
+ 
 function initPriceFilter(){
   let maxPrice=0;
   // Ignorar temporada-principal, calcular maxPrice solo de stock y temporada-secundaria
@@ -419,7 +445,7 @@ function initPriceFilter(){
   const slider=document.getElementById('price-slider-max');
   if(slider){slider.max=ceiling;slider.value=ceiling;slider.style.background='var(--border)';}
 }
-
+ 
 /* ── COMPORTAMIENTO TACTIL VS MOUSE ── */
 const isTouchDevice=()=>window.matchMedia('(hover:none)').matches;
 function handleCardClick(e,idx){
@@ -430,7 +456,7 @@ function handleCardClick(e,idx){
     else{document.querySelectorAll('#product-grid .product-card.touched').forEach(c=>c.classList.remove('touched'));card.classList.add('touched');}
   }else{openProduct(idx);}
 }
-
+ 
 /* ── MODAL PRODUCTO ── */
 function openProduct(idx){
   const p=PRODUCTOS[idx];if(!p)return;
@@ -454,7 +480,7 @@ function openProduct(idx){
   overlay.classList.add('open');document.body.style.overflow='hidden';
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');document.body.style.overflow='';}
-
+ 
 /* ── MODAL PEDIDO ── */
 function submitOrder(){
   const g=s=>document.querySelector(s)?.value.trim()||'—';
@@ -472,9 +498,8 @@ function submitOrder(){
 function closeOrderSummary(){document.getElementById('order-summary-overlay').classList.remove('open');document.body.style.overflow='';}
 function confirmOrder(){closeOrderSummary();showToast('¡Solicitud enviada! Te contactamos en 24 h ✓');}
 function copyPhone(){navigator.clipboard?.writeText(document.getElementById('osm-phone').textContent);showToast('Número copiado ✓');}
-
+ 
 /* ── HUCHA ── */
-const piggyFilled=67,piggyGoal=2000,piggyCurrent=Math.round(piggyGoal*piggyFilled/100);
 function renderPiggy(){
   document.getElementById('piggy-fill-bar').style.width=piggyFilled+'%';
   document.getElementById('piggy-current-val').textContent='€'+piggyCurrent.toLocaleString('es-ES');
@@ -527,7 +552,7 @@ function buildPiggySVG(pct){
     +'<ellipse cx="108" cy="98" rx="14" ry="9" fill="rgba(255,255,230,0.38)" transform="rotate(-20,108,98)"/>'
     +'<ellipse cx="111" cy="96" rx="6" ry="4" fill="rgba(255,255,255,0.55)" transform="rotate(-20,111,96)"/>';
 }
-
+ 
 /* ── DOM READY ── */
 document.addEventListener('DOMContentLoaded',function(){
   /* Theme */
@@ -597,7 +622,7 @@ document.addEventListener('DOMContentLoaded',function(){
   const po=new IntersectionObserver(entries=>{if(entries[0].isIntersecting)setTimeout(()=>{document.getElementById('piggy-fill-bar').style.width=piggyFilled+'%';},200);},{threshold:.3});
   const ps=document.getElementById('piggy-goal');if(ps)po.observe(ps);
 });
-
+ 
 function scroll2(s){document.querySelector(s)?.scrollIntoView({behavior:'smooth'});}
 function showToast(msg){document.getElementById('t-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function selectMat(el){document.querySelectorAll('.mat-pill').forEach(m=>m.classList.remove('active'));el.classList.add('active');}
