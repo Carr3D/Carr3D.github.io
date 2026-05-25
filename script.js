@@ -259,7 +259,7 @@ PRODUCTOS.forEach(p=>{
 
 /* Total ganado = 57.50 */
 
-const piggyFilled = 11;    // % completado (0-100)
+const piggyFilled = 11.5;    // % completado (0-100)
 const piggyGoal = 500;    // Meta en euros (€)
 const piggyCurrent = Math.round(piggyGoal * piggyFilled / 100);  // Se calcula automáticamente
  
