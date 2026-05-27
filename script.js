@@ -98,7 +98,7 @@
    {
      nombre: 'Cactus decorativo',
      ...
-     descuentoEscalonado: { 
+     descuentoEscalonado: {
        unidades: 10,  // A partir de la unidad 11
        porcentaje: 0.25  // 25% descuento
      },
@@ -231,7 +231,7 @@ const PRODUCTOS = [
      descripcion: 'Pequeño llavero de pelota de futbol',
      peso: '30g',
      tiempoProduccion: '1 días',
-     seccion: 'temporada-secundaria', 
+     seccion: 'temporada-secundaria',
      descuentoEscalonado: { unidades: 5, porcentaje: 0.10 },
    },
 ];
@@ -421,7 +421,7 @@ function applyFilter(){
     if(show)vis++;
   });
   document.getElementById('filter-count').textContent=vis+' producto'+(vis!==1?'s':'');
-  
+ 
   // Los productos secundarios de temporada SÍ se filtran por precio
   const seasonCards=document.querySelectorAll('.season-small-item');
   seasonCards.forEach(c=>{
@@ -432,7 +432,7 @@ function applyFilter(){
     const show=catOk&&minOk&&maxOk;
     c.classList.toggle('hidden',!show);
   });
-  
+ 
   const resetBtn=document.getElementById('price-reset');
   if(resetBtn)resetBtn.classList.toggle('hidden',minV===null&&maxV===null);
 }
@@ -948,9 +948,12 @@ document.addEventListener('DOMContentLoaded',function(){
     const el=document.getElementById(id);
     el.addEventListener('click',e=>{if(e.target===el){if(id==='modal-overlay')closeModal();else if(id==='order-summary-overlay')closeOrderSummary();else if(id==='checkout-contact-overlay')closeCheckoutContact();else if(id==='checkout-confirm-overlay')closeCheckoutConfirm();else closeCartPanel();}});
   });
+  document.getElementById('meta-modal-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('meta-modal-overlay'))closeAddMeta();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeCartPanel();closeOrderSummary();closeCheckoutContact();closeCheckoutConfirm();}});
   /* Hucha */
   renderPiggy();
+  /* Metas cumplidas */
+  renderMetas();
   /* Collage */
   buildCollage();
   const po=new IntersectionObserver(entries=>{if(entries[0].isIntersecting)setTimeout(()=>{document.getElementById('piggy-fill-bar').style.width=piggyFilled+'%';},200);},{threshold:.3});
