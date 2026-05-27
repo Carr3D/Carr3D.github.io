@@ -1,4 +1,4 @@
-  /* ================================================================
+    /* ================================================================
    🎯 GUÍA COMPLETA: CÓMO MODIFICAR TUS PRODUCTOS
    ================================================================
    
@@ -255,27 +255,56 @@ PRODUCTOS.forEach(p=>{
  
    Campos a modificar:
    
-   • piggyFilled: Porcentaje completado (0-100)
-     Ejemplo: 67 = 67% completado
+   • piggyEarned: Dinero recaudado hasta ahora (en euros)
+     Ejemplo: 57.50 = €57,50 recaudados
    
    • piggyGoal: Meta total en euros
-     Ejemplo: 2000 = €2.000
+     Ejemplo: 500 = €500 de meta
    
-   La hucha se actualizará automáticamente con:
+   El porcentaje se calcula solo automáticamente.
+   La hucha se actualizará con:
    - Barra de progreso visual
-   - Dinero recaudado (calculado: goal × filled ÷ 100)
+   - Dinero recaudado
+   - Porcentaje completado (calculado automáticamente)
    - Animación de líquido dentro del cerdo
    
    ================================================================ */
- 
-/* Calculo ( piggyGoal - 100
-                 Total - piggyFilled )*/
 
-/* Total ganado = 57.50 */
+const piggyEarned = 57.50; // € recaudados hasta ahora  ← MODIFICA ESTO
+const piggyGoal   = 500;   // Meta total en euros        ← MODIFICA ESTO
+const piggyFilled   = Math.min(100, Math.round(piggyEarned / piggyGoal * 100)); // ← Se calcula solo
+const piggyCurrent  = piggyEarned; // ← Se calcula solo
 
-const piggyFilled = 11;    // % completado (0-100)
-const piggyGoal = 500;    // Meta en euros (€)
-const piggyCurrent = Math.round(piggyGoal * piggyFilled / 100);  // Se calcula automáticamente
+/* ================================================================
+   📸 GUÍA: CÓMO AÑADIR FOTOS AL COLLAGE
+   ================================================================
+
+   Añade las rutas de tus fotos en el array COLLAGE_FOTOS de abajo.
+   Las fotos deben estar en la misma carpeta que este archivo HTML,
+   o en una subcarpeta.
+
+   Ejemplos de rutas:
+   • Foto en la misma carpeta:       'mi_foto.jpg'
+   • Foto en una subcarpeta:         'fotos/mi_foto.jpg'
+   • Foto ya usada en productos:     'productos/constante/llavero_perro_cosido.png'
+
+   Puedes añadir tantas fotos como quieras.
+   El collage las repite automáticamente en bucle infinito.
+
+   Formatos admitidos: .jpg  .jpeg  .png  .webp  .gif
+
+   ================================================================ */
+
+const COLLAGE_FOTOS = [
+  /* ── Añade tus fotos aquí ── */
+  'productos/constante/llavero_perro_cosido.png',
+  'productos/constante/llavero_gato_cosido.png',
+  'productos/constante/llavero_baca_cosida.png',
+  'productos/constante/llavero_capibara_cosido.png',
+  'productos/constante/peine_mariposa.png',
+  'productos/temporada/world_cup.png',
+  'productos/temporada/llavero_pelota.png',
+];
  
 const BADGE_MAP = {
   nuevo:{cls:'badge-new',txt:'Nuevo'},
@@ -492,28 +521,212 @@ function openProduct(idx){
 }
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open');document.body.style.overflow='';}
  
+/* ── VALIDACIÓN ── */
+function setFieldState(el,valid,msg){
+  const wrap=el.closest('.form-group')||el.parentElement;
+  let hint=wrap.querySelector('.field-hint');
+  if(!hint){hint=document.createElement('span');hint.className='field-hint';wrap.appendChild(hint);}
+  el.classList.toggle('field-error',!valid);
+  el.classList.toggle('field-ok',valid);
+  hint.textContent=valid?'':msg;
+  hint.style.color=valid?'':'var(--val-err)';
+}
+function clearFieldState(el){
+  const wrap=el.closest('.form-group')||el.parentElement;
+  const hint=wrap.querySelector('.field-hint');
+  if(hint)hint.textContent='';
+  el.classList.remove('field-error','field-ok');
+}
+function isValidEmail(v){return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);}
+function isValidPhone(v){return /^\d{9}$/.test(v.replace(/\s/g,''));}
+function isValidPrefix(v){return /^\+\d{1,4}$/.test(v.trim());}
+
+/* Validación formulario carrito */
+function validateCCFields(){
+  const prefEl=document.getElementById('cc-prefix');
+  const phEl=document.getElementById('cc-phone');
+  const emEl=document.getElementById('cc-email');
+  const prefix=prefEl.value.trim();
+  const phone=phEl.value.trim().replace(/\s/g,'');
+  const email=emEl.value.trim();
+  let ok=true;
+
+  /* Prefijo: obligatorio si hay teléfono */
+  if(phone){
+    if(!isValidPrefix(prefix)){setFieldState(prefEl,false,'Ej: +34');ok=false;}
+    else clearFieldState(prefEl);
+  } else clearFieldState(prefEl);
+
+  /* Teléfono */
+  if(phone&&!isValidPhone(phone)){setFieldState(phEl,false,'Exactamente 9 dígitos');ok=false;}
+  else if(phone){setFieldState(phEl,true,'');}
+  else clearFieldState(phEl);
+
+  /* Email */
+  if(email&&!isValidEmail(email)){setFieldState(emEl,false,'Formato inválido (ej: tu@email.com)');ok=false;}
+  else if(email){setFieldState(emEl,true,'');}
+  else clearFieldState(emEl);
+
+  /* Al menos uno obligatorio */
+  if(!phone&&!email){
+    setFieldState(phEl,false,'Introduce teléfono y/o correo');
+    setFieldState(emEl,false,'Introduce teléfono y/o correo');
+    ok=false;
+  }
+  return ok;
+}
+
+/* Validación formulario personalizado */
+function validateOrderForm(){
+  let ok=true;
+  const nombre=document.querySelector('.order-form #of-nombre');
+  const email=document.querySelector('.order-form #of-email');
+  const objeto=document.querySelector('.order-form #of-objeto');
+  const cantidad=document.querySelector('.order-form .form-input[placeholder="1"]');
+  const color=document.getElementById('custom-color-input');
+  const dims=document.querySelector('.order-form .form-input[placeholder="Alto × Ancho × Largo"]');
+  const desc=document.querySelector('.order-form .form-textarea');
+
+  if(!nombre.value.trim()||nombre.value.trim().length<2){setFieldState(nombre,false,'Introduce tu nombre (mín. 2 letras)');ok=false;}
+  else setFieldState(nombre,true,'');
+
+  if(!email.value.trim()){setFieldState(email,false,'El correo es obligatorio');ok=false;}
+  else if(!isValidEmail(email.value.trim())){setFieldState(email,false,'Formato inválido (ej: tu@email.com)');ok=false;}
+  else setFieldState(email,true,'');
+
+  if(!objeto.value.trim()||objeto.value.trim().length<3){setFieldState(objeto,false,'Describe brevemente el objeto (mín. 3 caracteres)');ok=false;}
+  else setFieldState(objeto,true,'');
+
+  if(!color||!color.value.trim()){setFieldState(color,false,'Indica el color deseado');ok=false;}
+  else setFieldState(color,true,'');
+
+  if(!dims||!dims.value.trim()){setFieldState(dims,false,'Indica las dimensiones aproximadas');ok=false;}
+  else setFieldState(dims,true,'');
+
+  const cant=parseInt(cantidad.value);
+  if(!cantidad.value||isNaN(cant)||cant<1){setFieldState(cantidad,false,'Mínimo 1 unidad');ok=false;}
+  else setFieldState(cantidad,true,'');
+
+  if(!desc||!desc.value.trim()||desc.value.trim().length<10){setFieldState(desc,false,'Describe el pedido con más detalle (mín. 10 caracteres)');ok=false;}
+  else setFieldState(desc,true,'');
+
+  return ok;
+}
+
 /* ── MODAL PEDIDO ── */
 function submitOrder(){
-  const g=s=>document.querySelector(s)?.value.trim()||'—';
-  document.getElementById('osm-nombre').textContent=g('.order-form .form-input[placeholder="Tu nombre"]');
-  document.getElementById('osm-email').textContent=g('.order-form .form-input[placeholder="tu@email.com"]');
-  document.getElementById('osm-objeto').textContent=g('.order-form .form-input[placeholder="Nombre o descripción breve del objeto"]');
-  document.getElementById('osm-material').textContent=document.querySelector('.mat-pill.active')?.textContent||'—';
-  document.getElementById('osm-dims').textContent=g('.order-form .form-input[placeholder="Alto × Ancho × Largo"]');
-  document.getElementById('osm-cantidad').textContent=g('.order-form .form-input[placeholder="1"]')||'1';
-  document.getElementById('osm-color').textContent=document.getElementById('custom-color-input')?.value.trim()||'—';
-  const d=g('.order-form .form-textarea');
-  document.getElementById('osm-desc').textContent=d.length>120?d.slice(0,120)+'…':d;
-  document.getElementById('order-summary-overlay').classList.add('open');document.body.style.overflow='hidden';
+  if(!validateOrderForm())return;
+  const nombre=document.querySelector('.order-form #of-nombre').value.trim();
+  const email=document.querySelector('.order-form #of-email').value.trim();
+  const objeto=document.querySelector('.order-form #of-objeto').value.trim();
+  const material=document.querySelector('.mat-pill.active')?.textContent||'—';
+  const color=document.getElementById('custom-color-input')?.value.trim()||'—';
+  const dims=document.querySelector('.order-form .form-input[placeholder="Alto × Ancho × Largo"]')?.value.trim()||'—';
+  const cantidad=document.querySelector('.order-form .form-input[placeholder="1"]')?.value||'1';
+  let desc=document.querySelector('.order-form .form-textarea')?.value.trim()||'—';
+  if(desc.length>200)desc=desc.slice(0,200)+'…';
+
+  const lines=[
+    'Nombre: '+nombre,
+    'Correo: '+email,
+    'Objeto: '+objeto,
+    'Material: '+material,
+    'Color: '+color,
+    'Dimensiones: '+dims,
+    'Cantidad: '+cantidad,
+    'Descripción: '+desc,
+  ];
+  document.getElementById('osm-summary-box').textContent=lines.join('\n');
+  document.getElementById('order-summary-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
 }
 function closeOrderSummary(){document.getElementById('order-summary-overlay').classList.remove('open');document.body.style.overflow='';}
-function confirmOrder(){closeOrderSummary();showToast('¡Solicitud enviada! Te contactamos en 24 h ✓');}
+function confirmOrder(){
+  closeOrderSummary();
+  // Limpiar formulario
+  document.querySelector('.order-form #of-nombre').value='';
+  document.querySelector('.order-form #of-email').value='';
+  document.querySelector('.order-form #of-objeto').value='';
+  document.getElementById('custom-color-input').value='';
+  const dims=document.querySelector('.order-form .form-input[placeholder="Alto × Ancho × Largo"]');if(dims)dims.value='';
+  const cant=document.querySelector('.order-form .form-input[placeholder="1"]');if(cant)cant.value='';
+  const ta=document.querySelector('.order-form .form-textarea');if(ta)ta.value='';
+  document.querySelectorAll('.order-form .form-input,.order-form .form-textarea').forEach(el=>clearFieldState(el));
+  showToast('¡Solicitud enviada! Te contactamos en 24 h ✓');
+}
+function copyOrderSummary(){
+  const txt=document.getElementById('osm-summary-box').textContent;
+  navigator.clipboard?.writeText(txt);
+  showToast('¡Datos copiados! ✓');
+}
 function copyPhone(){navigator.clipboard?.writeText(document.getElementById('osm-phone').textContent);showToast('Número copiado ✓');}
+
+function openCheckoutContact(){
+  closeCartPanel();
+  document.getElementById('cc-prefix').value='+34';
+  document.getElementById('cc-phone').value='';
+  document.getElementById('cc-email').value='';
+  document.getElementById('checkout-contact-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeCheckoutContact(){
+  document.getElementById('checkout-contact-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function goToOrderConfirm(){
+  if(!validateCCFields())return;
+  const prefix=document.getElementById('cc-prefix').value.trim();
+  const phone=document.getElementById('cc-phone').value.trim();
+  const email=document.getElementById('cc-email').value.trim();
+  closeCheckoutContact();
+  // Build summary text
+  let lines=[];
+  if(email)lines.push('Correo: '+email);
+  if(phone)lines.push('Número: '+(prefix?prefix+' ':'')+phone);
+  if(cartItems.length){
+    const pedidoLineas=cartItems.map(i=>{
+      let s=i.name+' × '+i.qty;
+      let total=i.price*i.qty;
+      if(i.descuentoEscalonado&&i.descuentoEscalonado.porcentaje&&i.qty>i.descuentoEscalonado.unidades){
+        const u=i.descuentoEscalonado.unidades,d=i.descuentoEscalonado.porcentaje;
+        total=(i.price*u)+(i.price*(i.qty-u)*(1-d));
+      }
+      return s+' (€'+total.toFixed(2)+')';
+    });
+    lines.push('Pedido: '+pedidoLineas.join(', '));
+    const grandTotal=cartItems.reduce((s,i)=>{
+      let t=i.price*i.qty;
+      if(i.descuentoEscalonado&&i.descuentoEscalonado.porcentaje&&i.qty>i.descuentoEscalonado.unidades){
+        const u=i.descuentoEscalonado.unidades,d=i.descuentoEscalonado.porcentaje;
+        t=(i.price*u)+(i.price*(i.qty-u)*(1-d));
+      }
+      return s+t;
+    },0);
+    lines.push('Total: €'+grandTotal.toFixed(2));
+  }
+  document.getElementById('cc-summary-box').textContent=lines.join('\n');
+  document.getElementById('checkout-confirm-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeCheckoutConfirm(){
+  document.getElementById('checkout-confirm-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function copySummary(){
+  const txt=document.getElementById('cc-summary-box').textContent;
+  navigator.clipboard?.writeText(txt);
+  showToast('¡Datos copiados! ✓');
+}
+function finalizeOrder(){
+  closeCheckoutConfirm();
+  clearCart();
+  showToast('¡Pedido enviado! Te contactamos pronto ✓');
+}
  
 /* ── HUCHA ── */
 function renderPiggy(){
   document.getElementById('piggy-fill-bar').style.width=piggyFilled+'%';
-  document.getElementById('piggy-current-val').textContent='€'+piggyCurrent.toLocaleString('es-ES');
+  document.getElementById('piggy-current-val').textContent='€'+piggyCurrent.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2});
   document.getElementById('piggy-goal-val').textContent='€'+piggyGoal.toLocaleString('es-ES');
   document.getElementById('piggy-pct-label').textContent=piggyFilled+'% completado';
   buildPiggySVG(piggyFilled);
@@ -564,6 +777,49 @@ function buildPiggySVG(pct){
     +'<ellipse cx="111" cy="96" rx="6" ry="4" fill="rgba(255,255,255,0.55)" transform="rotate(-20,111,96)"/>';
 }
  
+/* ── COLLAGE BUILDER ── */
+function buildCollage(){
+  const track=document.getElementById('collage-track');
+  if(!track||!COLLAGE_FOTOS.length)return;
+
+  // Patrones de celda: cada columna define qué ocupa (tall = 2 filas, normal = 1 fila)
+  // Se repite el patrón para llenar la pantalla en bucle
+  const patterns=[
+    [{span:'tall'},{span:'normal'},{span:'normal'}],   // col: 1 tall + 2 normal
+    [{span:'normal'},{span:'normal'},{span:'normal'}],  // col: 3 normales
+    [{span:'normal'},{span:'tall'},{span:'normal'}],    // col: normal + tall
+    [{span:'normal'},{span:'normal'},{span:'normal'}],
+    [{span:'tall'},{span:'normal'},{span:'normal'}],
+    [{span:'normal'},{span:'normal'},{span:'normal'}],
+  ];
+
+  // Genera celdas suficientes (duplicadas para el loop infinito)
+  let cells=[];
+  let photoIdx=0;
+  const totalCols=patterns.length*Math.ceil(24/patterns.length); // ~24 columnas
+  for(let c=0;c<totalCols;c++){
+    const pat=patterns[c%patterns.length];
+    pat.forEach(cell=>{
+      cells.push({src:COLLAGE_FOTOS[photoIdx%COLLAGE_FOTOS.length],tall:cell.span==='tall'});
+      photoIdx++;
+    });
+  }
+
+  // Duplicar para scroll infinito
+  const allCells=[...cells,...cells];
+  track.innerHTML='';
+  allCells.forEach(({src,tall})=>{
+    const div=document.createElement('div');
+    div.className='collage-cell'+(tall?' tall':'');
+    const img=document.createElement('img');
+    img.src=src;
+    img.alt='Carr3D foto';
+    img.loading='lazy';
+    div.appendChild(img);
+    track.appendChild(div);
+  });
+}
+
 /* ── DOM READY ── */
 document.addEventListener('DOMContentLoaded',function(){
   /* Theme */
@@ -618,18 +874,85 @@ document.addEventListener('DOMContentLoaded',function(){
     });
   },{threshold:.5});
   so.observe(document.getElementById('stats'));
-  /* File input */
-  const fi=document.getElementById('file-input');
-  if(fi)fi.addEventListener('change',function(){if(this.files[0])document.querySelector('.upload-text').innerHTML='<strong style="color:var(--accent2)">✓ '+this.files[0].name+'</strong>';});
+/* ── Validación en tiempo real: formulario personalizado ── */
+  const orderForm=document.querySelector('.order-form');
+  if(orderForm){
+    const nombre=orderForm.querySelector('#of-nombre');
+    const email=orderForm.querySelector('#of-email');
+    const objeto=orderForm.querySelector('#of-objeto');
+    const cantidad=orderForm.querySelector('.form-input[placeholder="1"]');
+    const color=document.getElementById('custom-color-input');
+    const dims=orderForm.querySelector('.form-input[placeholder="Alto × Ancho × Largo"]');
+    const desc=orderForm.querySelector('.form-textarea');
+
+    nombre?.addEventListener('input',()=>{
+      if(!nombre.value.trim()||nombre.value.trim().length<2)setFieldState(nombre,false,'Mín. 2 letras');
+      else setFieldState(nombre,true,'');
+    });
+    email?.addEventListener('input',()=>{
+      if(!email.value.trim())clearFieldState(email);
+      else if(!isValidEmail(email.value.trim()))setFieldState(email,false,'Formato inválido');
+      else setFieldState(email,true,'');
+    });
+    objeto?.addEventListener('input',()=>{
+      if(!objeto.value.trim()||objeto.value.trim().length<3)setFieldState(objeto,false,'Mín. 3 caracteres');
+      else setFieldState(objeto,true,'');
+    });
+    color?.addEventListener('input',()=>{
+      if(!color.value.trim())setFieldState(color,false,'Indica el color deseado');
+      else setFieldState(color,true,'');
+    });
+    dims?.addEventListener('input',()=>{
+      if(!dims.value.trim())setFieldState(dims,false,'Indica las dimensiones');
+      else setFieldState(dims,true,'');
+    });
+    cantidad?.addEventListener('input',()=>{
+      cantidad.value=cantidad.value.replace(/[^0-9]/g,'');
+      const v=parseInt(cantidad.value);
+      if(!cantidad.value||isNaN(v)||v<1)setFieldState(cantidad,false,'Mínimo 1');
+      else setFieldState(cantidad,true,'');
+    });
+    desc?.addEventListener('input',()=>{
+      if(!desc.value.trim()||desc.value.trim().length<10)setFieldState(desc,false,'Mín. 10 caracteres');
+      else setFieldState(desc,true,'');
+    });
+  }
+
+  /* ── Validación en tiempo real: modal carrito ── */
+  const ccPhone=document.getElementById('cc-phone');
+  const ccPrefix=document.getElementById('cc-prefix');
+  const ccEmail=document.getElementById('cc-email');
+  ccPhone?.addEventListener('input',()=>{
+    ccPhone.value=ccPhone.value.replace(/[^0-9 ]/g,'');
+    const v=ccPhone.value.replace(/\s/g,'');
+    if(!v){clearFieldState(ccPhone);clearFieldState(ccPrefix);return;}
+    if(!isValidPhone(v))setFieldState(ccPhone,false,'Exactamente 9 dígitos');
+    else setFieldState(ccPhone,true,'');
+    if(ccPrefix.value.trim()&&!isValidPrefix(ccPrefix.value.trim()))setFieldState(ccPrefix,false,'Ej: +34');
+    else if(ccPrefix.value.trim())setFieldState(ccPrefix,true,'');
+  });
+  ccPrefix?.addEventListener('input',()=>{
+    ccPrefix.value=ccPrefix.value.replace(/[^+0-9]/g,'');
+    if(!ccPrefix.value)return;
+    if(!isValidPrefix(ccPrefix.value))setFieldState(ccPrefix,false,'Ej: +34');
+    else setFieldState(ccPrefix,true,'');
+  });
+  ccEmail?.addEventListener('input',()=>{
+    if(!ccEmail.value.trim()){clearFieldState(ccEmail);return;}
+    if(!isValidEmail(ccEmail.value.trim()))setFieldState(ccEmail,false,'Formato inválido');
+    else setFieldState(ccEmail,true,'');
+  });
   /* Modals */
   document.getElementById('modal-close-btn').addEventListener('click',closeModal);
-  ['modal-overlay','order-summary-overlay','cart-panel-overlay'].forEach(id=>{
+  ['modal-overlay','order-summary-overlay','cart-panel-overlay','checkout-contact-overlay','checkout-confirm-overlay'].forEach(id=>{
     const el=document.getElementById(id);
-    el.addEventListener('click',e=>{if(e.target===el){if(id==='modal-overlay')closeModal();else if(id==='order-summary-overlay')closeOrderSummary();else closeCartPanel();}});
+    el.addEventListener('click',e=>{if(e.target===el){if(id==='modal-overlay')closeModal();else if(id==='order-summary-overlay')closeOrderSummary();else if(id==='checkout-contact-overlay')closeCheckoutContact();else if(id==='checkout-confirm-overlay')closeCheckoutConfirm();else closeCartPanel();}});
   });
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeCartPanel();closeOrderSummary();}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeCartPanel();closeOrderSummary();closeCheckoutContact();closeCheckoutConfirm();}});
   /* Hucha */
   renderPiggy();
+  /* Collage */
+  buildCollage();
   const po=new IntersectionObserver(entries=>{if(entries[0].isIntersecting)setTimeout(()=>{document.getElementById('piggy-fill-bar').style.width=piggyFilled+'%';},200);},{threshold:.3});
   const ps=document.getElementById('piggy-goal');if(ps)po.observe(ps);
 });

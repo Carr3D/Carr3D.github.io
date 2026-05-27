@@ -6,18 +6,23 @@
 <title>Carr3D – Impresión 3D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-<script src="script.js"></script>
 <link rel="icon" href="favicon.png">
 <link rel="stylesheet" href="styles.css">
+<script src="script.js"></script>
 </head>
 <body>
 
-<div id="progress-bar"></div>
-<div id="toast"><span id="t-icon">🎉</span><span id="t-msg">¡Añadido!</span></div>
+<!--
+<link rel="stylesheet" href="styles.css">
+<script src="script.js"></script>
+-->
 
-<!-- MODAL RESUMEN PEDIDO -->
+<div id="progress-bar"></div>
+<div id="toast"><span id="t-msg">¡Añadido!</span></div>
+
+<!-- MODAL RESUMEN PEDIDO PERSONALIZADO -->
 <div id="order-summary-overlay">
-  <div class="order-summary-modal">
+  <div class="checkout-contact-modal">
     <div class="osm-header">
       <h3>Resumen de tu solicitud</h3>
       <div style="display:flex;align-items:center;gap:.75rem;">
@@ -26,41 +31,86 @@
       </div>
     </div>
     <div class="osm-body">
-      <div class="osm-badge">✓ Solicitud recibida</div>
-      <p class="osm-intro">¡Gracias! Para prepararte el mejor presupuesto, envíanos una foto por WhatsApp.</p>
-      <div class="osm-row"><span class="osm-label">Nombre</span><span class="osm-value" id="osm-nombre">—</span></div>
-      <div class="osm-row"><span class="osm-label">Objeto</span><span class="osm-value" id="osm-objeto">—</span></div>
-      <div class="osm-row"><span class="osm-label">Material</span><span class="osm-value" id="osm-material">—</span></div>
-      <div class="osm-row"><span class="osm-label">Color</span><span class="osm-value" id="osm-color">—</span></div>
-      <div class="osm-row"><span class="osm-label">Cantidad</span><span class="osm-value" id="osm-cantidad">—</span></div>
-      <div style="display:none"><span id="osm-email">—</span><span id="osm-dims">—</span><span id="osm-desc">—</span></div>
-      <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:2px solid #f59e0b;border-radius:14px;padding:1.1rem 1.25rem;display:flex;flex-direction:column;gap:.5rem;margin-top:.25rem;">
-        <div style="display:flex;align-items:center;gap:.5rem;"><span style="font-size:1.4rem;">📸</span><span style="font-weight:700;font-size:.9rem;color:#92400e;">Último paso — ¡casi listo!</span></div>
-        <p style="font-size:.86rem;color:#78350f;line-height:1.6;">Mándanos una foto o referencia a WhatsApp y te enviamos el presupuesto en menos de 24 h:</p>
-        <div style="background:#fff;border-radius:10px;padding:.625rem .875rem;display:flex;align-items:center;justify-content:space-between;gap:.875rem;border:1px solid #f59e0b;">
-          <div>
-            <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#a16207;">WhatsApp Carr3D</div>
-            <div style="font-family:'DM Serif Display',serif;font-size:1.3rem;color:#92400e;" id="osm-phone">+34 600 000 000</div>
-          </div>
-          <button onclick="copyPhone()" style="background:#f59e0b;color:#fff;border:none;border-radius:99px;padding:7px 15px;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">Copiar</button>
-        </div>
-      </div>
+      <div class="osm-badge">✓ Solicitud lista para enviar</div>
+      <p class="osm-intro">Copia los datos del cuadro de abajo y envíalos al correo <strong><a href="mailto:Carr3D@gmail.com" style="color:var(--accent);text-decoration:underline;">Carr3D@gmail.com</a></strong>.</p>
+      <div id="osm-summary-box" style="background:var(--bg3);border:1.5px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;font-family:monospace;font-size:.85rem;line-height:1.9;color:var(--text);white-space:pre-wrap;word-break:break-word;"></div>
+      <button onclick="copyOrderSummary()" style="background:var(--accent);color:#fff;border:none;border-radius:99px;padding:9px 22px;font-size:.85rem;font-weight:700;cursor:pointer;width:100%;margin-top:.25rem;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">📋 Copiar datos</button>
+      <!-- ids ocultos para compatibilidad interna -->
+      <div style="display:none"><span id="osm-nombre"></span><span id="osm-email"></span><span id="osm-objeto"></span><span id="osm-material"></span><span id="osm-color"></span><span id="osm-cantidad"></span><span id="osm-dims"></span><span id="osm-desc"></span><span id="osm-phone"></span></div>
     </div>
     <div class="osm-footer">
-      <button class="btn-filled" onclick="confirmOrder()">Entendido ✓</button>
+      <button class="btn-filled" onclick="confirmOrder()">¡Enviado! ✓</button>
       <button class="btn-soft" onclick="closeOrderSummary()">Volver</button>
     </div>
   </div>
 </div>
 
+<!-- MODAL CONTACTO PEDIDO -->
+<div id="checkout-contact-overlay">
+  <div class="checkout-contact-modal">
+    <div class="osm-header">
+      <h3>¿Cómo te contactamos?</h3>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <span style="font-size:1.75rem;">📬</span>
+        <button class="osm-close-x" onclick="closeCheckoutContact()">✕</button>
+      </div>
+    </div>
+    <div class="osm-body">
+      <div class="osm-badge">🛒 Pedido listo para enviar</div>
+      <p class="osm-intro">Introduce tu información de contacto para que podamos procesarte el pedido y enviarte la confirmación.</p>
+      <div class="form-group" style="margin-top:.25rem;">
+        <label class="form-label">Prefijo + Teléfono</label>
+        <div style="display:flex;gap:.5rem;">
+          <input type="text" id="cc-prefix" class="form-input" placeholder="+34" style="width:72px;flex-shrink:0;">
+          <input type="tel" id="cc-phone" class="form-input" placeholder="600 000 000" inputmode="numeric" style="flex:1;">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:.25rem;">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" id="cc-email" class="form-input" placeholder="tu@email.com">
+      </div>
+      <p style="font-size:.78rem;color:var(--text3);margin-top:.25rem;">Al menos uno de los dos campos es obligatorio.</p>
+    </div>
+    <div class="osm-footer">
+      <button class="btn-filled" onclick="goToOrderConfirm()">Continuar →</button>
+      <button class="btn-soft" onclick="closeCheckoutContact()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMACIÓN PEDIDO CARRITO -->
+<div id="checkout-confirm-overlay">
+  <div class="checkout-contact-modal">
+    <div class="osm-header">
+      <h3>Resumen del pedido</h3>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <span style="font-size:1.75rem;">✅</span>
+        <button class="osm-close-x" onclick="closeCheckoutConfirm()">✕</button>
+      </div>
+    </div>
+    <div class="osm-body">
+      <div class="osm-badge">📋 Copia y envía al correo</div>
+      <p class="osm-intro">Copia los datos del cuadro de abajo y envíalos al correo <strong><a href="mailto:Carr3D@gmail.com" style="color:var(--accent);text-decoration:underline;">Carr3D@gmail.com</a></strong>.</p>
+      <!-- Cuadro copiable -->
+      <div id="cc-summary-box" style="background:var(--bg3);border:1.5px solid var(--border);border-radius:12px;padding:1.1rem 1.25rem;font-family:monospace;font-size:.85rem;line-height:1.9;color:var(--text);white-space:pre-wrap;word-break:break-word;position:relative;"></div>
+      <button onclick="copySummary()" style="background:var(--accent);color:#fff;border:none;border-radius:99px;padding:9px 22px;font-size:.85rem;font-weight:700;cursor:pointer;width:100%;margin-top:.25rem;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">📋 Copiar datos</button>
+    </div>
+    <div class="osm-footer">
+      <button class="btn-filled" onclick="finalizeOrder()">¡Pedido enviado! ✓</button>
+      <button class="btn-soft" onclick="closeCheckoutConfirm()">Volver</button>
+    </div>
+  </div>
+</div>
+
 <!-- PANEL CARRITO -->
+
 <div id="cart-panel-overlay">
   <div id="cart-panel">
     <div class="cp-header"><span class="cp-title">Tu carrito 🛒</span><button class="cp-close" onclick="closeCartPanel()">✕</button></div>
     <div class="cp-items" id="cp-items"><div class="cp-empty"><div class="cp-empty-icon">🛒</div><span>Tu carrito está vacío</span></div></div>
     <div class="cp-footer" id="cp-footer" style="display:none">
       <div class="cp-total-row"><span class="cp-total-label">Total</span><span class="cp-total-price" id="cp-total-price">€0.00</span></div>
-      <button class="cp-checkout" onclick="showToast('¡Pedido realizado! Te contactamos pronto ✓');clearCart();">Finalizar pedido →</button>
+      <button class="cp-checkout" onclick="openCheckoutContact()">Finalizar pedido →</button>
       <button class="cp-clear" onclick="clearCart()">Vaciar carrito</button>
     </div>
   </div>
@@ -194,6 +244,13 @@
   </div>
 </section>
 
+<!-- COLLAGE FOTOS -->
+<section id="photo-collage">
+  <div class="collage-track-wrap">
+    <div class="collage-track" id="collage-track"></div>
+  </div>
+</section>
+
 <!-- HUCHA -->
 <section id="piggy-goal">
   <div class="piggy-grid reveal">
@@ -233,10 +290,10 @@
       <div class="reveal">
         <div class="order-form">
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Nombre</label><input type="text" class="form-input" placeholder="Tu nombre"></div>
-            <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" placeholder="tu@email.com"></div>
+            <div class="form-group"><label class="form-label">Nombre <span style="color:var(--val-err)">*</span></label><input type="text" id="of-nombre" class="form-input" placeholder="Tu nombre"></div>
+            <div class="form-group"><label class="form-label">Email <span style="color:var(--val-err)">*</span></label><input type="email" id="of-email" class="form-input" placeholder="tu@email.com"></div>
           </div>
-          <div class="form-group"><label class="form-label">¿Qué quieres imprimir?</label><input type="text" class="form-input" placeholder="Nombre o descripción breve del objeto"></div>
+          <div class="form-group"><label class="form-label">¿Qué quieres imprimir? <span style="color:var(--val-err)">*</span></label><input type="text" id="of-objeto" class="form-input" placeholder="Nombre o descripción breve del objeto"></div>
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Material</label>
@@ -245,23 +302,16 @@
               </div>
             </div>
             <div class="form-group">
-              <label class="form-label">Color</label>
+              <label class="form-label">Color <span style="color:var(--val-err)">*</span></label>
               <input type="text" class="form-input" placeholder="Ej: Naranja, Azul turquesa, Rojo, Personalizado..." id="custom-color-input">
             </div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Dimensiones estimadas (cm)</label><input type="text" class="form-input" placeholder="Alto × Ancho × Largo"></div>
-            <div class="form-group"><label class="form-label">Cantidad</label><input type="number" class="form-input" placeholder="1" min="1"></div>
+            <div class="form-group"><label class="form-label">Dimensiones estimadas (cm) <span style="color:var(--val-err)">*</span></label><input type="text" class="form-input" placeholder="Alto × Ancho × Largo"></div>
+            <div class="form-group"><label class="form-label">Cantidad <span style="color:var(--val-err)">*</span></label><input type="number" class="form-input" placeholder="1" min="1" inputmode="numeric"></div>
           </div>
-          <div class="form-group"><label class="form-label">Descripción detallada</label><textarea class="form-textarea" placeholder="Cuéntanos el uso, acabado deseado, si tienes referencia de otra pieza..."></textarea></div>
-          <div class="form-group">
-            <label class="form-label">Archivo de referencia (opcional)</label>
-            <div class="upload-area" onclick="document.getElementById('file-input').click()">
-              <div class="upload-icon">📎</div>
-              <div class="upload-text">Arrastra o <strong>selecciona</strong> tu archivo STL, OBJ o imagen</div>
-              <input type="file" id="file-input" style="display:none" accept=".stl,.obj,.png,.jpg,.jpeg,.pdf">
-            </div>
-          </div>
+          <div class="form-group"><label class="form-label">Descripción detallada <span style="color:var(--val-err)">*</span></label><textarea class="form-textarea" placeholder="Cuéntanos el uso, acabado deseado, si tienes referencia de otra pieza..."></textarea></div>
+
           <button class="submit-btn" onclick="submitOrder()">Revisar y enviar solicitud →</button>
         </div>
       </div>
@@ -277,13 +327,13 @@
         <a class="logo" href="#" style="color:var(--bg);"><img class="logo-img" src="favicon.png" alt="Carr3D logo">Carr<span class="three">3D</span></a>
         <p>Creando objetos únicos capa a capa desde Extremadura. Impresión 3D de calidad para todos.</p>
         <div class="socials">
-          <a class="social-btn" href="#">IG</a><a class="social-btn" href="#">TK</a>
-          <a class="social-btn" href="#">TW</a><a class="social-btn" href="#">WA</a>
+          <button class="social-btn" onclick="showToast('Aún no disponible 🚧')">IG</button><button class="social-btn" onclick="showToast('Aún no disponible 🚧')">TK</button>
+          <button class="social-btn" onclick="showToast('Aún no disponible 🚧')">X</button>
         </div>
       </div>
-      <div class="footer-col"><h5>Tienda</h5><ul><li><a href="#stock">Catálogo</a></li><li><a href="#season">Temporada</a></li><li><a href="#custom">Personalizado</a></li></ul></div>
-      <div class="footer-col"><h5>Información</h5><ul><li><a href="#">Materiales</a></li><li><a href="#">Envíos</a></li><li><a href="#">FAQ</a></li></ul></div>
-      <div class="footer-col"><h5>Legal</h5><ul><li><a href="#">Aviso legal</a></li><li><a href="#">Privacidad</a></li><li><a href="#">Contacto</a></li></ul></div>
+      <div class="footer-col"><h5>Tienda</h5><ul><li><button class="footer-link-btn" onclick="scroll2('#stock')">Catálogo</button></li><li><button class="footer-link-btn" onclick="scroll2('#season')">Temporada</button></li><li><button class="footer-link-btn" onclick="scroll2('#custom')">Personalizado</button></li></ul></div>
+      <div class="footer-col"><h5>Información</h5><ul><li><button class="footer-link-btn" onclick="showToast('Aún no disponible 🚧')">Materiales</button></li><li><button class="footer-link-btn" onclick="showToast('Aún no disponible 🚧')">Envíos</button></li><li><button class="footer-link-btn" onclick="showToast('Aún no disponible 🚧')">FAQ</button></li></ul></div>
+      <div class="footer-col"><h5>Legal</h5><ul><li><button class="footer-link-btn" onclick="showToast('Aún no disponible 🚧')">Aviso legal</button></li><li><button class="footer-link-btn" onclick="showToast('Aún no disponible 🚧')">Privacidad</button></li><li><button class="footer-link-btn" onclick="showToast('Aún no disponible 🚧')">Contacto</button></li></ul></div>
     </div>
     <div class="footer-bottom">
       <span class="footer-copy">© 2025 Carr3D — Todos los derechos reservados</span>
