@@ -1,4 +1,5 @@
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 :root{
   --accent:#e8541a;--accent-s:#fde8dc;
   --accent2:#0891b2;--accent2-s:#cffafe;
@@ -350,3 +351,75 @@ footer{background:var(--text);color:var(--bg);}
 #checkout-contact-overlay.open .checkout-contact-modal,#checkout-confirm-overlay.open .checkout-contact-modal{transform:none;}
 @media(max-width:600px){.checkout-contact-modal{max-width:100%;}.osm-footer{flex-direction:column;}}
 @media(max-width:380px){.product-grid{grid-template-columns:1fr;gap:.75rem;}}
+
+/* Transición overlay info */
+#info-modal-overlay { transition: opacity .2s; opacity: 0; }
+#info-modal-overlay.iopen { display: flex !important; opacity: 1; }
+#info-modal-box { animation: infoSlideUp .25s cubic-bezier(.16,1,.3,1) both; }
+@keyframes infoSlideUp {
+  from { transform: translateY(24px) scale(.97); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+
+/* Secciones internas */
+.im-section { margin-bottom: 1.5rem; }
+.im-section:last-child { margin-bottom: 0; }
+.im-section-title {
+  font-size: .8rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--accent);
+  margin: 0 0 .5rem;
+}
+.im-section p {
+  font-size: .95rem; color: var(--text2); line-height: 1.7; margin: 0 0 .5rem;
+}
+.im-section p:last-child { margin-bottom: 0; }
+
+/* Tarjetas material */
+.im-mat-card {
+  display: flex; align-items: flex-start; gap: .75rem;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: .75rem; padding: 1rem; margin-bottom: .75rem;
+}
+.im-mat-card:last-child { margin-bottom: 0; }
+.im-mat-icon {
+  width: 2.5rem; height: 2.5rem; border-radius: .5rem;
+  background: var(--accent); display: flex; align-items: center;
+  justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+}
+.im-mat-name { font-weight: 700; font-size: .95rem; color: var(--text1); margin: 0 0 .2rem; }
+.im-mat-desc { font-size: .85rem; color: var(--text2); margin: 0; line-height: 1.5; }
+
+/* Chips envíos */
+.im-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin: .75rem 0; }
+.im-chip {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 2rem; padding: .3rem .85rem;
+  font-size: .82rem; font-weight: 600; color: var(--text2);
+}
+
+/* FAQ acordeón */
+.im-faq-item { border-bottom: 1px solid var(--border); }
+.im-faq-item:last-child { border-bottom: none; }
+.im-faq-q {
+  width: 100%; background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .9rem 0; font-size: .95rem; font-weight: 600;
+  color: var(--text1); text-align: left; gap: 1rem;
+}
+.im-faq-q:hover { color: var(--accent); }
+.im-faq-arrow { transition: transform .2s; font-size: .8rem; flex-shrink: 0; }
+.im-faq-a {
+  font-size: .88rem; color: var(--text2); line-height: 1.65;
+  max-height: 0; overflow: hidden; transition: max-height .3s ease, padding .2s;
+  padding-bottom: 0;
+}
+.im-faq-item.open .im-faq-arrow { transform: rotate(180deg); }
+.im-faq-item.open .im-faq-a { max-height: 300px; padding-bottom: .9rem; }
+
+/* Aviso "próximamente" */
+.im-soon-badge {
+  display:inline-flex;align-items:center;gap:.4rem;
+  background:color-mix(in srgb,var(--accent) 12%,transparent);
+  color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+  border-radius:2rem;padding:.3rem .9rem;font-size:.8rem;font-weight:700;margin-top:.75rem;
+}

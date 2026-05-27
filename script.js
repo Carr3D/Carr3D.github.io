@@ -1,3 +1,4 @@
+
     /* ================================================================
    🎯 GUÍA COMPLETA: CÓMO MODIFICAR TUS PRODUCTOS
    ================================================================
@@ -964,3 +965,374 @@ function scroll2(s){document.querySelector(s)?.scrollIntoView({behavior:'smooth'
 function showToast(msg){document.getElementById('t-msg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 function selectMat(el){document.querySelectorAll('.mat-pill').forEach(m=>m.classList.remove('active'));el.classList.add('active');}
 function selectColor(el){document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('active'));el.classList.add('active');}
+
+/* ── CONTENIDOS DE LOS MODALES ── */
+const INFO_MODALS = {
+
+  materiales: {
+    icon: '🧪',
+    title: 'Materiales disponibles',
+    body: `
+      <div class="im-section">
+        <p class="im-section-title">Material actual</p>
+        <div class="im-mat-card">
+          <div class="im-mat-icon">🌿</div>
+          <div>
+            <p class="im-mat-name">PLA (Ácido Poliláctico)</p>
+            <p class="im-mat-desc">
+              Actualmente trabajamos exclusivamente con PLA, un material de origen vegetal
+              y fácil de imprimir. Ofrece una excelente precisión dimensional, acabados
+              lisos y una amplia gama de colores. Es la opción más habitual para
+              decoración, llaveros y piezas de uso cotidiano que no estén expuestas
+              a altas temperaturas.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Características del PLA</p>
+        <p>✅ Alta rigidez y buena resistencia mecánica</p>
+        <p>✅ Temperatura de impresión moderada (190–220 °C)</p>
+        <p>✅ Biodegradable en condiciones industriales</p>
+        <p>⚠️ No apto para entornos con temperaturas superiores a ~60 °C</p>
+        <p>⚠️ Menor flexibilidad respecto a otros materiales como el TPU</p>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Próximos materiales</p>
+        <p>A medida que vayamos ampliando nuestra infraestructura, tenemos previsto
+          incorporar gradualmente nuevos materiales para poder cubrir un mayor
+          abanico de necesidades:</p>
+        <div class="im-chips">
+          <span class="im-chip">PETG</span>
+          <span class="im-chip">ABS</span>
+          <span class="im-chip">TPU (flexible)</span>
+          <span class="im-chip">ASA</span>
+          <span class="im-chip">Resina (SLA)</span>
+        </div>
+        <div class="im-soon-badge">🏦 La expansión depende de nuestras metas de recaudación</div>
+      </div>
+    `
+  },
+
+  envios: {
+    icon: '📦',
+    title: 'Política de envíos',
+    body: `
+      <div class="im-section">
+        <p class="im-section-title">Plazos de entrega</p>
+        <p>La mayoría de los pedidos se preparan y despachan en un plazo de
+          <strong>24–48 horas</strong> desde la confirmación del pago. No obstante,
+          ciertos factores pueden prolongar este tiempo:</p>
+        <div class="im-chips">
+          <span class="im-chip">24–48 h</span>
+          <span class="im-chip">Estándar</span>
+          <span class="im-chip">Piezas grandes: 3–5 días</span>
+          <span class="im-chip">Pedidos personalizados: hasta 7 días</span>
+        </div>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Factores que pueden influir en el plazo</p>
+        <p>🔹 <strong>Tamaño y complejidad de la pieza:</strong> Las impresiones de mayor
+          volumen o con geometrías complejas requieren más horas de fabricación.</p>
+        <p>🔹 <strong>Cantidad de unidades:</strong> Pedidos con varias unidades se
+          procesan en lotes, lo que puede añadir uno o dos días laborables.</p>
+        <p>🔹 <strong>Distancia de entrega:</strong> Enviamos a toda España. Las zonas más alejadas de Extremadura pueden necesitar un día extra de tránsito.</p>
+        <p>🔹 <strong>Festivos y fines de semana:</strong> Los plazos se cuentan en
+          días laborables. Los pedidos realizados en viernes o víspera de festivo
+          se procesan el siguiente día hábil.</p>
+      </div>
+
+    `
+  },
+
+  aviso: {
+    icon: '📋',
+    title: 'Aviso legal',
+    body: `
+      <div class="im-section">
+        <p class="im-section-title">Titular del sitio</p>
+        <p>El presente sitio web es titularidad de <strong>Carr3D</strong>, actividad de
+          fabricación y venta de objetos mediante impresión 3D, con sede en
+          Extremadura, España. El uso de este sitio implica la aceptación de
+          las condiciones aquí descritas.</p>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Objeto y actividad</p>
+        <p>Carr3D ofrece productos impresos en 3D tanto de catálogo como bajo pedido
+          personalizado. Todos los artículos se fabrican de forma artesanal con
+          materiales de calidad. Las imágenes y descripciones son orientativas;
+          el resultado final puede presentar ligeras variaciones propias del proceso
+          de impresión.</p>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Propiedad intelectual</p>
+        <p>Los diseños, fotografías, textos y logotipos presentes en esta web son
+          propiedad de Carr3D o de sus respectivos autores y están protegidos por
+          la legislación española e internacional de propiedad intelectual.
+          Queda prohibida su reproducción total o parcial sin autorización expresa.</p>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Responsabilidad</p>
+        <p>Carr3D no se hace responsable del uso indebido que el usuario pueda hacer
+          de los productos adquiridos. Las piezas decorativas no están diseñadas
+          para soportar cargas estructurales ni para uso en entornos de alta
+          temperatura salvo indicación expresa.</p>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Legislación aplicable</p>
+        <p>Este aviso legal se rige por la legislación española vigente. Para
+          cualquier controversia derivada del uso de este sitio web, las partes
+          se someten a los juzgados y tribunales de Extremadura.</p>
+      </div>
+    `
+  },
+
+  privacidad: {
+    icon: '🔒',
+    title: 'Política de privacidad',
+    body: `
+      <div class="im-section">
+        <p class="im-section-title">Responsable del tratamiento</p>
+        <p>Carr3D es el responsable del tratamiento de los datos personales que
+          el usuario facilite a través de los formularios de este sitio web,
+          de conformidad con el Reglamento General de Protección de Datos (RGPD)
+          y la Ley Orgánica 3/2018 de Protección de Datos.</p>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Datos que recopilamos</p>
+        <p>Únicamente recogemos los datos que el usuario introduce voluntariamente
+          en el formulario de pedido personalizado: nombre, correo electrónico,
+          descripción del encargo y datos de contacto. No se recogen datos de
+          forma automática más allá de los estrictamente necesarios para el
+          funcionamiento técnico del sitio.</p>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Finalidad y uso</p>
+        <p>Los datos se utilizan exclusivamente para gestionar y responder a la
+          solicitud del usuario, elaborar presupuestos y coordinar la entrega del
+          pedido. No cedemos ni vendemos datos a terceros bajo ningún concepto.</p>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Conservación</p>
+        <p>Los datos se conservan durante el tiempo necesario para tramitar el
+          pedido y el periodo legal de garantía. Transcurrido ese plazo, se
+          eliminan de forma segura.</p>
+      </div>
+
+      <div class="im-section">
+        <p class="im-section-title">Tus derechos</p>
+        <p>Puedes ejercer tus derechos de acceso, rectificación, supresión,
+          portabilidad y oposición escribiéndonos a
+          <strong>Carr3D@gmail.com</strong>. Atendemos todas las solicitudes
+          en un plazo máximo de 30 días.</p>
+      </div>
+    `
+  },
+
+  contacto: {
+    icon: '✉️',
+    title: 'Contacto',
+    body: `
+      <div class="im-section">
+        <p class="im-section-title">Pedidos personalizados</p>
+        <p>¿Tienes una idea en mente? La mejor forma de ponerte en contacto con
+          nosotros para encargar una pieza personalizada es a través del formulario
+          de la sección <strong>«Pedidos personalizados»</strong> de esta misma web.</p>
+        <p>Cuéntanos qué quieres imprimir, las dimensiones aproximadas, el color
+          y cualquier detalle que nos ayude a entender tu proyecto. Te responderemos
+          con un presupuesto en menos de 24 horas laborables.</p>
+        <button onclick="closeInfoModal();setTimeout(()=>scroll2('#custom'),150)" style="
+          margin-top:.5rem;padding:.6rem 1.2rem;background:var(--accent);color:#fff;
+          border:none;border-radius:.6rem;font-size:.9rem;font-weight:700;
+          cursor:pointer;font-family:inherit;">
+          Ir a pedidos personalizados →
+        </button>
+      </div>
+
+      <div class="im-section" style="margin-top:1.5rem;">
+        <p class="im-section-title">Otras consultas</p>
+        <p>Para cualquier otra duda, incidencia con un pedido ya realizado o
+          consulta general, puedes escribirnos directamente al correo:</p>
+        <a href="mailto:Carr3D@gmail.com" style="
+          display:inline-flex;align-items:center;gap:.5rem;margin-top:.5rem;
+          padding:.6rem 1.2rem;background:var(--bg2);border:1px solid var(--border);
+          border-radius:.6rem;font-size:.95rem;font-weight:700;color:var(--text1);
+          text-decoration:none;">
+          📧 Carr3D@gmail.com
+        </a>
+        <p style="margin-top:.75rem;font-size:.85rem;">Intentamos responder en un plazo de 24–48 horas laborables.</p>
+      </div>
+    `
+  },
+
+  faq: {
+    icon: '❓',
+    title: 'Preguntas frecuentes',
+    body: `
+      <div style="margin-top:.25rem;">
+        ${[
+          {
+            q: '¿Cómo puedo realizar un pedido personalizado?',
+            a: 'Dirígete a la sección «Pedidos personalizados» de nuestra web y rellena el formulario con los datos de tu proyecto: objeto, material, color, dimensiones y descripción. Te enviaremos un presupuesto en menos de 24 horas laborables.'
+          },
+          {
+            q: '¿Qué formato de archivo necesito para un diseño propio?',
+            a: 'Aceptamos archivos STL, OBJ y 3MF, que son los formatos estándar para impresión 3D. Si no tienes el modelo 3D, descríbenos la pieza y valoraremos si podemos diseñarla o adaptarla para ti.'
+          },
+          {
+            q: '¿Puedo elegir el color de mi pieza?',
+            a: 'Sí. En el catálogo cada producto indica los colores disponibles. Para pedidos personalizados disponemos de más de 20 tonalidades de PLA. Consulta disponibilidad en el formulario de pedido.'
+          },
+          {
+            q: '¿Qué hago si mi pedido llega dañado?',
+            a: 'Escríbenos en las primeras 48 horas tras recibir el paquete con una foto del desperfecto. Revisaremos el caso y, si se confirma un fallo de fabricación o transporte, reimprimiremos o reembolsaremos la pieza sin coste adicional.'
+          },
+          {
+            q: '¿Admitís devoluciones?',
+            a: 'Dado que cada pieza se fabrica bajo demanda, no admitimos devoluciones por cambio de opinión. Sí atendemos incidencias por defectos de fabricación o errores en el pedido. Contacta con nosotros y buscaremos la mejor solución.'
+          },
+          {
+            q: '¿Podéis imprimir en grandes cantidades?',
+            a: 'Sí, ofrecemos precios especiales para pedidos a partir de 10 unidades del mismo modelo. Contáctanos a través del formulario de pedidos personalizados y te preparamos un presupuesto adaptado.'
+          },
+          {
+            q: '¿Las piezas son resistentes al agua?',
+            a: 'El PLA tiene una resistencia moderada a la humedad puntual, pero no es apto para inmersión prolongada ni para entornos muy húmedos. Si necesitas piezas impermeables, consúltanos sobre futuros materiales como el PETG o ABS.'
+          },
+        ].map((item,i)=>`
+          <div class="im-faq-item" id="faq-item-${i}">
+            <button class="im-faq-q" onclick="toggleFaq(${i})">
+              <span>${item.q}</span>
+              <span class="im-faq-arrow">▼</span>
+            </button>
+            <div class="im-faq-a">${item.a}</div>
+          </div>
+        `).join('')}
+      </div>
+    `
+  }
+};
+
+/* ── METAS CUMPLIDAS ── */
+let metasCumplidas = JSON.parse(localStorage.getItem('carr3d-metas') || '[]');
+
+function renderMetas() {
+  const grid = document.getElementById('metas-grid');
+  const empty = document.getElementById('metas-empty');
+  if (!grid) return;
+  grid.innerHTML = '';
+  if (!metasCumplidas.length) {
+    empty.style.display = 'flex';
+    return;
+  }
+  empty.style.display = 'none';
+  metasCumplidas.forEach((m, i) => {
+    grid.innerHTML += `
+      <div class="meta-card">
+        <button class="meta-card-del" onclick="deleteMeta(${i})" title="Eliminar">✕</button>
+        <div class="meta-card-emoji">${m.emoji || '🏆'}</div>
+        <div class="meta-card-nombre">${m.nombre}</div>
+        <div class="meta-card-desc">${m.desc}</div>
+        <div class="meta-card-footer">
+          <span class="meta-card-importe">${m.importe || ''}</span>
+          <span class="meta-card-fecha">${m.fecha || ''}</span>
+        </div>
+      </div>`;
+  });
+}
+
+function openAddMeta() {
+  document.getElementById('meta-nombre').value = '';
+  document.getElementById('meta-desc').value = '';
+  document.getElementById('meta-importe').value = '';
+  document.getElementById('meta-fecha').value = '';
+  document.getElementById('meta-emoji-val').value = '🏆';
+  document.querySelectorAll('.meta-emoji-opt').forEach(b => b.classList.remove('selected'));
+  const first = document.querySelector('.meta-emoji-opt');
+  if (first) first.classList.add('selected');
+  const ov = document.getElementById('meta-modal-overlay');
+  ov.style.display = 'flex';
+  requestAnimationFrame(() => ov.classList.add('mopen'));
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAddMeta() {
+  const ov = document.getElementById('meta-modal-overlay');
+  ov.classList.remove('mopen');
+  setTimeout(() => { ov.style.display = 'none'; }, 250);
+  document.body.style.overflow = '';
+}
+
+function selectMetaEmoji(btn, emoji) {
+  document.querySelectorAll('.meta-emoji-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('meta-emoji-val').value = emoji;
+}
+
+function saveMetaCumplida() {
+  const nombre = document.getElementById('meta-nombre').value.trim();
+  const desc = document.getElementById('meta-desc').value.trim();
+  const importe = document.getElementById('meta-importe').value.trim();
+  const fecha = document.getElementById('meta-fecha').value.trim();
+  const emoji = document.getElementById('meta-emoji-val').value;
+  if (!nombre) { document.getElementById('meta-nombre').focus(); return; }
+  if (!desc) { document.getElementById('meta-desc').focus(); return; }
+  metasCumplidas.unshift({ nombre, desc, importe, fecha, emoji });
+  localStorage.setItem('carr3d-metas', JSON.stringify(metasCumplidas));
+  renderMetas();
+  closeAddMeta();
+  showToast('¡Meta cumplida añadida! 🏆');
+}
+
+function deleteMeta(idx) {
+  metasCumplidas.splice(idx, 1);
+  localStorage.setItem('carr3d-metas', JSON.stringify(metasCumplidas));
+  renderMetas();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('meta-modal-overlay').classList.contains('mopen')) {
+    closeAddMeta();
+  }
+});
+
+function openInfoModal(key) {
+  const data = INFO_MODALS[key];
+  if (!data) return;
+  document.getElementById('info-modal-icon').textContent = data.icon;
+  document.getElementById('info-modal-title').textContent = data.title;
+  document.getElementById('info-modal-body').innerHTML = data.body;
+  const overlay = document.getElementById('info-modal-overlay');
+  overlay.style.display = 'flex';
+  requestAnimationFrame(() => overlay.classList.add('iopen'));
+  document.body.style.overflow = 'hidden';
+}
+
+function closeInfoModal() {
+  const overlay = document.getElementById('info-modal-overlay');
+  overlay.classList.remove('iopen');
+  setTimeout(() => { overlay.style.display = 'none'; }, 220);
+  document.body.style.overflow = '';
+}
+
+function toggleFaq(idx) {
+  const item = document.getElementById('faq-item-' + idx);
+  if (!item) return;
+  item.classList.toggle('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('info-modal-overlay').classList.contains('iopen')) {
+    closeInfoModal();
+  }
+});
