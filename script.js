@@ -1,4 +1,3 @@
-
     /* ================================================================
    🎯 GUÍA COMPLETA: CÓMO MODIFICAR TUS PRODUCTOS
    ================================================================
@@ -221,20 +220,6 @@ const PRODUCTOS = [
      seccion: 'temporada-principal',
    },
    /* Producto temporada secundarios */
-   {
-     nombre: 'Llavero de pelota',
-     imgPrincipal: 'productos/temporada/llavero_pelota.png',
-     svgPlaceholder: `<svg>...</svg>`,
-     precio: '€1.00',
-     categoria: 'LLAVERO',
-     materiales: ['PLA'],
-     colores: ['#ffffff', '#000000'],
-     descripcion: 'Pequeño llavero de pelota de futbol',
-     peso: '30g',
-     tiempoProduccion: '1 días',
-     seccion: 'temporada-secundaria',
-     descuentoEscalonado: { unidades: 5, porcentaje: 0.10 },
-   },
 ];
  
 /* Procesar descuentos */
@@ -275,6 +260,36 @@ const piggyEarned = 57.50; // € recaudados hasta ahora  ← MODIFICA ESTO
 const piggyGoal   = 500;   // Meta total en euros        ← MODIFICA ESTO
 const piggyFilled   = Math.min(100, Math.round(piggyEarned / piggyGoal * 100)); // ← Se calcula solo
 const piggyCurrent  = piggyEarned; // ← Se calcula solo
+
+/* ================================================================
+   🏆 METAS CUMPLIDAS
+   ================================================================
+
+   Añade aquí las metas que ya habéis alcanzado.
+   Aparecerán en la sección "Metas cumplidas" debajo de la hucha.
+
+   Copia y pega un bloque { } para cada meta.
+   Campos:
+     • emoji:   Icono que representa la meta (cualquier emoji)
+     • nombre:  Título corto de la meta
+     • desc:    Descripción de lo que se consiguió
+     • importe: Cantidad recaudada (opcional, ej: '€250')
+     • fecha:   Cuándo se cumplió (opcional, ej: 'Mayo 2026')
+
+   Si no hay ninguna meta cumplida todavía, deja el array vacío: []
+
+   ================================================================ */
+
+const METAS_CUMPLIDAS = [
+  // Ejemplo (descomenta para usar):
+  // {
+  //   emoji:   '🏆',
+  //   nombre:  'Primera venta',
+  //   desc:    'Vendimos nuestra primera pieza y recuperamos los primeros materiales.',
+  //   importe: '€12.00',
+  //   fecha:   'Abril 2026',
+  // },
+];
 
 /* ================================================================
    📸 GUÍA: CÓMO AÑADIR FOTOS AL COLLAGE
@@ -783,21 +798,18 @@ function buildCollage(){
   const track=document.getElementById('collage-track');
   if(!track||!COLLAGE_FOTOS.length)return;
 
-  // Patrones de celda: cada columna define qué ocupa (tall = 2 filas, normal = 1 fila)
-  // Se repite el patrón para llenar la pantalla en bucle
   const patterns=[
-    [{span:'tall'},{span:'normal'},{span:'normal'}],   // col: 1 tall + 2 normal
-    [{span:'normal'},{span:'normal'},{span:'normal'}],  // col: 3 normales
-    [{span:'normal'},{span:'tall'},{span:'normal'}],    // col: normal + tall
+    [{span:'tall'},{span:'normal'},{span:'normal'}],
+    [{span:'normal'},{span:'normal'},{span:'normal'}],
+    [{span:'normal'},{span:'tall'},{span:'normal'}],
     [{span:'normal'},{span:'normal'},{span:'normal'}],
     [{span:'tall'},{span:'normal'},{span:'normal'}],
     [{span:'normal'},{span:'normal'},{span:'normal'}],
   ];
 
-  // Genera celdas suficientes (duplicadas para el loop infinito)
   let cells=[];
   let photoIdx=0;
-  const totalCols=patterns.length*Math.ceil(24/patterns.length); // ~24 columnas
+  const totalCols=patterns.length*Math.ceil(24/patterns.length);
   for(let c=0;c<totalCols;c++){
     const pat=patterns[c%patterns.length];
     pat.forEach(cell=>{
@@ -806,16 +818,29 @@ function buildCollage(){
     });
   }
 
-  // Duplicar para scroll infinito
   const allCells=[...cells,...cells];
   track.innerHTML='';
   allCells.forEach(({src,tall})=>{
     const div=document.createElement('div');
     div.className='collage-cell'+(tall?' tall':'');
     const img=document.createElement('img');
-    img.src=src;
     img.alt='Carr3D foto';
     img.loading='lazy';
+    // Ajusta object-position según la proporción natural de la imagen
+    img.onload=function(){
+      const ratio=this.naturalWidth/this.naturalHeight;
+      if(ratio>1.4){
+        // Apaisada dentro de celda cuadrada/vertical: centrar horizontalmente
+        this.style.objectPosition='center center';
+      } else if(ratio<0.75){
+        // Muy vertical dentro de celda: mostrar la parte superior (más interesante)
+        this.style.objectPosition='center top';
+      } else {
+        // Cuadrada o casi: centro perfecto
+        this.style.objectPosition='center center';
+      }
+    };
+    img.src=src;
     div.appendChild(img);
     track.appendChild(div);
   });
@@ -949,7 +974,6 @@ document.addEventListener('DOMContentLoaded',function(){
     const el=document.getElementById(id);
     el.addEventListener('click',e=>{if(e.target===el){if(id==='modal-overlay')closeModal();else if(id==='order-summary-overlay')closeOrderSummary();else if(id==='checkout-contact-overlay')closeCheckoutContact();else if(id==='checkout-confirm-overlay')closeCheckoutConfirm();else closeCartPanel();}});
   });
-  document.getElementById('meta-modal-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('meta-modal-overlay'))closeAddMeta();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();closeCartPanel();closeOrderSummary();closeCheckoutContact();closeCheckoutConfirm();}});
   /* Hucha */
   renderPiggy();
@@ -1224,22 +1248,19 @@ const INFO_MODALS = {
 };
 
 /* ── METAS CUMPLIDAS ── */
-let metasCumplidas = JSON.parse(localStorage.getItem('carr3d-metas') || '[]');
-
 function renderMetas() {
   const grid = document.getElementById('metas-grid');
   const empty = document.getElementById('metas-empty');
   if (!grid) return;
   grid.innerHTML = '';
-  if (!metasCumplidas.length) {
+  if (!METAS_CUMPLIDAS.length) {
     empty.style.display = 'flex';
     return;
   }
   empty.style.display = 'none';
-  metasCumplidas.forEach((m, i) => {
+  METAS_CUMPLIDAS.forEach(m => {
     grid.innerHTML += `
       <div class="meta-card">
-        <button class="meta-card-del" onclick="deleteMeta(${i})" title="Eliminar">✕</button>
         <div class="meta-card-emoji">${m.emoji || '🏆'}</div>
         <div class="meta-card-nombre">${m.nombre}</div>
         <div class="meta-card-desc">${m.desc}</div>
@@ -1250,61 +1271,6 @@ function renderMetas() {
       </div>`;
   });
 }
-
-function openAddMeta() {
-  document.getElementById('meta-nombre').value = '';
-  document.getElementById('meta-desc').value = '';
-  document.getElementById('meta-importe').value = '';
-  document.getElementById('meta-fecha').value = '';
-  document.getElementById('meta-emoji-val').value = '🏆';
-  document.querySelectorAll('.meta-emoji-opt').forEach(b => b.classList.remove('selected'));
-  const first = document.querySelector('.meta-emoji-opt');
-  if (first) first.classList.add('selected');
-  const ov = document.getElementById('meta-modal-overlay');
-  ov.style.display = 'flex';
-  requestAnimationFrame(() => ov.classList.add('mopen'));
-  document.body.style.overflow = 'hidden';
-}
-
-function closeAddMeta() {
-  const ov = document.getElementById('meta-modal-overlay');
-  ov.classList.remove('mopen');
-  setTimeout(() => { ov.style.display = 'none'; }, 250);
-  document.body.style.overflow = '';
-}
-
-function selectMetaEmoji(btn, emoji) {
-  document.querySelectorAll('.meta-emoji-opt').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  document.getElementById('meta-emoji-val').value = emoji;
-}
-
-function saveMetaCumplida() {
-  const nombre = document.getElementById('meta-nombre').value.trim();
-  const desc = document.getElementById('meta-desc').value.trim();
-  const importe = document.getElementById('meta-importe').value.trim();
-  const fecha = document.getElementById('meta-fecha').value.trim();
-  const emoji = document.getElementById('meta-emoji-val').value;
-  if (!nombre) { document.getElementById('meta-nombre').focus(); return; }
-  if (!desc) { document.getElementById('meta-desc').focus(); return; }
-  metasCumplidas.unshift({ nombre, desc, importe, fecha, emoji });
-  localStorage.setItem('carr3d-metas', JSON.stringify(metasCumplidas));
-  renderMetas();
-  closeAddMeta();
-  showToast('¡Meta cumplida añadida! 🏆');
-}
-
-function deleteMeta(idx) {
-  metasCumplidas.splice(idx, 1);
-  localStorage.setItem('carr3d-metas', JSON.stringify(metasCumplidas));
-  renderMetas();
-}
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('meta-modal-overlay').classList.contains('mopen')) {
-    closeAddMeta();
-  }
-});
 
 function openInfoModal(key) {
   const data = INFO_MODALS[key];

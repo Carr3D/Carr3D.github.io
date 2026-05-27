@@ -9,7 +9,6 @@
 <link rel="icon" href="favicon.png">
 <link rel="stylesheet" href="styles.css">
 <script src="script.js"></script>
-
 </head>
 <body>
 
@@ -275,10 +274,7 @@
       <p style="font-size:.78rem;color:var(--text3);text-align:center;max-width:180px;line-height:1.5;">El nivel de llenado representa el % de la meta alcanzado</p>
     </div>
   </div>
-</section>
-
-<!-- METAS CUMPLIDAS -->
-<!--
+</section><!-- METAS CUMPLIDAS -->
 <section id="metas-cumplidas" style="background:var(--bg2);border-top:1px solid var(--border);">
   <div class="section-wrap">
     <div class="reveal">
@@ -289,67 +285,12 @@
     <div class="reveal">
       <div class="metas-grid" id="metas-grid"></div>
       <div class="metas-empty" id="metas-empty" style="display:none;">
-        <span style="font-size:2.5rem;opacity:.25;">🏁</span>
-        <p style="color:var(--text3);font-size:.9rem;margin-top:.5rem;">Todavía no hay metas cumplidas. ¡Pronto!</p>
+        <span style="font-size:2.5rem;">😔</span>
+        <p style="color:var(--text3);font-size:.9rem;margin-top:.5rem;">Ninguna</p>
       </div>
-      <button class="metas-add-btn" onclick="openAddMeta()">+ Añadir meta cumplida</button>
     </div>
   </div>
 </section>
--->
-
-<!-- MODAL AÑADIR META -->
-<div id="meta-modal-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:4500;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .3s;">
-  <div class="meta-modal">
-    <div class="meta-modal-header">
-      <span style="font-size:1.4rem;">🏆</span>
-      <h3 style="font-family:'DM Serif Display',serif;font-size:1.3rem;margin-left:.6rem;flex:1;">Nueva meta cumplida</h3>
-      <button onclick="closeAddMeta()" style="background:rgba(255,255,255,.2);border:none;border-radius:99px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.9rem;color:#fff;">✕</button>
-    </div>
-    <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem;">
-      <div class="form-group">
-        <label class="form-label">Nombre de la meta <span style="color:var(--val-err)">*</span></label>
-        <input type="text" id="meta-nombre" class="form-input" placeholder="Ej: Primera impresora comprada">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Descripción <span style="color:var(--val-err)">*</span></label>
-        <textarea id="meta-desc" class="form-textarea" placeholder="Cuenta qué habéis logrado juntos..." style="min-height:75px;"></textarea>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Cantidad recaudada</label>
-          <input type="text" id="meta-importe" class="form-input" placeholder="Ej: €250">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Fecha</label>
-          <input type="text" id="meta-fecha" class="form-input" placeholder="Ej: Mayo 2026">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Emoji / Icono</label>
-        <div style="display:flex;gap:.5rem;flex-wrap:wrap;" id="meta-emoji-picker">
-          <button class="meta-emoji-opt selected" onclick="selectMetaEmoji(this,'🏆')">🏆</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'🎉')">🎉</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'⭐')">⭐</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'🚀')">🚀</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'💪')">💪</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'🎯')">🎯</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'✨')">✨</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'🌟')">🌟</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'🛠️')">🛠️</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'💡')">💡</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'📦')">📦</button>
-          <button class="meta-emoji-opt" onclick="selectMetaEmoji(this,'🧡')">🧡</button>
-        </div>
-        <input type="hidden" id="meta-emoji-val" value="🏆">
-      </div>
-      <div style="display:flex;gap:.6rem;margin-top:.25rem;">
-        <button class="btn-soft" onclick="closeAddMeta()" style="flex:1;">Cancelar</button>
-        <button class="btn-filled" onclick="saveMetaCumplida()" style="flex:1;">Guardar meta</button>
-      </div>
-    </div>
-  </div>
-</div> 
 
 <!-- CUSTOM -->
 <section id="custom">
@@ -396,7 +337,7 @@
       </div>
     </div>
   </div>
-</section>-->
+</section>
 
 <!-- FOOTER -->
 <footer>
@@ -452,6 +393,7 @@
     <div id="info-modal-body" style="padding:1.5rem;"></div>
   </div>
 </div>
+
 
 </body>
 </html>
