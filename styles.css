@@ -336,7 +336,7 @@ footer{background:var(--text);color:var(--bg);}
 /* ── COLLAGE ── */
 #photo-collage{overflow:hidden;background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:0;line-height:0;}
 .collage-track-wrap{width:100%;overflow:hidden;cursor:default;}
-.collage-track{display:grid;grid-template-rows:repeat(3,140px);grid-auto-flow:column;grid-auto-columns:auto;gap:4px;padding:4px;width:max-content;animation:collage-scroll 40s linear infinite;}
+.collage-track{display:grid;grid-template-rows:repeat(3,140px);grid-auto-flow:column;grid-auto-columns:auto;gap:4px;padding:4px;width:max-content;animation:collage-scroll 80s linear infinite;}
 .collage-track-wrap:hover .collage-track{animation-play-state:paused;}
 .collage-cell{overflow:hidden;border-radius:6px;background:var(--bg2);}
 .collage-cell.tall{grid-row:span 2;}
