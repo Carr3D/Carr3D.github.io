@@ -1368,6 +1368,13 @@ Object.assign(window,{
     btn.classList.add('selected');
     document.getElementById('com-avatar').value=emoji;
   },
+  enviarComentario(){
+    // La implementación real la sobreescribe el módulo de Firebase al cargar
+    console.warn('Firebase aún no cargado');
+  },
+});
+/* ── PARCHE: funciones de estrellas, carrito persistente y auth ── */
+Object.assign(window,{
   setEstrellas(n){
     document.getElementById('com-estrellas').value=n;
     document.querySelectorAll('.com-star').forEach((s,i)=>{
@@ -1387,8 +1394,39 @@ Object.assign(window,{
       s.classList.toggle('active',i<sel);
     });
   },
-  enviarComentario(){
-    // La implementación real la sobreescribe el módulo de Firebase al cargar
-    console.warn('Firebase aún no cargado');
-  },
 });
+
+/* ── Carrito: hooks para Firebase ── */
+/* Guardar en Firestore cada vez que cambia el carrito */
+function _persistCart(){
+  window._guardarCarritoEnFirestore && window._guardarCarritoEnFirestore(
+    cartItems.map(i=>({name:i.name,price:i.price,img:i.img,svg:i.svg,qty:i.qty,
+      descuentoEscalonado:i.descuentoEscalonado||null}))
+  );
+}
+/* Sobrescribir changeQty/removeItem/addToCart para que llamen a _persistCart */
+const _origChangeQty=window.changeQty;
+window.changeQty=function(idx,delta){_origChangeQty(idx,delta);_persistCart();};
+const _origRemoveItem=window.removeItem;
+window.removeItem=function(idx){_origRemoveItem(idx);_persistCart();};
+const _origAddToCart=window.addToCart;
+window.addToCart=function(name,priceStr,img,idx){_origAddToCart(name,priceStr,img,idx);_persistCart();};
+const _origClearCart=window.clearCart;
+window.clearCart=function(){_origClearCart();_persistCart();};
+
+/* Limpiar carrito local al cerrar sesión */
+window._clearCartLocal=function(){
+  cartItems=[];
+  updateBadge();
+  renderCartPanel();
+};
+
+/* Cargar carrito desde Firestore al iniciar sesión */
+window._loadCartFromFirestore=function(items){
+  cartItems=items.map(i=>({
+    name:i.name,price:i.price,img:i.img||'',svg:i.svg||'',
+    qty:i.qty,descuentoEscalonado:i.descuentoEscalonado||null
+  }));
+  updateBadge();
+  renderCartPanel();
+};
