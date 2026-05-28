@@ -445,5 +445,14 @@ footer{background:var(--text);color:var(--bg);}
 .com-loading{display:flex;align-items:center;gap:.7rem;color:var(--text3);font-size:.88rem;padding:1rem 0;}
 .com-spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 .com-empty{display:flex;flex-direction:column;align-items:center;padding:2rem;}
+/* ── Estrellas formulario ── */
+.com-stars{display:flex;gap:.25rem;margin-top:.2rem;}
+.com-star{font-size:1.7rem;cursor:pointer;color:var(--border);transition:color .12s,transform .1s;line-height:1;user-select:none;}
+.com-star.active,.com-star.hover{color:#f59e0b;}
+.com-star:hover{transform:scale(1.15);}
+/* ── Estrellas tarjeta comentario ── */
+.com-card-stars{display:flex;gap:.1rem;margin-bottom:.35rem;}
+.s-on{color:#f59e0b;font-size:.95rem;}
+.s-off{color:var(--border);font-size:.95rem;}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}

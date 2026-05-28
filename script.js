@@ -1368,6 +1368,25 @@ Object.assign(window,{
     btn.classList.add('selected');
     document.getElementById('com-avatar').value=emoji;
   },
+  setEstrellas(n){
+    document.getElementById('com-estrellas').value=n;
+    document.querySelectorAll('.com-star').forEach((s,i)=>{
+      s.classList.toggle('active',i<n);
+      s.classList.toggle('hover',false);
+    });
+  },
+  hoverEstrellas(n){
+    document.querySelectorAll('.com-star').forEach((s,i)=>{
+      s.classList.toggle('hover',i<n);
+    });
+  },
+  resetEstrellas(){
+    const sel=parseInt(document.getElementById('com-estrellas').value)||0;
+    document.querySelectorAll('.com-star').forEach((s,i)=>{
+      s.classList.toggle('hover',false);
+      s.classList.toggle('active',i<sel);
+    });
+  },
   enviarComentario(){
     // La implementación real la sobreescribe el módulo de Firebase al cargar
     console.warn('Firebase aún no cargado');
