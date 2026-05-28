@@ -220,6 +220,20 @@ const PRODUCTOS = [
      seccion: 'temporada-principal',
    },
    /* Producto temporada secundarios */
+   {
+     nombre: 'Llavero de pelota',
+     imgPrincipal: 'productos/temporada/llavero_pelota.png',
+     svgPlaceholder: `<svg>...</svg>`,
+     precio: '€1.00',
+     categoria: 'LLAVERO',
+     materiales: ['PLA'],
+     colores: ['#ffffff', '#000000'],
+     descripcion: 'Pequeño llavero de pelota de futbol',
+     peso: '30g',
+     tiempoProduccion: '1 días',
+     seccion: 'temporada-secundaria',
+     descuentoEscalonado: { unidades: 5, porcentaje: 0.10 },
+   },
 ];
  
 /* Procesar descuentos */
@@ -319,20 +333,24 @@ const COLLAGE_FOTOS = [
   'productos/constante/llavero_capibara_cosido.png',
   'productos/constante/peine_mariposa.png',
   'productos/temporada/world_cup.png',
+  'productos/temporada/llavero_pelota.png',
 ];
  
 const BADGE_MAP = {
-  nuevo:{cls:'badge-new',txt:'Nuevo'},
-  pocas:{cls:'badge-low',txt:'Pocas unidades'},
-  descuento:{cls:'badge-sale',txt:'−20%'},
+  nuevo:{cls:'badge-new',txt:'Nuevo',tip:'¡Producto recién añadido al catálogo!'},
+  pocas:{cls:'badge-low',txt:'Pocas unidades',tip:'Quedan muy pocas unidades disponibles. ¡Date prisa!'},
+  descuento:{cls:'badge-sale',txt:'−20%',tip:'Este producto tiene un descuento especial del 20%.'},
 };
 function badgeHTML(d,descuentoEscalonado){
   if(descuentoEscalonado&&descuentoEscalonado.porcentaje){
     const pct=(descuentoEscalonado.porcentaje*100|0);
     const unidades=descuentoEscalonado.unidades||10;
-    return '<span class="badge badge-sale">+'+unidades+' = −'+pct+'%</span>';
+    const tip='Pide más de '+unidades+' unidades y obtendrás un '+pct+'% de descuento en las que pasen de ese número.';
+    return '<span class="badge badge-sale badge-tip" data-tip="'+tip+'">+'+unidades+' = −'+pct+'%</span>';
   }
-  return (!d||!BADGE_MAP[d])?'':'<span class="badge '+BADGE_MAP[d].cls+'">'+BADGE_MAP[d].txt+'</span>';
+  if(!d||!BADGE_MAP[d])return'';
+  const b=BADGE_MAP[d];
+  return '<span class="badge '+b.cls+' badge-tip" data-tip="'+b.tip+'">'+b.txt+'</span>';
 }
 function matsLabel(arr){return (arr||[]).join(' · ');}
 function safeQ(s){return (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
@@ -847,6 +865,55 @@ function buildCollage(){
 
 /* ── DOM READY ── */
 document.addEventListener('DOMContentLoaded',function(){
+  /* Badge tooltips */
+  const btt=document.getElementById('badge-tooltip');
+  let bttActive=false;
+
+  // Desktop: hover + mousemove
+  document.addEventListener('mouseover',e=>{
+    const b=e.target.closest('.badge-tip');
+    if(!b||!b.dataset.tip)return;
+    btt.textContent=b.dataset.tip;
+    btt.classList.add('visible');
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!btt.classList.contains('visible')||bttActive)return;
+    const tw=btt.offsetWidth,x=e.clientX;
+    let left=x-16;
+    if(left+tw>window.innerWidth-8)left=window.innerWidth-tw-8;
+    btt.style.left=left+'px';
+    btt.style.top=(e.clientY+18)+'px';
+  });
+  document.addEventListener('mouseout',e=>{
+    if(e.target.closest('.badge-tip'))btt.classList.remove('visible');
+  });
+
+  // Móvil: tap en badge → mostrar tooltip anclado encima del badge
+  document.addEventListener('touchstart',e=>{
+    const b=e.target.closest('.badge-tip');
+    if(b&&b.dataset.tip){
+      e.stopPropagation();
+      bttActive=true;
+      btt.textContent=b.dataset.tip;
+      // Posicionar encima del badge
+      const r=b.getBoundingClientRect();
+      btt.style.top='';btt.style.bottom='';btt.style.left='';
+      btt.classList.add('visible');
+      requestAnimationFrame(()=>{
+        const tw=btt.offsetWidth,th=btt.offsetHeight;
+        let left=r.left;
+        if(left+tw>window.innerWidth-8)left=window.innerWidth-tw-8;
+        if(left<8)left=8;
+        // Intentar colocar encima; si no cabe, debajo
+        const top=r.top-th-10>0?r.top-th-10:r.bottom+10;
+        btt.style.left=left+'px';
+        btt.style.top=top+'px';
+      });
+      return;
+    }
+    // Tocar fuera cierra el tooltip
+    if(bttActive){btt.classList.remove('visible');bttActive=false;}
+  },{passive:false});
   /* Theme */
   const html=document.documentElement,tb=document.getElementById('theme-toggle');
   const sv=localStorage.getItem('carr3d-theme');
@@ -1246,7 +1313,7 @@ const INFO_MODALS = {
   }
 };
 
-/* ── METAS CUMPLIDAS ── */
+
 function renderMetas() {
   const grid = document.getElementById('metas-grid');
   const empty = document.getElementById('metas-empty');
@@ -1300,4 +1367,25 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && document.getElementById('info-modal-overlay').classList.contains('iopen')) {
     closeInfoModal();
   }
+});
+
+/* Exponer funciones globales necesarias para los onclick del HTML */
+Object.assign(window,{
+  addToCart,changeQty,clearCart,
+  closeCartPanel,closeCheckoutConfirm,closeCheckoutContact,
+  closeInfoModal,closeModal,closeOrderSummary,
+  confirmOrder,copyOrderSummary,copySummary,
+  finalizeOrder,goToOrderConfirm,handleCardClick,
+  openCartPanel,openCheckoutContact,openInfoModal,openProduct,
+  removeItem,resetPriceFilter,scroll2,
+  selectMat,showToast,submitOrder,toggleFaq,
+  selectAvatar(btn,emoji){
+    document.querySelectorAll('.com-avatar-opt').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('com-avatar').value=emoji;
+  },
+  enviarComentario(){
+    // La implementación real la sobreescribe el módulo de Firebase al cargar
+    console.warn('Firebase aún no cargado');
+  },
 });
