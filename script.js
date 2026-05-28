@@ -319,7 +319,6 @@ const COLLAGE_FOTOS = [
   'productos/constante/llavero_capibara_cosido.png',
   'productos/constante/peine_mariposa.png',
   'productos/temporada/world_cup.png',
-  'productos/temporada/llavero_pelota.png',
 ];
  
 const BADGE_MAP = {
