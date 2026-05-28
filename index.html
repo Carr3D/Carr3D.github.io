@@ -270,7 +270,8 @@
         <div class="com-form-row">
           <div class="form-group" style="flex:1;">
             <label class="form-label">Nombre <span style="color:var(--val-err)">*</span></label>
-            <input type="text" id="com-nombre" class="form-input" placeholder="Tu nombre">
+            <input type="text" id="com-nombre" class="form-input" placeholder="Tu nombre" maxlength="30" oninput="document.getElementById('com-nombre-cnt').textContent=this.value.length">
+            <span style="font-size:.72rem;color:var(--text3);float:right;"><span id="com-nombre-cnt">0</span>/30</span>
           </div>
           <div class="form-group" style="flex:1;">
             <label class="form-label">Emoji</label>
@@ -288,8 +289,20 @@
           </div>
         </div>
         <div class="form-group">
+          <label class="form-label">Valoración <span style="color:var(--val-err)">*</span></label>
+          <div class="com-stars" id="com-stars">
+            <span class="com-star" onclick="setEstrellas(1)" onmouseover="hoverEstrellas(1)" onmouseout="resetEstrellas()">★</span>
+            <span class="com-star" onclick="setEstrellas(2)" onmouseover="hoverEstrellas(2)" onmouseout="resetEstrellas()">★</span>
+            <span class="com-star" onclick="setEstrellas(3)" onmouseover="hoverEstrellas(3)" onmouseout="resetEstrellas()">★</span>
+            <span class="com-star" onclick="setEstrellas(4)" onmouseover="hoverEstrellas(4)" onmouseout="resetEstrellas()">★</span>
+            <span class="com-star" onclick="setEstrellas(5)" onmouseover="hoverEstrellas(5)" onmouseout="resetEstrellas()">★</span>
+          </div>
+          <input type="hidden" id="com-estrellas" value="0">
+        </div>
+        <div class="form-group">
           <label class="form-label">Comentario <span style="color:var(--val-err)">*</span></label>
-          <textarea id="com-texto" class="form-textarea" placeholder="Escribe aquí tu comentario..." style="min-height:90px;"></textarea>
+          <textarea id="com-texto" class="form-textarea" placeholder="Escribe aquí tu comentario..." style="min-height:90px;" maxlength="300" oninput="document.getElementById('com-texto-cnt').textContent=this.value.length"></textarea>
+          <span style="font-size:.72rem;color:var(--text3);float:right;"><span id="com-texto-cnt">0</span>/300</span>
         </div>
         <div style="display:flex;justify-content:flex-end;">
           <button class="btn-filled" onclick="enviarComentario()" id="com-btn">Enviar comentario</button>
@@ -308,6 +321,9 @@
       <div class="com-empty" id="com-empty" style="display:none;">
         <span style="font-size:2rem;">💬</span>
         <p style="color:var(--text3);font-size:.9rem;margin-top:.4rem;">Sé el primero en comentar</p>
+      </div>
+      <div id="com-load-more-wrap" style="display:none;text-align:center;margin-top:1rem;">
+        <button id="com-load-more-btn" onclick="cargarMasComentarios()" class="metas-add-btn" style="justify-content:center;">Cargar más comentarios</button>
       </div>
       <!-- Overlay borroso -->
       <div id="com-blur-overlay" style="position:absolute;inset:0;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);background:rgba(0,0,0,.08);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;z-index:10;min-height:120px;">
