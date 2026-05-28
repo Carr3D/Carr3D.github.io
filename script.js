@@ -1,4 +1,4 @@
-    /* ================================================================
+/* ================================================================
    🎯 GUÍA COMPLETA: CÓMO MODIFICAR TUS PRODUCTOS
    ================================================================
    
@@ -197,7 +197,7 @@ const PRODUCTOS = [
      imgPrincipal: 'productos/constante/peine_mariposa.png',
      svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="80" fill="none" stroke="#e8541a" stroke-width="2"/><circle cx="100" cy="100" r="50" fill="#fde8dc"/></svg>`,
      precio: '€2.00',
-     categoria: 'JUGUETE',
+     categoria: 'CUCHILLO',
      materiales: ['PLA'],
      colores: [],
      descripcion: 'Juguete de peine parecido a los cuchillos mariposa',
@@ -219,7 +219,6 @@ const PRODUCTOS = [
      tiempoProduccion: '2-3 días',
      seccion: 'temporada-principal',
    },
-   /* Producto temporada secundarios */
 ];
  
 /* Procesar descuentos */
