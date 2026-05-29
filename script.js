@@ -303,7 +303,6 @@ const COLLAGE_FOTOS = [
   'productos/constante/llavero_gato_cosido.png',
   'productos/constante/llavero_baca_cosida.png',
   'productos/constante/llavero_capibara_cosido.png',
-  'productos/constante/peine_mariposa.png',
   'productos/temporada/world_cup.png',
 ];
  
