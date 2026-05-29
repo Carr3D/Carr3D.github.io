@@ -192,6 +192,19 @@ const PRODUCTOS = [
      seccion: 'stock',
      descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
    },
+   {
+     nombre: 'Peine mariposa',
+     imgPrincipal: 'productos/constante/peine_mariposa.png',
+     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="80" fill="none" stroke="#e8541a" stroke-width="2"/><circle cx="100" cy="100" r="50" fill="#fde8dc"/></svg>`,
+     precio: '€2.00',
+     categoria: 'CUCHILLO',
+     materiales: ['PLA'],
+     colores: [],
+     descripcion: 'Juguete de peine parecido a los cuchillos mariposa',
+     peso: '10g',
+     tiempoProduccion: '1 día',
+     seccion: 'stock',
+   },
    /* Producto temporada principal */
    {
      nombre: 'World Cup',
@@ -303,6 +316,7 @@ const COLLAGE_FOTOS = [
   'productos/constante/llavero_gato_cosido.png',
   'productos/constante/llavero_baca_cosida.png',
   'productos/constante/llavero_capibara_cosido.png',
+  'productos/constante/peine_mariposa.png',
   'productos/temporada/world_cup.png',
 ];
  

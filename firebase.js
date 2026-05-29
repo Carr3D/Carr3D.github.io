@@ -225,11 +225,19 @@ window.enviarComentario = async function(){
    AUTENTICACIÓN CON GOOGLE
 ══════════════════════════════ */
 
-/* Login — redirect sin async para que Firefox no bloquee el gesto */
+/* Login — popup con fallback a redirect si el popup está bloqueado */
 window.loginGoogle = function(){
-  signInWithRedirect(_auth, _provider).catch(function(e){
-    window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
-    console.error(e);
+  signInWithPopup(_auth, _provider).catch(function(e){
+    if(e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user'){
+      // Popup bloqueado → fallback a redirect
+      signInWithRedirect(_auth, _provider).catch(function(e2){
+        window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
+        console.error(e2);
+      });
+    } else if(e.code !== 'auth/cancelled-popup-request'){
+      window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
+      console.error(e);
+    }
   });
 };
 
