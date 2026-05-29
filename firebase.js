@@ -225,14 +225,12 @@ window.enviarComentario = async function(){
    AUTENTICACIÓN CON GOOGLE
 ══════════════════════════════ */
 
-/* Login — redirect universal (funciona en todos los navegadores) */
-window.loginGoogle = async function(){
-  try{
-    await signInWithRedirect(_auth, _provider);
-  }catch(e){
+/* Login — redirect sin async para que Firefox no bloquee el gesto */
+window.loginGoogle = function(){
+  signInWithRedirect(_auth, _provider).catch(function(e){
     window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
     console.error(e);
-  }
+  });
 };
 
 /* Logout */
