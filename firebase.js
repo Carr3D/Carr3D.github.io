@@ -21,6 +21,18 @@ const _storage = getStorage(_app);
 
 const _provider = new GoogleAuthProvider();
 
+/* Procesar resultado del redirect al volver de Google */
+getRedirectResult(_auth).then(result => {
+  if(result && result.user){
+    console.log('Login por redirect OK:', result.user.displayName);
+  }
+}).catch(e => {
+  if(e && e.code !== 'auth/no-current-user'){
+    console.error('Redirect result error:', e);
+    window.showToast && window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
+  }
+});
+
 /* ── ESTADO USUARIO ── */
 let _currentUser = null;
 let _adminUids = [];
@@ -213,12 +225,20 @@ window.enviarComentario = async function(){
    AUTENTICACIÓN CON GOOGLE
 ══════════════════════════════ */
 
-/* Login */
+/* Login — intenta popup, si falla (Firefox/bloqueado) usa redirect */
 window.loginGoogle = async function(){
   try{
     await signInWithPopup(_auth, _provider);
   }catch(e){
-    if(e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request'){
+    if(e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request'){
+      // Firefox u otros navegadores bloquean el popup → usar redirect
+      try{
+        await signInWithRedirect(_auth, _provider);
+      }catch(e2){
+        window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
+        console.error(e2);
+      }
+    } else {
       window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
       console.error(e);
     }
