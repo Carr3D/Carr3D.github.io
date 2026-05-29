@@ -8,7 +8,7 @@ import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject }
 
 const _app = initializeApp({
   apiKey:            'AIzaSyCUNeg8VisxV8tysDF0hqZKIoZuezTXj8w',
-  authDomain:        'carr3d-aacb2.web.app',
+  authDomain:        'carr3d-aacb2.firebaseapp.com',
   projectId:         'carr3d-aacb2',
   storageBucket:     'carr3d-aacb2.firebasestorage.app',
   messagingSenderId: '625649973013',
