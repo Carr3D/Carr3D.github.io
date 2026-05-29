@@ -11,6 +11,10 @@
 </head>
 <body>
 
+<!--
+-->
+
+
 <div id="progress-bar"></div>
 <div id="toast"><span id="t-msg">¡Añadido!</span></div>
 
@@ -297,6 +301,19 @@
             <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Descripción</label>
             <textarea id="af-desc" class="form-textarea" style="min-height:70px;" placeholder="Descripción del producto..."></textarea>
           </div>
+
+          <div>
+            <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Destacado (opcional)</label>
+            <select id="af-destacado" class="form-input" style="cursor:pointer;">
+              <option value="">Sin destacado</option>
+              <option value="nuevo">🆕 Nuevo</option>
+              <option value="pocas">⚠️ Últimas unidades</option>
+              <option value="sale10">🏷️ −10%</option>
+              <option value="sale20">🏷️ −20%</option>
+              <option value="sale25">🏷️ −25%</option>
+              <option value="bulk25">📦 +10 = −25%</option>
+            </select>
+          </div>
           <div>
             <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Imagen</label>
             <div id="af-img-preview" style="display:none;margin-bottom:.5rem;border-radius:.5rem;overflow:hidden;max-height:140px;text-align:center;background:var(--bg3);">
@@ -334,12 +351,97 @@
       <p class="section-kicker">02 — Edición limitada</p>
       <h2 class="section-title">Colección mundial '26</h2>
     </div>
+    <!-- PANEL ADMIN TEMPORADA -->
+    <div id="admin-temporada-panel" style="display:none;margin-bottom:.75rem;">
+      <div onclick="toggleAdminTemporadaPanel()" style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;background:var(--bg2);border:1.5px solid var(--border);border-radius:.75rem;cursor:pointer;user-select:none;">
+        <span style="font-size:.85rem;font-weight:700;color:var(--accent);">⚙️ Panel admin — Temporada</span>
+        <span id="admin-temporada-arrow" style="font-size:.8rem;color:var(--text3);">▼ Expandir</span>
+      </div>
+      <div id="admin-temporada-body" style="display:none;border:1.5px solid var(--border);border-radius:.75rem;overflow:hidden;margin-top:.5rem;">
+        <!-- Principal -->
+        <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border);background:var(--bg3);">
+          <p style="font-size:.78rem;font-weight:800;color:var(--text2);margin:0 0 .5rem;text-transform:uppercase;letter-spacing:.05em;">⭐ Producto principal</p>
+          <div id="admin-temp-principal-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.5rem;"></div>
+          <button onclick="abrirFormTemporada('temporada-principal',null)" style="display:flex;align-items:center;gap:.5rem;padding:.4rem .85rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;">＋ Añadir principal</button>
+        </div>
+        <!-- Secundarios -->
+        <div style="padding:.75rem 1rem;background:var(--bg3);">
+          <p style="font-size:.78rem;font-weight:800;color:var(--text2);margin:0 0 .5rem;text-transform:uppercase;letter-spacing:.05em;">🎨 Productos secundarios</p>
+          <div id="admin-temp-secundarios-list" style="display:flex;flex-direction:column;gap:.5rem;max-height:240px;overflow-y:auto;margin-bottom:.5rem;"></div>
+          <button onclick="abrirFormTemporada('temporada-secundaria',null)" style="display:flex;align-items:center;gap:.5rem;padding:.4rem .85rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;">＋ Añadir secundario</button>
+        </div>
+      </div>
+    </div>
+
     <div class="season-grid reveal">
       <div id="season-featured-wrap"></div>
       <div class="season-smalls" id="season-smalls"></div>
     </div>
   </div>
 </section>
+
+<!-- MODAL ADMIN TEMPORADA -->
+<div id="admin-temp-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--bg1);border-radius:1.25rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:1.5rem;position:relative;">
+    <button onclick="cerrarFormTemporada()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text2);">✕</button>
+    <h3 id="at-form-title" style="margin:0 0 1.25rem;font-size:1.1rem;font-weight:800;">Añadir producto de temporada</h3>
+    <input type="hidden" id="at-doc-id">
+    <input type="hidden" id="at-seccion">
+    <input type="hidden" id="at-img-url">
+    <div style="display:flex;flex-direction:column;gap:.9rem;">
+      <div>
+        <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Nombre *</label>
+        <input id="at-nombre" class="form-input" type="text" placeholder="Nombre del producto" maxlength="60">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+        <div>
+          <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Precio * (ej: €12.50)</label>
+          <input id="at-precio" class="form-input" type="text" placeholder="€0.00">
+        </div>
+        <div>
+          <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Categoría *</label>
+          <input id="at-categoria" class="form-input" type="text" placeholder="LLAVERO, DECO...">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+        <div>
+          <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Material</label>
+          <input id="at-material" class="form-input" type="text" placeholder="PLA, PETG...">
+        </div>
+        <div>
+          <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Peso</label>
+          <input id="at-peso" class="form-input" type="text" placeholder="10g">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Tiempo de producción</label>
+        <input id="at-tiempo" class="form-input" type="text" placeholder="1-2 días">
+      </div>
+      <div>
+        <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Descripción</label>
+        <textarea id="at-desc" class="form-textarea" style="min-height:70px;" placeholder="Descripción del producto..."></textarea>
+      </div>
+      <div>
+        <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Imagen</label>
+        <div id="at-img-preview" style="display:none;margin-bottom:.5rem;border-radius:.5rem;overflow:hidden;max-height:140px;text-align:center;background:var(--bg3);">
+          <img id="at-img-tag" src="" style="max-height:140px;object-fit:contain;">
+        </div>
+        <input id="at-img-file" type="file" accept="image/*" onchange="previsualizarImagenTemp(this)" style="font-size:.82rem;">
+      </div>
+      <div id="at-upload-wrap" style="display:none;">
+        <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;">
+          <div id="at-upload-bar" style="height:100%;width:0%;background:var(--accent);transition:width .2s;border-radius:99px;"></div>
+        </div>
+        <p id="at-upload-txt" style="font-size:.75rem;color:var(--text3);margin:.3rem 0 0;">Subiendo imagen…</p>
+      </div>
+      <p id="at-error" style="color:red;font-size:.82rem;display:none;margin:0;"></p>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem;">
+        <button onclick="cerrarFormTemporada()" style="padding:.5rem 1.1rem;border:1.5px solid var(--border);border-radius:.6rem;background:none;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text1);">Cancelar</button>
+        <button id="at-save-btn" onclick="guardarProductoTemporada()" style="padding:.5rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- COLLAGE FOTOS -->
 <section id="photo-collage">
@@ -389,20 +491,7 @@
             </div>
             <input type="hidden" id="com-nombre">
           </div>
-          <div class="form-group" style="flex:1;">
-            <label class="form-label">Emoji</label>
-            <div style="display:flex;gap:.4rem;flex-wrap:wrap;">
-              <button class="com-avatar-opt selected" onclick="selectAvatar(this,'😊')">😊</button>
-              <button class="com-avatar-opt" onclick="selectAvatar(this,'🙌')">🙌</button>
-              <button class="com-avatar-opt" onclick="selectAvatar(this,'🤩')">🤩</button>
-              <button class="com-avatar-opt" onclick="selectAvatar(this,'🧡')">🧡</button>
-              <button class="com-avatar-opt" onclick="selectAvatar(this,'🐷')">🐷</button>
-              <button class="com-avatar-opt" onclick="selectAvatar(this,'🚀')">🚀</button>
-              <button class="com-avatar-opt" onclick="selectAvatar(this,'🎨')">🎨</button>
-              <button class="com-avatar-opt" onclick="selectAvatar(this,'🛠️')">🛠️</button>
-            </div>
-            <input type="hidden" id="com-avatar" value="😊">
-          </div>
+          <input type="hidden" id="com-avatar" value="">
         </div>
         <div class="form-group">
           <label class="form-label">Valoración <span style="color:var(--val-err)">*</span></label>
@@ -455,10 +544,10 @@
     <div class="piggy-info">
       <p class="piggy-kicker">🐷 Meta de recaudación</p>
       <h2 class="piggy-title">Ayúdanos a crecer</h2>
-      <p class="piggy-desc">Cada compra contribuye directamente a nuestra meta: adquirir una nueva impresora 3D de mayor precisión para poder ofrecerte acabados todavía mejores, nuevos materiales y tiempos de entrega más rápidos.<br><br>Gracias a vosotros, seguimos creciendo capa a capa. ¡Sois increíbles! 🧡</p>
+      <p class="piggy-desc" id="piggy-desc-label">Cada compra contribuye directamente a nuestra meta: adquirir una nueva impresora 3D de mayor precisión para poder ofrecerte acabados todavía mejores, nuevos materiales y tiempos de entrega más rápidos.<br><br>Gracias a vosotros, seguimos creciendo capa a capa. ¡Sois increíbles! 🧡</p>
       <div class="piggy-meta-actual">
         <span class="piggy-meta-badge">🎯 Meta actual</span>
-        <span class="piggy-meta-nombre">Recuperar gastos</span>
+        <span class="piggy-meta-nombre" id="piggy-meta-nombre-label">Recuperar gastos</span>
       </div>
       <div class="piggy-amounts">
         <div class="piggy-amount-block"><span class="piggy-amount-label">Recaudado</span><span class="piggy-amount-value" id="piggy-current-val">€0</span></div>
@@ -466,6 +555,38 @@
       </div>
       <div class="piggy-progress-bar"><div class="piggy-progress-fill" id="piggy-fill-bar" style="width:0%"></div></div>
       <p id="piggy-pct-label" style="margin-top:.625rem;font-size:.88rem;color:var(--text3);">67% completado</p>
+
+      <!-- Panel admin meta -->
+      <div id="admin-piggy-panel" style="display:none;margin-top:1.25rem;">
+        <div onclick="toggleAdminPiggyPanel()" style="display:flex;align-items:center;justify-content:space-between;padding:.55rem 1rem;background:var(--bg2);border:1.5px solid var(--border);border-radius:.75rem;cursor:pointer;user-select:none;">
+          <span style="font-size:.82rem;font-weight:700;color:var(--accent);">⚙️ Editar meta de recaudación</span>
+          <span id="admin-piggy-arrow" style="font-size:.78rem;color:var(--text3);">▼ Expandir</span>
+        </div>
+        <div id="admin-piggy-body" style="display:none;padding:1rem;border:1.5px solid var(--border);border-top:none;border-radius:0 0 .75rem .75rem;background:var(--bg2);">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem;">
+            <div>
+              <label style="font-size:.78rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Recaudado (€)</label>
+              <input id="piggy-edit-earned" class="form-input" type="number" min="0" step="0.01" placeholder="57.50">
+            </div>
+            <div>
+              <label style="font-size:.78rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Meta total (€)</label>
+              <input id="piggy-edit-goal" class="form-input" type="number" min="1" step="1" placeholder="500">
+            </div>
+          </div>
+          <div style="margin-bottom:.75rem;">
+            <label style="font-size:.78rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Nombre de la meta actual</label>
+            <input id="piggy-edit-nombre" class="form-input" type="text" placeholder="Recuperar gastos" maxlength="50">
+          </div>
+          <div style="margin-bottom:.75rem;">
+            <label style="font-size:.78rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Descripción</label>
+            <textarea id="piggy-edit-desc" class="form-textarea" style="min-height:70px;" placeholder="Cada compra contribuye..."></textarea>
+          </div>
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <button onclick="guardarMetaAdmin()" id="piggy-save-btn" style="padding:.45rem 1.1rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;">Guardar cambios</button>
+            <p id="piggy-save-ok" style="display:none;color:green;font-size:.82rem;font-weight:600;">✓ Guardado</p>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="piggy-visual">
       <div class="piggy-svg-wrap"><svg id="piggy-svg" viewBox="40 44 220 240" width="260" height="260" xmlns="http://www.w3.org/2000/svg"></svg></div>
@@ -483,6 +604,20 @@
       <p class="section-sub" style="margin-bottom:2rem;">Gracias a vuestro apoyo, ya hemos alcanzado estos hitos. ¡Cada compra cuenta!</p>
     </div>
     <div class="reveal">
+      <!-- Panel admin metas -->
+      <div id="admin-metas-panel" style="display:none;margin-bottom:1rem;">
+        <div onclick="toggleAdminMetasPanel()" style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;background:var(--bg2);border:1.5px solid var(--accent);border-radius:.75rem;cursor:pointer;user-select:none;">
+          <span style="font-size:.85rem;font-weight:700;color:var(--accent);">⚙️ Gestionar metas cumplidas</span>
+          <span id="admin-metas-arrow" style="font-size:.8rem;color:var(--text3);">▼ Expandir</span>
+        </div>
+        <div id="admin-metas-body" style="display:none;border:1.5px solid var(--border);border-top:none;border-radius:0 0 .75rem .75rem;overflow:hidden;">
+          <div id="admin-metas-list" style="padding:1rem;display:flex;flex-direction:column;gap:.6rem;max-height:300px;overflow-y:auto;"></div>
+          <div style="padding:.75rem 1rem;border-top:1px solid var(--border);background:var(--bg3);">
+            <button onclick="abrirFormMeta(null)" style="display:flex;align-items:center;gap:.5rem;padding:.5rem 1rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">＋ Añadir meta cumplida</button>
+          </div>
+        </div>
+      </div>
+
       <div class="metas-grid" id="metas-grid"></div>
       <div class="metas-empty" id="metas-empty" style="display:none;">
         <span style="font-size:2.5rem;">😔</span>
@@ -491,6 +626,46 @@
     </div>
   </div>
 </section>
+
+<!-- MODAL ADMIN META CUMPLIDA -->
+<div id="admin-meta-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--bg1);border-radius:1.25rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;padding:1.5rem;position:relative;">
+    <button onclick="cerrarFormMeta()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text2);">✕</button>
+    <h3 id="am-form-title" style="margin:0 0 1.25rem;font-size:1.1rem;font-weight:800;">Añadir meta cumplida</h3>
+    <input type="hidden" id="am-doc-id">
+    <div style="display:flex;flex-direction:column;gap:.9rem;">
+      <div style="display:grid;grid-template-columns:64px 1fr;gap:.75rem;align-items:end;">
+        <div>
+          <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Emoji</label>
+          <input id="am-emoji" class="form-input" type="text" placeholder="🏆" maxlength="4" style="text-align:center;font-size:1.4rem;">
+        </div>
+        <div>
+          <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Nombre de la meta *</label>
+          <input id="am-nombre" class="form-input" type="text" placeholder="Primera venta" maxlength="60">
+        </div>
+      </div>
+      <div>
+        <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Descripción *</label>
+        <textarea id="am-desc" class="form-textarea" style="min-height:70px;" placeholder="Vendimos nuestra primera pieza..."></textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+        <div>
+          <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Importe (opcional)</label>
+          <input id="am-importe" class="form-input" type="text" placeholder="€250">
+        </div>
+        <div>
+          <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Fecha (opcional)</label>
+          <input id="am-fecha" class="form-input" type="text" placeholder="Mayo 2026">
+        </div>
+      </div>
+      <p id="am-error" style="color:red;font-size:.82rem;display:none;margin:0;"></p>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
+        <button onclick="cerrarFormMeta()" style="padding:.5rem 1.1rem;border:1.5px solid var(--border);border-radius:.6rem;background:none;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text1);">Cancelar</button>
+        <button id="am-save-btn" onclick="guardarMetaCumplida()" style="padding:.5rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- CUSTOM -->
 <section id="custom">
@@ -595,5 +770,9 @@
 </div>
 <script src="script.js"></script>
 <script type="module" src="firebase.js"></script>
+<!-- Aviso admin -->
+<div id="admin-warning" style="display:none;position:fixed;bottom:1.25rem;right:1.25rem;z-index:9999;background:#f59e0b;color:#fff;font-size:.78rem;font-weight:800;padding:.55rem 1rem;border-radius:2rem;box-shadow:0 4px 16px rgba(245,158,11,.4);pointer-events:none;letter-spacing:.02em;user-select:none;">
+  ⚠️ Estás usando cuenta de administrador
+</div>
 </body>
 </html>

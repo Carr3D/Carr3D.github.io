@@ -1,7 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, setDoc, deleteDoc }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
@@ -17,6 +17,14 @@ const _app = initializeApp({
 const _db   = getFirestore(_app);
 const _auth    = getAuth(_app);
 const _storage = getStorage(_app);
+
+// Recoger resultado del redirect al volver de Google
+getRedirectResult(_auth).catch(e=>{
+  if(e && e.code !== 'auth/no-current-user'){
+    console.error('Redirect result error:', e);
+    window.showToast && window.showToast('Error al iniciar sesión.');
+  }
+});
 const _provider = new GoogleAuthProvider();
 
 /* ── ESTADO USUARIO ── */
@@ -58,9 +66,14 @@ function renderCom(docSnap){
   const d = docSnap.data();
   const esAdmin = d.uid && _adminUids.includes(d.uid);
   const esYoAdmin = _currentUser && _adminUids.includes(_currentUser.uid);
+  const fotoUrl = d.photoURL || '';
+  const inicial = (d.nombre||'?')[0].toUpperCase();
+  const fotoHtml = fotoUrl
+    ? `<img src="${fotoUrl}" alt="${escapeHTML(d.nombre)}" style="width:44px;height:44px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:1.1rem;align-items:center;justify-content:center;">${inicial}</span>`
+    : `<span style="display:flex;width:44px;height:44px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;font-size:1.1rem;align-items:center;justify-content:center;">${inicial}</span>`;
   const avatarContent = esAdmin
-    ? `<span class="com-avatar-emoji">${d.avatar||'😊'}</span><span class="com-crown">👑</span>`
-    : `<span>${d.avatar||'😊'}</span>`;
+    ? `${fotoHtml}<span class="com-crown">👑</span>`
+    : fotoHtml;
   const nombreBadge = esAdmin
     ? `<span class="com-admin-badge">Admin</span>`
     : '';
@@ -180,8 +193,10 @@ window.enviarComentario = async function(){
   const btn=document.getElementById('com-btn');
   btn.disabled=true; btn.textContent='Enviando…';
   try{
+    const photoURL = _currentUser.photoURL || '';
     await addDoc(collection(_db,'comentarios'),{
-      nombre, texto, avatar, estrellas,
+      nombre, texto, estrellas,
+      photoURL,
       uid,
       ts: serverTimestamp()
     });
@@ -206,13 +221,12 @@ window.enviarComentario = async function(){
 
 /* Login */
 window.loginGoogle = async function(){
+  // Usar redirect (más fiable en todos los navegadores)
   try{
-    await signInWithPopup(_auth, _provider);
+    await signInWithRedirect(_auth, _provider);
   }catch(e){
-    if(e.code !== 'auth/popup-closed-by-user'){
-      window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
-      console.error(e);
-    }
+    window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
+    console.error(e);
   }
 };
 
@@ -264,6 +278,12 @@ function actualizarUIAuth(user){
     /* Panel admin */
     const adminPanel = document.getElementById('admin-stock-panel');
     if(adminPanel) adminPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
+    const adminTempPanel = document.getElementById('admin-temporada-panel');
+    if(adminTempPanel) adminTempPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
+    const adminPiggyPanel = document.getElementById('admin-piggy-panel');
+    if(adminPiggyPanel) adminPiggyPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
+    const adminMetasPanel = document.getElementById('admin-metas-panel');
+    if(adminMetasPanel) adminMetasPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
     const adminWarn = document.getElementById('admin-warning');
     if(adminWarn) adminWarn.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
     if(formLock)  formLock.style.display  = 'none';
@@ -279,6 +299,9 @@ function actualizarUIAuth(user){
     if(nombreInput)   nombreInput.value         = displayName;
     if(nombreDisplay) nombreDisplay.textContent  = displayName;
     if(nombreAvatar)  nombreAvatar.src           = photoURL;
+    /* Guardar photoURL en campo oculto del formulario */
+    const comAvatarHidden = document.getElementById('com-avatar');
+    if(comAvatarHidden) comAvatarHidden.value = photoURL;
     if(ofNombre)      ofNombre.value             = displayName;
     if(ofNombreText)  ofNombreText.textContent   = displayName;
     if(ofNombreAvatar)ofNombreAvatar.src         = photoURL;
@@ -288,11 +311,518 @@ function actualizarUIAuth(user){
     if(formWrap)  formWrap.style.display  = 'none';
     const adminPanelHide = document.getElementById('admin-stock-panel');
     if(adminPanelHide) adminPanelHide.style.display = 'none';
+    const adminTempPanelHide = document.getElementById('admin-temporada-panel');
+    if(adminTempPanelHide) adminTempPanelHide.style.display = 'none';
+    const adminPiggyHide = document.getElementById('admin-piggy-panel');
+    if(adminPiggyHide) adminPiggyHide.style.display = 'none';
+    const adminMetasHide = document.getElementById('admin-metas-panel');
+    if(adminMetasHide) adminMetasHide.style.display = 'none';
     const adminWarnHide = document.getElementById('admin-warning');
     if(adminWarnHide) adminWarnHide.style.display = 'none';
     if(formLock)  formLock.style.display  = 'flex';
   }
 }
+
+/* ══════════════════════════════
+   PANEL ADMIN — TEMPORADA
+══════════════════════════════ */
+
+let _productosTemporada = [];
+
+function iniciarEscuchaTemporada(){
+  onSnapshot(
+    query(collection(_db,'productos_temporada'), orderBy('nombre','asc')),
+    snap => {
+      _productosTemporada = snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderTemporadaWeb();
+      if(_currentUser && _adminUids.includes(_currentUser.uid)){
+        renderAdminTemporadaList();
+      }
+    },
+    err => console.error('Error temporada:', err)
+  );
+}
+iniciarEscuchaTemporada();
+
+function renderTemporadaWeb(){
+  const sfw = document.getElementById('season-featured-wrap');
+  const ssm = document.getElementById('season-smalls');
+  if(!sfw || !ssm) return;
+
+  // Quitar solo los de Firestore
+  sfw.querySelectorAll('[data-source="firestore"]').forEach(el=>el.remove());
+  ssm.querySelectorAll('[data-source="firestore"]').forEach(el=>el.remove());
+
+  const principal   = _productosTemporada.filter(p=>p.seccion==='temporada-principal');
+  const secundarios = _productosTemporada.filter(p=>p.seccion==='temporada-secundaria');
+
+  principal.forEach(p=>{
+    const div = document.createElement('div');
+    div.setAttribute('data-source','firestore');
+    div.className='season-featured';
+    const imgBlock = p.imgUrl
+      ? `<img src="${p.imgUrl}" alt="${p.nombre||''}" style="width:100%;height:100%;object-fit:cover;">`
+      : `<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:3rem;">📦</div>`;
+    div.innerHTML=`
+      <div class="season-feat-img">${imgBlock}</div>
+      <div class="season-feat-info">
+        <span class="season-tag">Edición limitada · ${(p.materiales||['PLA']).join(' · ')}</span>
+        <h3 class="season-feat-title">${p.nombre||''}</h3>
+        <p class="season-feat-desc">${p.descripcion||''}</p>
+        <div class="season-feat-price">${p.precio||''}</div>
+        <button class="btn-filled" onclick="addToCartFirestoreTemp('${p.id}')">Añadir al carrito</button>
+      </div>`;
+    sfw.appendChild(div);
+  });
+
+  secundarios.forEach(p=>{
+    const div = document.createElement('div');
+    div.setAttribute('data-source','firestore');
+    div.className='product-card season-small-item';
+    div.setAttribute('data-cat', p.categoria||'');
+    div.setAttribute('data-precio', parseFloat((p.precio||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||0);
+    div.innerHTML=`
+      ${p.destacado ? badgeHTML(p.destacado) : ''}
+      <div class="card-img" style="background:var(--bg3)">
+        ${p.imgUrl?`<img src="${p.imgUrl}" alt="${p.nombre||''}" style="width:100%;height:100%;object-fit:cover;">`:''}
+        <div class="card-overlay">
+          <button class="view-btn" onclick="abrirModalFirestoreTemp('${p.id}')">Ver</button>
+          <button class="add-btn" onclick="addToCartFirestoreTemp('${p.id}')">+ Carrito</button>
+        </div>
+      </div>
+      <div class="card-info">
+        ${p.categoria?`<div class="card-categoria">${p.categoria}</div>`:''}
+        <div class="card-name">${p.nombre||''}</div>
+        <div class="card-meta">
+          <span class="card-price">${p.precio||''}</span>
+          <span class="card-mat-pill">${(p.materiales||['PLA']).join(' · ')}</span>
+        </div>
+      </div>`;
+    ssm.appendChild(div);
+  });
+}
+
+window.addToCartFirestoreTemp = function(id){
+  const p = _productosTemporada.find(x=>x.id===id);
+  if(!p) return;
+  const precio = parseFloat((p.precio||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||0;
+  const ex = cartItems.find(i=>i.name===p.nombre);
+  if(ex){ex.qty++;}else{cartItems.push({name:p.nombre,price:precio,img:p.imgUrl||'',svg:'',descuentoEscalonado:null,qty:1});}
+  updateBadge();
+  window.showToast((p.nombre||'Producto')+' añadido 🎉');
+  window._guardarCarritoEnFirestore && window._guardarCarritoEnFirestore(cartItems);
+};
+
+window.abrirModalFirestoreTemp = function(id){
+  const p = _productosTemporada.find(x=>x.id===id);
+  if(!p) return;
+  const overlay = document.getElementById('modal-overlay');
+  const imgEl = document.getElementById('modal-img-tag');
+  const phEl  = document.getElementById('modal-img-ph');
+  if(p.imgUrl){
+    imgEl.src=p.imgUrl; imgEl.style.display='block'; phEl.style.display='none';
+    imgEl.onerror=()=>{imgEl.style.display='none';phEl.style.display='flex';};
+  } else {
+    imgEl.style.display='none'; phEl.style.display='flex';
+  }
+  document.getElementById('modal-kicker').textContent=(p.materiales||['PLA']).join(' · ');
+  document.getElementById('modal-title').textContent=p.nombre||'';
+  document.getElementById('modal-price').textContent=p.precio||'';
+  document.getElementById('modal-desc').textContent=p.descripcion||'';
+  const specsEl=document.getElementById('modal-specs'); specsEl.innerHTML='';
+  [['Material',(p.materiales||[]).join(' · ')],['Peso',p.peso],['Tiempo de producción',p.tiempoProduccion]]
+    .forEach(s=>{if(s[1])specsEl.innerHTML+=`<div class="modal-spec"><span>${s[0]}</span><span>${s[1]}</span></div>`;});
+  document.getElementById('modal-colors').innerHTML='';
+  document.getElementById('modal-add-btn').onclick=()=>{addToCartFirestoreTemp(id);closeModal();};
+  overlay.classList.add('open'); document.body.style.overflow='hidden';
+};
+
+/* ── Lista admin temporada ── */
+function renderAdminTemporadaList(){
+  const listP = document.getElementById('admin-temp-principal-list');
+  const listS = document.getElementById('admin-temp-secundarios-list');
+  if(!listP||!listS) return;
+
+  const principales  = _productosTemporada.filter(p=>p.seccion==='temporada-principal');
+  const secundarios  = _productosTemporada.filter(p=>p.seccion==='temporada-secundaria');
+
+  [listP, listS].forEach(l=>l.innerHTML='');
+
+  const buildRow = (p) => {
+    const div = document.createElement('div');
+    div.className='admin-prod-row';
+    div.innerHTML=`
+      ${p.imgUrl?`<img src="${p.imgUrl}" alt="${p.nombre}">`:'<div style="width:38px;height:38px;background:var(--bg3);border-radius:.4rem;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📦</div>'}
+      <div class="admin-prod-row-info">
+        <div class="admin-prod-row-name">${p.nombre||'—'}</div>
+        <div class="admin-prod-row-meta">${p.precio||''} · ${p.seccion}</div>
+      </div>
+      <div class="admin-prod-row-btns">
+        <button onclick="abrirFormTemporada('${p.seccion}','${p.id}')">✏️ Editar</button>
+        <button class="btn-del" onclick="eliminarProductoTemporada('${p.id}','${(p.imgStoragePath||'').replace(/'/g,"\'")}')">🗑️</button>
+      </div>`;
+    return div;
+  };
+
+  if(!principales.length) listP.innerHTML='<p style="color:var(--text3);font-size:.82rem;">Sin producto principal.</p>';
+  else principales.forEach(p=>listP.appendChild(buildRow(p)));
+
+  if(!secundarios.length) listS.innerHTML='<p style="color:var(--text3);font-size:.82rem;">Sin productos secundarios.</p>';
+  else secundarios.forEach(p=>listS.appendChild(buildRow(p)));
+}
+
+window.toggleAdminTemporadaPanel = function(){
+  const body  = document.getElementById('admin-temporada-body');
+  const arrow = document.getElementById('admin-temporada-arrow');
+  const open  = body.style.display==='none';
+  body.style.display = open?'block':'none';
+  arrow.textContent  = open?'▲ Cerrar':'▼ Expandir';
+  if(open) renderAdminTemporadaList();
+};
+
+window.abrirFormTemporada = function(seccion, id){
+  const overlay = document.getElementById('admin-temp-overlay');
+  document.getElementById('at-error').style.display='none';
+  document.getElementById('at-upload-wrap').style.display='none';
+  document.getElementById('at-img-preview').style.display='none';
+  document.getElementById('at-img-file').value='';
+  document.getElementById('at-seccion').value=seccion;
+
+  if(id){
+    const p=_productosTemporada.find(x=>x.id===id);
+    if(!p) return;
+    document.getElementById('at-form-title').textContent='Editar producto de temporada';
+    document.getElementById('at-doc-id').value=id;
+    document.getElementById('at-nombre').value=p.nombre||'';
+    document.getElementById('at-precio').value=p.precio||'';
+    document.getElementById('at-categoria').value=p.categoria||'';
+    document.getElementById('at-material').value=(p.materiales||[]).join(', ');
+    document.getElementById('at-peso').value=p.peso||'';
+    document.getElementById('at-tiempo').value=p.tiempoProduccion||'';
+    document.getElementById('at-desc').value=p.descripcion||'';
+    document.getElementById('at-img-url').value=p.imgUrl||'';
+    const atDest = document.getElementById('at-destacado');
+    if(atDest) atDest.value = p.destacado||'';
+    if(p.imgUrl){
+      document.getElementById('at-img-tag').src=p.imgUrl;
+      document.getElementById('at-img-preview').style.display='block';
+    }
+  } else {
+    document.getElementById('at-form-title').textContent = seccion==='temporada-principal'?'Añadir producto principal':'Añadir producto secundario';
+    ['at-doc-id','at-nombre','at-precio','at-categoria','at-material','at-peso','at-tiempo','at-desc','at-img-url'].forEach(id=>document.getElementById(id).value='');
+    const atDestReset = document.getElementById('at-destacado'); if(atDestReset) atDestReset.value='';
+  }
+  overlay.style.display='flex';
+  document.body.style.overflow='hidden';
+};
+
+window.cerrarFormTemporada = function(){
+  document.getElementById('admin-temp-overlay').style.display='none';
+  document.body.style.overflow='';
+};
+
+window.previsualizarImagenTemp = function(input){
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('at-img-tag').src=e.target.result;
+    document.getElementById('at-img-preview').style.display='block';
+  };
+  reader.readAsDataURL(file);
+};
+
+window.guardarProductoTemporada = async function(){
+  const nombre    = document.getElementById('at-nombre').value.trim();
+  const precio    = document.getElementById('at-precio').value.trim();
+  const categoria = document.getElementById('at-categoria').value.trim();
+  const material  = document.getElementById('at-material').value.trim();
+  const peso      = document.getElementById('at-peso').value.trim();
+  const tiempo    = document.getElementById('at-tiempo').value.trim();
+  const desc      = document.getElementById('at-desc').value.trim();
+  const docId     = document.getElementById('at-doc-id').value;
+  const seccion   = document.getElementById('at-seccion').value;
+  const fileInput = document.getElementById('at-img-file');
+  const errEl     = document.getElementById('at-error');
+  const saveBtn   = document.getElementById('at-save-btn');
+
+  if(!nombre||!precio||!categoria){
+    errEl.textContent='Nombre, precio y categoría son obligatorios.';
+    errEl.style.display='block'; return;
+  }
+  errEl.style.display='none';
+  saveBtn.disabled=true; saveBtn.textContent='Guardando…';
+
+  try{
+    let imgUrl='', imgStoragePath='';
+    if(docId){
+      imgUrl = document.getElementById('at-img-url').value||'';
+    }
+
+    if(fileInput.files[0]){
+      const file=fileInput.files[0];
+      const ext=file.name.split('.').pop();
+      const path=`temporada/${Date.now()}.${ext}`;
+      imgStoragePath=path;
+      const storageRef=ref(_storage,path);
+      const wrap=document.getElementById('at-upload-wrap');
+      const bar=document.getElementById('at-upload-bar');
+      const txt=document.getElementById('at-upload-txt');
+      wrap.style.display='block';
+      await new Promise((res,rej)=>{
+        const task=uploadBytesResumable(storageRef,file);
+        task.on('state_changed',
+          snap=>{ const pct=Math.round(snap.bytesTransferred/snap.totalBytes*100); bar.style.width=pct+'%'; txt.textContent='Subiendo… '+pct+'%'; },
+          rej,
+          async ()=>{ imgUrl=await getDownloadURL(task.snapshot.ref); res(); }
+        );
+      });
+      wrap.style.display='none';
+    }
+
+    const destacadoT = document.getElementById('at-destacado') ? document.getElementById('at-destacado').value || '' : '';
+    const data={
+      nombre, precio, categoria, seccion,
+      materiales: material?material.split(',').map(s=>s.trim()).filter(Boolean):['PLA'],
+      peso, tiempoProduccion:tiempo, descripcion:desc,
+      imgUrl, imgStoragePath,
+      destacado: destacadoT,
+      updatedAt:serverTimestamp(),
+    };
+
+    if(docId){
+      await setDoc(doc(_db,'productos_temporada',docId),data,{merge:true});
+      window.showToast('Producto actualizado ✓');
+    } else {
+      data.createdAt=serverTimestamp();
+      await addDoc(collection(_db,'productos_temporada'),data);
+      window.showToast('Producto añadido ✓');
+    }
+    cerrarFormTemporada();
+  }catch(e){
+    errEl.textContent='Error: '+e.message;
+    errEl.style.display='block';
+    console.error(e);
+  }
+  saveBtn.disabled=false; saveBtn.textContent='Guardar';
+};
+
+window.eliminarProductoTemporada = async function(id, storagePath){
+  if(!confirm('¿Eliminar este producto de temporada?')) return;
+  try{
+    if(storagePath){
+      try{ await deleteObject(ref(_storage,storagePath)); }catch(e){ console.warn('Imagen no eliminada:',e); }
+    }
+    await deleteDoc(doc(_db,'productos_temporada',id));
+    window.showToast('Producto eliminado 🗑️');
+  }catch(e){
+    window.showToast('Error al eliminar.');
+    console.error(e);
+  }
+};
+
+/* ══════════════════════════════
+   METAS CUMPLIDAS — FIRESTORE
+══════════════════════════════ */
+
+function iniciarEscuchaMetas(){
+  onSnapshot(
+    query(collection(_db,'metas_cumplidas'), orderBy('creadoEn','asc')),
+    snap => {
+      _metasFirestore = snap.docs.map(d=>({id:d.id,...d.data()}));
+      renderMetas();
+      if(_currentUser && _adminUids.includes(_currentUser.uid)){
+        renderAdminMetasList();
+      }
+    },
+    err => console.error('Error metas:', err)
+  );
+}
+iniciarEscuchaMetas();
+
+function renderAdminMetasList(){
+  const list = document.getElementById('admin-metas-list');
+  if(!list) return;
+  if(!_metasFirestore.length){
+    list.innerHTML='<p style="color:var(--text3);font-size:.85rem;text-align:center;padding:.5rem 0;">No hay metas en Firestore. Las del código siguen apareciendo.</p>';
+    return;
+  }
+  list.innerHTML='';
+  _metasFirestore.forEach(m=>{
+    const div=document.createElement('div');
+    div.className='admin-prod-row';
+    div.innerHTML=`
+      <div style="font-size:1.5rem;width:38px;text-align:center;flex-shrink:0;">${m.emoji||'🏆'}</div>
+      <div class="admin-prod-row-info">
+        <div class="admin-prod-row-name">${m.nombre||'—'}</div>
+        <div class="admin-prod-row-meta">${m.importe||''} ${m.fecha?'· '+m.fecha:''}</div>
+      </div>
+      <div class="admin-prod-row-btns">
+        <button onclick="abrirFormMeta('${m.id}')">✏️ Editar</button>
+        <button class="btn-del" onclick="eliminarMetaCumplida('${m.id}')">🗑️</button>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+window.toggleAdminMetasPanel = function(){
+  const body  = document.getElementById('admin-metas-body');
+  const arrow = document.getElementById('admin-metas-arrow');
+  const open  = body.style.display==='none';
+  body.style.display = open?'block':'none';
+  arrow.textContent  = open?'▲ Cerrar':'▼ Expandir';
+  if(open) renderAdminMetasList();
+};
+
+window.abrirFormMeta = function(id){
+  const overlay = document.getElementById('admin-meta-overlay');
+  document.getElementById('am-error').style.display='none';
+  if(id){
+    const m = _metasFirestore.find(x=>x.id===id);
+    if(!m) return;
+    document.getElementById('am-form-title').textContent='Editar meta cumplida';
+    document.getElementById('am-doc-id').value  = id;
+    document.getElementById('am-emoji').value   = m.emoji||'🏆';
+    document.getElementById('am-nombre').value  = m.nombre||'';
+    document.getElementById('am-desc').value    = m.desc||'';
+    document.getElementById('am-importe').value = m.importe||'';
+    document.getElementById('am-fecha').value   = m.fecha||'';
+  } else {
+    document.getElementById('am-form-title').textContent='Añadir meta cumplida';
+    ['am-doc-id','am-nombre','am-desc','am-importe','am-fecha'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('am-emoji').value='🏆';
+  }
+  overlay.style.display='flex';
+  document.body.style.overflow='hidden';
+};
+
+window.cerrarFormMeta = function(){
+  document.getElementById('admin-meta-overlay').style.display='none';
+  document.body.style.overflow='';
+};
+
+window.guardarMetaCumplida = async function(){
+  const nombre  = document.getElementById('am-nombre').value.trim();
+  const desc    = document.getElementById('am-desc').value.trim();
+  const emoji   = document.getElementById('am-emoji').value.trim()||'🏆';
+  const importe = document.getElementById('am-importe').value.trim();
+  const fecha   = document.getElementById('am-fecha').value.trim();
+  const docId   = document.getElementById('am-doc-id').value;
+  const errEl   = document.getElementById('am-error');
+  const saveBtn = document.getElementById('am-save-btn');
+
+  if(!nombre||!desc){
+    errEl.textContent='Nombre y descripción son obligatorios.';
+    errEl.style.display='block'; return;
+  }
+  errEl.style.display='none';
+  saveBtn.disabled=true; saveBtn.textContent='Guardando…';
+
+  try{
+    const data = { emoji, nombre, desc, importe, fecha, creadoEn: serverTimestamp() };
+    if(docId){
+      await setDoc(doc(_db,'metas_cumplidas',docId), data, {merge:true});
+      window.showToast('Meta actualizada ✓');
+    } else {
+      await addDoc(collection(_db,'metas_cumplidas'), data);
+      window.showToast('Meta añadida ✓');
+    }
+    cerrarFormMeta();
+  }catch(e){
+    errEl.textContent='Error: '+e.message;
+    errEl.style.display='block';
+    console.error(e);
+  }
+  saveBtn.disabled=false; saveBtn.textContent='Guardar';
+};
+
+window.eliminarMetaCumplida = async function(id){
+  if(!confirm('¿Eliminar esta meta cumplida?')) return;
+  try{
+    await deleteDoc(doc(_db,'metas_cumplidas',id));
+    window.showToast('Meta eliminada 🗑️');
+  }catch(e){
+    window.showToast('Error al eliminar.');
+    console.error(e);
+  }
+};
+
+/* ══════════════════════════════
+   META DE RECAUDACIÓN — FIRESTORE
+══════════════════════════════ */
+
+async function cargarMeta(){
+  try{
+    const snap = await getDoc(doc(_db,'config','meta'));
+    if(snap.exists()){
+      const d = snap.data();
+      piggyEarned  = d.earned  ?? piggyEarned;
+      piggyGoal    = d.goal    ?? piggyGoal;
+      piggyFilled  = Math.min(100, Math.round(piggyEarned / piggyGoal * 100));
+      piggyCurrent = piggyEarned;
+      renderPiggy();
+      // Actualizar nombre y descripción si existen
+      if(d.nombre){
+        const el = document.getElementById('piggy-meta-nombre-label');
+        if(el) el.textContent = d.nombre;
+      }
+      if(d.descripcion){
+        const el = document.getElementById('piggy-desc-label');
+        if(el) el.innerHTML = d.descripcion.replace(/\n/g,'<br>');
+      }
+    }
+  }catch(e){ console.error('Error cargando meta:', e); }
+}
+cargarMeta();
+
+window.toggleAdminPiggyPanel = function(){
+  const body  = document.getElementById('admin-piggy-body');
+  const arrow = document.getElementById('admin-piggy-arrow');
+  const open  = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  arrow.textContent  = open ? '▲ Cerrar' : '▼ Expandir';
+  if(open){
+    document.getElementById('piggy-edit-earned').value = piggyEarned;
+    document.getElementById('piggy-edit-goal').value   = piggyGoal;
+    const nombreEl = document.getElementById('piggy-meta-nombre-label');
+    if(nombreEl) document.getElementById('piggy-edit-nombre').value = nombreEl.textContent;
+    const descEl = document.getElementById('piggy-desc-label');
+    if(descEl) document.getElementById('piggy-edit-desc').value = descEl.innerText;
+  }
+};
+
+window.guardarMetaAdmin = async function(){
+  const earned = parseFloat(document.getElementById('piggy-edit-earned').value) || 0;
+  const goal   = parseFloat(document.getElementById('piggy-edit-goal').value)   || 1;
+  const nombre = document.getElementById('piggy-edit-nombre').value.trim();
+  const desc   = document.getElementById('piggy-edit-desc').value.trim();
+  const btn    = document.getElementById('piggy-save-btn');
+  const ok     = document.getElementById('piggy-save-ok');
+
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try{
+    await setDoc(doc(_db,'config','meta'), { earned, goal, nombre, descripcion: desc }, { merge: true });
+    piggyEarned  = earned;
+    piggyGoal    = goal;
+    piggyFilled  = Math.min(100, Math.round(earned / goal * 100));
+    piggyCurrent = earned;
+    renderPiggy();
+    if(nombre){
+      const el = document.getElementById('piggy-meta-nombre-label');
+      if(el) el.textContent = nombre;
+    }
+    if(desc){
+      const el = document.getElementById('piggy-desc-label');
+      if(el) el.innerHTML = desc.replace(/\n/g,'<br>');
+    }
+    ok.style.display = 'inline';
+    setTimeout(()=>{ ok.style.display='none'; }, 2500);
+  }catch(e){
+    window.showToast('Error al guardar. Inténtalo de nuevo.');
+    console.error(e);
+  }
+  btn.disabled = false; btn.textContent = 'Guardar cambios';
+};
 
 /* ══════════════════════════════
    CARRITO PERSISTENTE
@@ -302,14 +832,34 @@ async function sincronizarCarrito(uid){
   try{
     const ref  = doc(_db, 'usuarios', uid);
     const snap = await getDoc(ref);
-    if(snap.exists() && snap.data().carrito){
-      const items = snap.data().carrito;
-      window._loadCartFromFirestore && window._loadCartFromFirestore(items);
+    if(snap.exists()){
+      const d = snap.data();
+      // Carrito
+      if(d.carrito){
+        window._loadCartFromFirestore && window._loadCartFromFirestore(d.carrito);
+      }
+      // Tema
+      if(d.tema){
+        const html = document.documentElement;
+        const tb   = document.getElementById('theme-toggle');
+        html.setAttribute('data-theme', d.tema);
+        if(tb) tb.textContent = d.tema === 'dark' ? '☀️' : '🌙';
+        localStorage.setItem('carr3d-theme', d.tema);
+      }
     }
   }catch(e){
-    console.error('Error cargando carrito:', e);
+    console.error('Error cargando datos usuario:', e);
   }
 }
+
+window._guardarTemaEnFirestore = async function(tema){
+  if(!_currentUser) return;
+  try{
+    await setDoc(doc(_db,'usuarios',_currentUser.uid), { tema }, { merge: true });
+  }catch(e){
+    console.error('Error guardando tema:', e);
+  }
+};
 
 /* ══════════════════════════════
    PANEL ADMIN — GESTIÓN DE STOCK
@@ -353,6 +903,7 @@ function renderProductosWeb(){
     div.setAttribute('data-cat', p.categoria||'');
     div.setAttribute('data-precio', parseFloat((precio).replace(/[^0-9.,]/g,'').replace(',','.'))||0);
     div.innerHTML = `
+      ${p.destacado ? badgeHTML(p.destacado) : ''}
       <div class="card-img">${imgHtml}
         <div class="card-overlay">
           <button class="view-btn" onclick="abrirModalFirestore('${p.id}')">Ver detalles</button>
@@ -486,6 +1037,7 @@ window.abrirFormAdmin = function(id){
     document.getElementById('af-tiempo').value    = p.tiempoProduccion||'';
     document.getElementById('af-desc').value      = p.descripcion||'';
     document.getElementById('af-img-url').value   = p.imgUrl||'';
+    document.getElementById('af-destacado').value = p.destacado||'';
     if(p.imgUrl){
       document.getElementById('af-img-tag').src = p.imgUrl;
       document.getElementById('af-img-preview').style.display='block';
@@ -570,11 +1122,13 @@ window.guardarProductoAdmin = async function(){
       wrap.style.display='none';
     }
 
+    const destacado = document.getElementById('af-destacado').value || '';
     const data = {
       nombre, precio, categoria,
       materiales: material ? material.split(',').map(s=>s.trim()).filter(Boolean) : ['PLA'],
       peso, tiempoProduccion: tiempo, descripcion: desc,
       imgUrl, imgStoragePath,
+      destacado,
       seccion: 'stock',
       updatedAt: serverTimestamp(),
     };

@@ -255,10 +255,10 @@ PRODUCTOS.forEach(p=>{
    
    ================================================================ */
 
-const piggyEarned = 57.50; // € recaudados hasta ahora  ← MODIFICA ESTO
-const piggyGoal   = 500;   // Meta total en euros        ← MODIFICA ESTO
-const piggyFilled   = Math.min(100, Math.round(piggyEarned / piggyGoal * 100)); // ← Se calcula solo
-const piggyCurrent  = piggyEarned; // ← Se calcula solo
+let piggyEarned = 57.50; // valor por defecto hasta que cargue Firestore
+let piggyGoal   = 500;
+let piggyFilled   = Math.min(100, Math.round(piggyEarned / piggyGoal * 100));
+let piggyCurrent  = piggyEarned;
 
 /* ================================================================
    🏆 METAS CUMPLIDAS
@@ -321,9 +321,12 @@ const COLLAGE_FOTOS = [
 ];
  
 const BADGE_MAP = {
-  nuevo:{cls:'badge-new',txt:'Nuevo',tip:'¡Producto recién añadido al catálogo!'},
-  pocas:{cls:'badge-low',txt:'Pocas unidades',tip:'Quedan muy pocas unidades disponibles. ¡Date prisa!'},
-  descuento:{cls:'badge-sale',txt:'−20%',tip:'Este producto tiene un descuento especial del 20%.'},
+  nuevo:   {cls:'badge-new',  txt:'Nuevo',          tip:'¡Producto recién añadido al catálogo!'},
+  pocas:   {cls:'badge-low',  txt:'Últimas unidades',tip:'Quedan muy pocas unidades disponibles. ¡Date prisa!'},
+  sale10:  {cls:'badge-sale', txt:'−10%',            tip:'Este producto tiene un descuento del 10%.'},
+  sale20:  {cls:'badge-sale', txt:'−20%',            tip:'Este producto tiene un descuento del 20%.'},
+  sale25:  {cls:'badge-sale', txt:'−25%',            tip:'Este producto tiene un descuento del 25%.'},
+  bulk25:  {cls:'badge-sale', txt:'+10 = −25%',      tip:'Pide más de 10 unidades y obtendrás un 25% de descuento en las que pasen de ese número.'},
 };
 function badgeHTML(d,descuentoEscalonado){
   if(descuentoEscalonado&&descuentoEscalonado.porcentaje){
@@ -902,7 +905,13 @@ document.addEventListener('DOMContentLoaded',function(){
   const html=document.documentElement,tb=document.getElementById('theme-toggle');
   const sv=localStorage.getItem('carr3d-theme');
   if(sv){html.setAttribute('data-theme',sv);tb.textContent=sv==='dark'?'☀️':'🌙';}
-  tb.addEventListener('click',()=>{const n=html.getAttribute('data-theme')==='dark'?'light':'dark';html.setAttribute('data-theme',n);tb.textContent=n==='dark'?'☀️':'🌙';localStorage.setItem('carr3d-theme',n);});
+  tb.addEventListener('click',()=>{
+    const n=html.getAttribute('data-theme')==='dark'?'light':'dark';
+    html.setAttribute('data-theme',n);
+    tb.textContent=n==='dark'?'☀️':'🌙';
+    localStorage.setItem('carr3d-theme',n);
+    window._guardarTemaEnFirestore && window._guardarTemaEnFirestore(n);
+  });
   /* Hamburger */
   const hb=document.getElementById('hamburger-btn'),mm=document.getElementById('mobile-menu');
   hb.addEventListener('click',()=>{const o=mm.classList.toggle('open');hb.textContent=o?'✕':'☰';document.body.style.overflow=o?'hidden':'';});
@@ -1298,19 +1307,32 @@ const INFO_MODALS = {
 };
 
 
+let _metasFirestore = [];
+
 function renderMetas() {
-  const grid = document.getElementById('metas-grid');
+  const grid  = document.getElementById('metas-grid');
   const empty = document.getElementById('metas-empty');
   if (!grid) return;
   grid.innerHTML = '';
-  if (!METAS_CUMPLIDAS.length) {
+
+  // Combinar hardcoded + Firestore
+  const todas = [...METAS_CUMPLIDAS, ..._metasFirestore];
+
+  if (!todas.length) {
     empty.style.display = 'flex';
     return;
   }
   empty.style.display = 'none';
-  METAS_CUMPLIDAS.forEach(m => {
+
+  const esAdmin = _currentUser && _adminUids.includes(_currentUser.uid);
+
+  todas.forEach(m => {
+    const btnDel = (esAdmin && m.id)
+      ? `<button class="meta-card-del" onclick="event.stopPropagation();eliminarMetaCumplida('${m.id}')" title="Eliminar">✕</button>`
+      : '';
     grid.innerHTML += `
       <div class="meta-card">
+        ${btnDel}
         <div class="meta-card-emoji">${m.emoji || '🏆'}</div>
         <div class="meta-card-nombre">${m.nombre}</div>
         <div class="meta-card-desc">${m.desc}</div>

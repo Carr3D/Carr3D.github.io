@@ -436,7 +436,7 @@ footer{background:var(--text);color:var(--bg);}
 .com-avatar-opt.selected{border-color:var(--accent);background:var(--accent-s);}
 .com-list{display:flex;flex-direction:column;gap:1rem;}
 .com-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;display:flex;gap:1rem;align-items:flex-start;animation:fadeUp .4s ease;}
-.com-card-avatar{font-size:1.8rem;line-height:1;flex-shrink:0;width:44px;height:44px;background:var(--bg3);border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.com-card-avatar{font-size:1.8rem;line-height:1;flex-shrink:0;width:44px;height:44px;background:transparent;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;}
 .com-card-body{flex:1;min-width:0;}
 .com-card-header{display:flex;align-items:baseline;gap:.6rem;margin-bottom:.3rem;}
 .com-card-nombre{font-weight:700;font-size:.95rem;}
@@ -524,6 +524,9 @@ footer{background:var(--text);color:var(--bg);}
 .com-card-stars{display:flex;gap:.1rem;margin-bottom:.35rem;}
 .s-on{color:#f59e0b;font-size:.95rem;}
 .s-off{color:var(--border);font-size:.95rem;}
+
+
+/* ── Panel admin (al final del archivo original) ── */
 /* ── Panel admin productos ── */
 #admin-stock-panel{margin-bottom:.5rem;}
 .admin-prod-row{display:flex;align-items:center;gap:.75rem;padding:.55rem .75rem;background:var(--bg2);border:1px solid var(--border);border-radius:.6rem;}
