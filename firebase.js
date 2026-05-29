@@ -225,23 +225,13 @@ window.enviarComentario = async function(){
    AUTENTICACIÓN CON GOOGLE
 ══════════════════════════════ */
 
-/* Login — intenta popup, si falla (Firefox/bloqueado) usa redirect */
+/* Login — redirect universal (funciona en todos los navegadores) */
 window.loginGoogle = async function(){
   try{
-    await signInWithPopup(_auth, _provider);
+    await signInWithRedirect(_auth, _provider);
   }catch(e){
-    if(e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request'){
-      // Firefox u otros navegadores bloquean el popup → usar redirect
-      try{
-        await signInWithRedirect(_auth, _provider);
-      }catch(e2){
-        window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
-        console.error(e2);
-      }
-    } else {
-      window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
-      console.error(e);
-    }
+    window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
+    console.error(e);
   }
 };
 
