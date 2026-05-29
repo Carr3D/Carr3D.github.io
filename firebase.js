@@ -18,13 +18,7 @@ const _db   = getFirestore(_app);
 const _auth    = getAuth(_app);
 const _storage = getStorage(_app);
 
-// Recoger resultado del redirect al volver de Google
-getRedirectResult(_auth).catch(e=>{
-  if(e && e.code !== 'auth/no-current-user'){
-    console.error('Redirect result error:', e);
-    window.showToast && window.showToast('Error al iniciar sesión.');
-  }
-});
+
 const _provider = new GoogleAuthProvider();
 
 /* ── ESTADO USUARIO ── */
@@ -221,12 +215,13 @@ window.enviarComentario = async function(){
 
 /* Login */
 window.loginGoogle = async function(){
-  // Usar redirect (más fiable en todos los navegadores)
   try{
-    await signInWithRedirect(_auth, _provider);
+    await signInWithPopup(_auth, _provider);
   }catch(e){
-    window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
-    console.error(e);
+    if(e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request'){
+      window.showToast('Error al iniciar sesión. Inténtalo de nuevo.');
+      console.error(e);
+    }
   }
 };
 
