@@ -8,7 +8,6 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 <link rel="icon" href="favicon.png">
-<script src="script.js"></script>
 </head>
 <body>
 
@@ -316,12 +315,12 @@
             </select>
           </div>
           <div>
-            <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Imagen</label>
-            <div id="af-img-preview" style="display:none;margin-bottom:.5rem;border-radius:.5rem;overflow:hidden;max-height:140px;text-align:center;background:var(--bg3);">
+            <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">URL de imagen (opcional)</label>
+            <input id="af-img-file-url" class="form-input" type="url" placeholder="https://i.imgur.com/..." oninput="previsualizarImagen(this)">
+            <div id="af-img-preview" style="display:none;margin-top:.5rem;border-radius:.5rem;overflow:hidden;max-height:140px;text-align:center;background:var(--bg3);">
               <img id="af-img-tag" src="" style="max-height:140px;object-fit:contain;">
             </div>
-            <input id="af-img-file" type="file" accept="image/*" onchange="previsualizarImagen(this)" style="font-size:.82rem;">
-            <p style="font-size:.75rem;color:var(--text3);margin:.3rem 0 0;">Sube una imagen o déjalo vacío para usar el placeholder SVG.</p>
+            <p style="font-size:.75rem;color:var(--text3);margin:.3rem 0 0;">Pega una URL de imagen (Imgur, Google Drive, etc.) o déjalo vacío.</p>
           </div>
           <!-- Barra de progreso subida -->
           <div id="af-upload-wrap" style="display:none;">
@@ -768,12 +767,7 @@
     <!-- Contenido dinámico -->
     <div id="info-modal-body" style="padding:1.5rem;"></div>
   </div>
-</div>
 <script src="script.js"></script>
 <script type="module" src="firebase.js"></script>
-<!-- Aviso admin -->
-<div id="admin-warning" style="display:none;position:fixed;bottom:1.25rem;right:1.25rem;z-index:9999;background:#f59e0b;color:#fff;font-size:.78rem;font-weight:800;padding:.55rem 1rem;border-radius:2rem;box-shadow:0 4px 16px rgba(245,158,11,.4);pointer-events:none;letter-spacing:.02em;user-select:none;">
-  ⚠️ Estás usando cuenta de administrador
-</div>
 </body>
 </html>

@@ -1,10 +1,9 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, setDoc, deleteDoc }
+import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, doc, getDoc, setDoc, deleteDoc, getDocs }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+// Storage no usado (imágenes por URL)
 
 const _app = initializeApp({
   apiKey:            'AIzaSyCUNeg8VisxV8tysDF0hqZKIoZuezTXj8w',
@@ -16,7 +15,7 @@ const _app = initializeApp({
 });
 const _db   = getFirestore(_app);
 const _auth    = getAuth(_app);
-const _storage = getStorage(_app);
+// const _storage = getStorage(_app); // no usado
 
 
 const _provider = new GoogleAuthProvider();
@@ -88,6 +87,7 @@ function renderCom(docSnap){
     : '';
   const div = document.createElement('div');
   div.className = 'com-card' + (esAdmin ? ' com-card-admin' : '');
+  div.setAttribute('data-com-id', docSnap.id);
   div.innerHTML = `
     <div class="com-card-avatar${esAdmin ? ' com-avatar-admin' : ''}">${avatarContent}</div>
     <div class="com-card-body">
@@ -98,9 +98,217 @@ function renderCom(docSnap){
       </div>
       ${d.estrellas ? starsHTML(d.estrellas) : ''}
       <p class="com-card-texto">${escapeHTML(d.texto)}</p>
+      <button class="com-replies-toggle" onclick="toggleReplies('${docSnap.id}',this)" style="display:none;">
+        💬 <span class="replies-count-label">Responder</span>
+      </button>
+      <div class="com-replies-area" style="display:none;"></div>
     </div>`;
+  // Cargar conteo de respuestas en segundo plano
+  contarRespuestas(docSnap.id, div.querySelector('.replies-count-label'));
   return div;
 }
+
+/* ── Contar respuestas (sin suscripción) ── */
+async function contarRespuestas(comId, labelEl){
+  try{
+    const snap = await getDocs(collection(_db,'comentarios',comId,'respuestas'));
+    const n = snap.size;
+    if(labelEl){
+      labelEl.textContent = n > 0 ? `${n} respuesta${n===1?'':'s'}` : 'Responder';
+      // Mostrar el botón ahora que sabemos el conteo
+      const btn = labelEl.closest('.com-replies-toggle');
+      if(btn) btn.style.display = '';
+    }
+  }catch(e){
+    // Si falla, mostrar igual con texto "Responder"
+    if(labelEl){
+      labelEl.textContent = 'Responder';
+      const btn = labelEl.closest('.com-replies-toggle');
+      if(btn) btn.style.display = '';
+    }
+  }
+}
+
+/* ── Toggle panel de respuestas ── */
+const _repliesCache = {}; // cache por comentario
+window.toggleReplies = async function(comId, btn){
+  const card   = btn.closest('.com-card');
+  const area   = card.querySelector('.com-replies-area');
+  const label  = btn.querySelector('.replies-count-label');
+  const open   = area.style.display === 'none';
+  area.style.display = open ? 'block' : 'none';
+  if(!open) return;
+  area.innerHTML = '<p style="font-size:.8rem;color:var(--text3);padding:.5rem 0;">Cargando…</p>';
+  await cargarRespuestas(comId, area, label);
+};
+
+const REPLY_PAGE = 5;
+
+async function cargarRespuestas(comId, area, label){
+  try{
+    const snap = await getDocs(
+      query(collection(_db,'comentarios',comId,'respuestas'), orderBy('ts','asc'))
+    );
+    const todas = snap.docs;
+    const n = todas.length;
+    if(label) label.textContent = n > 0 ? `${n} respuesta${n===1?'':'s'}` : 'Responder';
+    _repliesCache[comId] = todas;
+    renderReplies(comId, area, 0);
+  }catch(e){
+    area.innerHTML='<p style="color:red;font-size:.8rem;">Error cargando respuestas.</p>';
+  }
+}
+
+function renderReplies(comId, area, desde){
+  const todas = _repliesCache[comId] || [];
+  const esYoAdmin = _currentUser && _adminUids.includes(_currentUser.uid);
+
+  const adminReplies = todas.filter(r => _adminUids.includes(r.data().uid));
+  const otherReplies = todas.filter(r => !_adminUids.includes(r.data().uid));
+  const ordenadas    = [...adminReplies, ...otherReplies];
+
+  const lote   = ordenadas.slice(desde, desde + REPLY_PAGE);
+  const quedan = ordenadas.length - desde - lote.length;
+
+  area.querySelectorAll('.com-reply, .com-replies-more').forEach(el=>el.remove());
+
+  const formEl = area.querySelector('.com-reply-form');
+
+  lote.forEach(r => {
+    const rd = r.data();
+    const isAdmin = _adminUids.includes(rd.uid);
+    const foto = rd.photoURL || '';
+    const inicial = (rd.nombre||'?')[0].toUpperCase();
+
+    const div = document.createElement('div');
+    div.className = 'com-reply' + (isAdmin ? ' reply-admin' : '');
+    div.setAttribute('data-reply-id', r.id);
+
+    // Avatar
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'com-reply-avatar';
+    if(foto){
+      const img = document.createElement('img');
+      img.src = foto;
+      img.onerror = () => { avatarDiv.textContent = inicial; };
+      avatarDiv.appendChild(img);
+    } else {
+      avatarDiv.textContent = inicial;
+    }
+
+    // Body
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'com-reply-body';
+
+    const header = document.createElement('div');
+    header.className = 'com-reply-header';
+    header.innerHTML = '<span class="com-reply-nombre">' + escapeHTML(rd.nombre||'?') + '</span>'
+      + (isAdmin ? '<span class="com-reply-admin-badge">Admin</span>' : '')
+      + '<span class="com-reply-fecha">' + timeAgo(rd.ts) + '</span>';
+
+    const texto = document.createElement('p');
+    texto.className = 'com-reply-texto';
+    texto.textContent = rd.texto || '';
+
+    bodyDiv.appendChild(header);
+    bodyDiv.appendChild(texto);
+    div.appendChild(avatarDiv);
+    div.appendChild(bodyDiv);
+
+    // Botón eliminar (solo admin)
+    if(esYoAdmin){
+      const delBtn = document.createElement('button');
+      delBtn.className = 'com-reply-del';
+      delBtn.title = 'Eliminar';
+      delBtn.textContent = '🗑️';
+      delBtn.onclick = () => eliminarRespuesta(comId, r.id, delBtn);
+      div.appendChild(delBtn);
+    }
+
+    if(formEl) area.insertBefore(div, formEl);
+    else area.appendChild(div);
+  });
+
+  if(quedan > 0){
+    const more = document.createElement('button');
+    more.className = 'com-replies-more';
+    more.textContent = 'Ver ' + Math.min(quedan, REPLY_PAGE) + ' más…';
+    more.onclick = () => renderReplies(comId, area, desde + REPLY_PAGE);
+    if(formEl) area.insertBefore(more, formEl);
+    else area.appendChild(more);
+  }
+
+  if(!area.querySelector('.com-reply-form')){
+    if(_currentUser){
+      const form = document.createElement('div');
+      form.className = 'com-reply-form';
+      const ta = document.createElement('textarea');
+      ta.className = 'com-reply-input';
+      ta.placeholder = 'Escribe una respuesta…';
+      ta.maxLength = 300;
+      ta.rows = 1;
+      ta.oninput = function(){ this.style.height='auto'; this.style.height=this.scrollHeight+'px'; };
+      const sendBtn = document.createElement('button');
+      sendBtn.className = 'com-reply-send';
+      sendBtn.textContent = 'Enviar';
+      sendBtn.onclick = () => enviarRespuesta(comId, sendBtn);
+      form.appendChild(ta);
+      form.appendChild(sendBtn);
+      area.appendChild(form);
+    } else {
+      const lock = document.createElement('p');
+      lock.style.cssText = 'font-size:.8rem;color:var(--text3);margin-top:.5rem;';
+      lock.textContent = 'Inicia sesión para responder.';
+      area.appendChild(lock);
+    }
+  }
+}
+window.enviarRespuesta = async function(comId, btn){
+  if(!_currentUser){ window.showToast('Inicia sesión para responder 🔑'); return; }
+  const form  = btn.closest('.com-reply-form');
+  const input = form.querySelector('.com-reply-input');
+  const texto = input.value.trim();
+  if(!texto) return;
+  btn.disabled = true; btn.textContent = '…';
+  try{
+    await addDoc(collection(_db,'comentarios',comId,'respuestas'),{
+      texto,
+      nombre:   _currentUser.displayName||'Usuario',
+      photoURL: _currentUser.photoURL||'',
+      uid:      _currentUser.uid,
+      ts:       serverTimestamp(),
+    });
+    input.value = '';
+    input.style.height = 'auto';
+    // Recargar respuestas
+    const area  = btn.closest('.com-replies-area');
+    const card  = btn.closest('.com-card');
+    const label = card.querySelector('.replies-count-label');
+    await cargarRespuestas(comId, area, label);
+    window.showToast('Respuesta enviada 💬');
+  }catch(e){
+    window.showToast('Error al enviar.');
+    console.error(e);
+  }
+  btn.disabled = false; btn.textContent = 'Enviar';
+};
+
+window.eliminarRespuesta = async function(comId, replyId, btn){
+  if(!_currentUser || !_adminUids.includes(_currentUser.uid)) return;
+  if(!confirm('¿Eliminar esta respuesta?')) return;
+  btn.disabled = true;
+  try{
+    await deleteDoc(doc(_db,'comentarios',comId,'respuestas',replyId));
+    const area  = btn.closest('.com-replies-area');
+    const card  = btn.closest('.com-card');
+    const label = card.querySelector('.replies-count-label');
+    await cargarRespuestas(comId, area, label);
+    window.showToast('Respuesta eliminada 🗑️');
+  }catch(e){
+    window.showToast('Error al eliminar.');
+    btn.disabled = false;
+  }
+};
 
 window.eliminarComentario = async function(id, btn){
   if(!_currentUser || !_adminUids.includes(_currentUser.uid)) return;
@@ -166,10 +374,6 @@ window.enviarComentario = async function(){
     window.showToast('Inicia sesión con Google para comentar 🔑');
     return;
   }
-  // ── MOVER AQUÍ, antes de cualquier uso ──
-  const uid      = _currentUser.uid;
-  const esAdmin  = _adminUids.includes(uid);
-
   const nombre   = document.getElementById('com-nombre').value.trim();
   const texto    = document.getElementById('com-texto').value.trim();
   const avatar   = document.getElementById('com-avatar').value;
@@ -181,6 +385,9 @@ window.enviarComentario = async function(){
   if(!esAdmin && texto.length>300){window.showToast('El comentario es demasiado largo.');return;}
   if(!estrellas){window.showToast('Por favor selecciona una valoración ⭐');return;}
 
+  /* Comprobar límite de 1 comentario por día (no aplica a admins) */
+  const uid = _currentUser.uid;
+  const esAdmin = _adminUids.includes(uid);
   const userRef = doc(_db, 'usuarios', uid);
   if(!esAdmin){
     const userSnap = await getDoc(userRef);
@@ -515,6 +722,8 @@ window.abrirFormTemporada = function(seccion, id){
     document.getElementById('at-img-url').value=p.imgUrl||'';
     const atDest = document.getElementById('at-destacado');
     if(atDest) atDest.value = p.destacado||'';
+    const atUrlInput = document.getElementById('at-img-file-url');
+    if(atUrlInput) atUrlInput.value = p.imgUrl||'';
     if(p.imgUrl){
       document.getElementById('at-img-tag').src=p.imgUrl;
       document.getElementById('at-img-preview').style.display='block';
@@ -534,14 +743,11 @@ window.cerrarFormTemporada = function(){
 };
 
 window.previsualizarImagenTemp = function(input){
-  const file=input.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    document.getElementById('at-img-tag').src=e.target.result;
-    document.getElementById('at-img-preview').style.display='block';
-  };
-  reader.readAsDataURL(file);
+  const url  = input.value.trim();
+  const tag  = document.getElementById('at-img-tag');
+  const prev = document.getElementById('at-img-preview');
+  if(url){ tag.src = url; prev.style.display='block'; }
+  else   { prev.style.display='none'; }
 };
 
 window.guardarProductoTemporada = async function(){
@@ -566,31 +772,9 @@ window.guardarProductoTemporada = async function(){
   saveBtn.disabled=true; saveBtn.textContent='Guardando…';
 
   try{
-    let imgUrl='', imgStoragePath='';
-    if(docId){
-      imgUrl = document.getElementById('at-img-url').value||'';
-    }
-
-    if(fileInput.files[0]){
-      const file=fileInput.files[0];
-      const ext=file.name.split('.').pop();
-      const path=`temporada/${Date.now()}.${ext}`;
-      imgStoragePath=path;
-      const storageRef=ref(_storage,path);
-      const wrap=document.getElementById('at-upload-wrap');
-      const bar=document.getElementById('at-upload-bar');
-      const txt=document.getElementById('at-upload-txt');
-      wrap.style.display='block';
-      await new Promise((res,rej)=>{
-        const task=uploadBytesResumable(storageRef,file);
-        task.on('state_changed',
-          snap=>{ const pct=Math.round(snap.bytesTransferred/snap.totalBytes*100); bar.style.width=pct+'%'; txt.textContent='Subiendo… '+pct+'%'; },
-          rej,
-          async ()=>{ imgUrl=await getDownloadURL(task.snapshot.ref); res(); }
-        );
-      });
-      wrap.style.display='none';
-    }
+    const imgUrl = (document.getElementById('at-img-file-url')||{}).value?.trim()
+                || document.getElementById('at-img-url').value||'';
+    const imgStoragePath = '';
 
     const destacadoT = document.getElementById('at-destacado') ? document.getElementById('at-destacado').value || '' : '';
     const data={
@@ -622,9 +806,6 @@ window.guardarProductoTemporada = async function(){
 window.eliminarProductoTemporada = async function(id, storagePath){
   if(!confirm('¿Eliminar este producto de temporada?')) return;
   try{
-    if(storagePath){
-      try{ await deleteObject(ref(_storage,storagePath)); }catch(e){ console.warn('Imagen no eliminada:',e); }
-    }
     await deleteDoc(doc(_db,'productos_temporada',id));
     window.showToast('Producto eliminado 🗑️');
   }catch(e){
@@ -1050,6 +1231,8 @@ window.abrirFormAdmin = function(id){
     document.getElementById('af-desc').value      = p.descripcion||'';
     document.getElementById('af-img-url').value   = p.imgUrl||'';
     document.getElementById('af-destacado').value = p.destacado||'';
+    const afUrlInput = document.getElementById('af-img-file-url');
+    if(afUrlInput) afUrlInput.value = p.imgUrl||'';
     if(p.imgUrl){
       document.getElementById('af-img-tag').src = p.imgUrl;
       document.getElementById('af-img-preview').style.display='block';
@@ -1077,14 +1260,11 @@ window.cerrarFormAdmin = function(){
 
 /* ── Previsualizar imagen ── */
 window.previsualizarImagen = function(input){
-  const file = input.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e=>{
-    document.getElementById('af-img-tag').src = e.target.result;
-    document.getElementById('af-img-preview').style.display='block';
-  };
-  reader.readAsDataURL(file);
+  const url = input.value.trim();
+  const tag  = document.getElementById('af-img-tag');
+  const prev = document.getElementById('af-img-preview');
+  if(url){ tag.src = url; prev.style.display='block'; }
+  else   { prev.style.display='none'; }
 };
 
 /* ── Guardar producto ── */
@@ -1109,30 +1289,9 @@ window.guardarProductoAdmin = async function(){
   saveBtn.disabled=true; saveBtn.textContent='Guardando…';
 
   try{
-    let imgUrl = document.getElementById('af-img-url').value||'';
-    let imgStoragePath = '';
-
-    // Subir imagen si hay archivo nuevo
-    if(fileInput.files[0]){
-      const file = fileInput.files[0];
-      const ext  = file.name.split('.').pop();
-      const path = `productos/${Date.now()}.${ext}`;
-      imgStoragePath = path;
-      const storageRef = ref(_storage, path);
-      const wrap = document.getElementById('af-upload-wrap');
-      const bar  = document.getElementById('af-upload-bar');
-      const txt  = document.getElementById('af-upload-txt');
-      wrap.style.display='block';
-      await new Promise((res,rej)=>{
-        const task = uploadBytesResumable(storageRef, file);
-        task.on('state_changed',
-          snap=>{ const pct=Math.round(snap.bytesTransferred/snap.totalBytes*100); bar.style.width=pct+'%'; txt.textContent='Subiendo… '+pct+'%'; },
-          rej,
-          async ()=>{ imgUrl = await getDownloadURL(task.snapshot.ref); res(); }
-        );
-      });
-      wrap.style.display='none';
-    }
+    const imgUrl = (document.getElementById('af-img-file-url')||{}).value?.trim()
+                || document.getElementById('af-img-url').value||'';
+    const imgStoragePath = '';
 
     const destacado = document.getElementById('af-destacado').value || '';
     const data = {
@@ -1166,9 +1325,6 @@ window.guardarProductoAdmin = async function(){
 window.eliminarProductoAdmin = async function(id, storagePath){
   if(!confirm('¿Eliminar este producto? Esta acción no se puede deshacer.')) return;
   try{
-    if(storagePath){
-      try{ await deleteObject(ref(_storage, storagePath)); }catch(e){ console.warn('Imagen no eliminada:',e); }
-    }
     await deleteDoc(doc(_db,'productos',id));
     window.showToast('Producto eliminado 🗑️');
   }catch(e){

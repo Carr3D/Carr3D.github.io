@@ -427,7 +427,7 @@ footer{background:var(--text);color:var(--bg);}
   border-radius:2rem;padding:.3rem .9rem;font-size:.8rem;font-weight:700;margin-top:.75rem;
 }
 /* ── COMENTARIOS ── */
-#comentarios{background:var(--bg1);border-top:1px solid var(--border);}
+#comentarios{background:var(--bg1);border-top:1px solid var(--border);padding-bottom:2.5rem;}
 .com-form-wrap{margin-bottom:2.5rem;}
 .com-form{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;display:flex;flex-direction:column;gap:1rem;}
 .com-form-row{display:flex;gap:1rem;flex-wrap:wrap;}
@@ -549,6 +549,85 @@ footer{background:var(--text);color:var(--bg);}
   line-height:1;
 }
 .com-delete-btn:hover{opacity:1;background:rgba(239,68,68,.12);}
+
+/* ── Respuestas a comentarios ── */
+.com-replies-toggle{
+  display:inline-flex;align-items:center;gap:.35rem;
+  margin-top:.6rem;background:none;border:1px solid var(--border);
+  border-radius:99px;padding:.25rem .7rem;font-size:.78rem;
+  font-weight:600;color:var(--text3);cursor:pointer;
+  transition:color .15s,border-color .15s,background .15s;
+  font-family:inherit;
+}
+.com-replies-toggle:hover{color:var(--accent);border-color:var(--accent);background:var(--accent-s);}
+.com-replies-wrap{
+  margin-top:.75rem;padding-top:.75rem;
+  border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:.6rem;
+}
+.com-reply{
+  display:flex;gap:.75rem;align-items:flex-start;
+  padding:.7rem .9rem;border-radius:.75rem;
+  background:var(--bg3);border:1px solid var(--border);
+  animation:fadeUp .3s ease;
+}
+.com-reply.reply-admin{
+  background:linear-gradient(135deg,var(--bg3) 0%,color-mix(in srgb,#f59e0b 8%,var(--bg3)) 100%);
+  border-color:#f59e0b55;
+}
+.com-reply-avatar{
+  width:30px;height:30px;border-radius:50%;
+  object-fit:cover;flex-shrink:0;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:800;overflow:hidden;
+}
+.com-reply-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.com-reply-body{flex:1;min-width:0;}
+.com-reply-header{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.25rem;flex-wrap:wrap;}
+.com-reply-nombre{font-weight:700;font-size:.85rem;}
+.com-reply-fecha{font-size:.72rem;color:var(--text3);}
+.com-reply-admin-badge{
+  font-size:.62rem;font-weight:800;background:#f59e0b;
+  color:#fff;padding:.1rem .4rem;border-radius:99px;
+  text-transform:uppercase;letter-spacing:.03em;
+}
+.com-reply-texto{font-size:.85rem;color:var(--text2);line-height:1.6;word-break:break-word;}
+.com-reply-del{
+  background:none;border:none;cursor:pointer;
+  color:var(--text3);font-size:.8rem;padding:2px 4px;
+  border-radius:.3rem;transition:color .15s;flex-shrink:0;opacity:0;
+}
+.com-reply:hover .com-reply-del{opacity:1;}
+.com-reply-del:hover{color:#ef4444;}
+/* Form respuesta */
+.com-reply-form{
+  display:flex;gap:.5rem;align-items:flex-end;
+  margin-top:.6rem;padding-top:.6rem;
+  border-top:1px dashed var(--border);
+}
+.com-reply-input{
+  flex:1;background:var(--bg2);border:1px solid var(--border);
+  border-radius:.6rem;padding:.5rem .75rem;font-size:.85rem;
+  color:var(--text);font-family:inherit;resize:none;
+  min-height:36px;max-height:100px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.com-reply-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-s);}
+.com-reply-send{
+  background:var(--accent);color:#fff;border:none;
+  border-radius:.6rem;padding:.5rem .9rem;font-size:.82rem;
+  font-weight:700;cursor:pointer;font-family:inherit;
+  white-space:nowrap;transition:opacity .15s;flex-shrink:0;
+}
+.com-reply-send:hover{opacity:.85;}
+.com-replies-more{
+  background:none;border:1px dashed var(--border);
+  border-radius:.6rem;width:100%;padding:.4rem;
+  font-size:.78rem;font-weight:600;color:var(--text3);
+  cursor:pointer;font-family:inherit;transition:color .15s,border-color .15s;
+}
+.com-replies-more:hover{color:var(--accent);border-color:var(--accent);}
 
 /* ── Admin crown ── */
 .com-avatar-admin{position:relative;overflow:visible !important;}
