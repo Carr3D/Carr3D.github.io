@@ -427,7 +427,7 @@ footer{background:var(--text);color:var(--bg);}
   border-radius:2rem;padding:.3rem .9rem;font-size:.8rem;font-weight:700;margin-top:.75rem;
 }
 /* ── COMENTARIOS ── */
-#comentarios{background:var(--bg1);border-top:1px solid var(--border);padding-bottom:2.5rem;}
+#comentarios{background:var(--bg1);border-top:1px solid var(--border);}
 .com-form-wrap{margin-bottom:2.5rem;}
 .com-form{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;display:flex;flex-direction:column;gap:1rem;}
 .com-form-row{display:flex;gap:1rem;flex-wrap:wrap;}
