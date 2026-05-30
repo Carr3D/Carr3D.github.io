@@ -166,6 +166,10 @@ window.enviarComentario = async function(){
     window.showToast('Inicia sesión con Google para comentar 🔑');
     return;
   }
+  // ── MOVER AQUÍ, antes de cualquier uso ──
+  const uid      = _currentUser.uid;
+  const esAdmin  = _adminUids.includes(uid);
+
   const nombre   = document.getElementById('com-nombre').value.trim();
   const texto    = document.getElementById('com-texto').value.trim();
   const avatar   = document.getElementById('com-avatar').value;
@@ -177,9 +181,6 @@ window.enviarComentario = async function(){
   if(!esAdmin && texto.length>300){window.showToast('El comentario es demasiado largo.');return;}
   if(!estrellas){window.showToast('Por favor selecciona una valoración ⭐');return;}
 
-  /* Comprobar límite de 1 comentario por día (no aplica a admins) */
-  const uid = _currentUser.uid;
-  const esAdmin = _adminUids.includes(uid);
   const userRef = doc(_db, 'usuarios', uid);
   if(!esAdmin){
     const userSnap = await getDoc(userRef);
