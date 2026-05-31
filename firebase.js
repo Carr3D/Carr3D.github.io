@@ -44,6 +44,14 @@ async function cargarAdmins(){
 }
 cargarAdmins();
 
+async function cargarBloqueados(){
+  try{
+    const snap = await getDoc(doc(_db,'config','bloqueados'));
+    if(snap.exists()) _blockedUids = snap.data().uids || [];
+  }catch(e){ console.error('Error cargando bloqueados:',e); }
+}
+cargarBloqueados();
+
 /* ── PAGINACIÓN COMENTARIOS ── */
 const PAGE_SIZE = 5;
 let _todosLosDocs = [];
@@ -82,19 +90,24 @@ function renderCom(docSnap){
   const nombreBadge = esAdmin
     ? `<span class="com-admin-badge">Admin</span>`
     : '';
-  const btnEliminar = esYoAdmin
+  const bloqueado = d.uid && _blockedUids.includes(d.uid);
+  const btnEliminar = esYoAdmin && !esAdmin
     ? `<button class="com-delete-btn" title="Eliminar comentario" onclick="eliminarComentario('${docSnap.id}',this)">🗑️</button>`
     : '';
+  const btnBloquear = esYoAdmin && !esAdmin && d.uid
+    ? `<button class="com-block-btn" title="${bloqueado?'Desbloquear':'Bloquear'} usuario" onclick="toggleBloqueo('${d.uid}','${escapeHTML(d.nombre)}',this)">${bloqueado?'🔓':'🚫'}</button>`
+    : '';
+  const blockedBadge = bloqueado ? `<span class="com-blocked-badge">Bloqueado</span>` : '';
   const div = document.createElement('div');
-  div.className = 'com-card' + (esAdmin ? ' com-card-admin' : '');
+  div.className = 'com-card' + (esAdmin ? ' com-card-admin' : '') + (bloqueado ? ' com-card-blocked' : '');
   div.setAttribute('data-com-id', docSnap.id);
   div.innerHTML = `
     <div class="com-card-avatar${esAdmin ? ' com-avatar-admin' : ''}">${avatarContent}</div>
     <div class="com-card-body">
       <div class="com-card-header">
-        <span class="com-card-nombre">${escapeHTML(d.nombre)}${nombreBadge}</span>
+        <span class="com-card-nombre">${escapeHTML(d.nombre)}${nombreBadge}${blockedBadge}</span>
         <span class="com-card-fecha">${timeAgo(d.ts)}</span>
-        ${btnEliminar}
+        ${btnEliminar}${btnBloquear}
       </div>
       ${d.estrellas ? starsHTML(d.estrellas) : ''}
       <p class="com-card-texto">${escapeHTML(d.texto)}</p>
@@ -255,6 +268,7 @@ function renderReplies(comId, area, desde){
 }
 window.enviarRespuesta = async function(comId, btn){
   if(!_currentUser){ window.showToast('Inicia sesión para responder 🔑'); return; }
+  if(_blockedUids.includes(_currentUser.uid)){ window.showToast('Tu cuenta ha sido bloqueada para comentar. 🚫'); return; }
   const form  = btn.closest('.com-reply-form');
   const input = form.querySelector('.com-reply-input');
   const texto = input.value.trim();
@@ -297,6 +311,37 @@ window.eliminarRespuesta = async function(comId, replyId, btn){
   }catch(e){
     window.showToast('Error al eliminar.');
     btn.disabled = false;
+  }
+};
+
+window.toggleBloqueo = async function(uid, nombre, btn){
+  if(!_currentUser || !_adminUids.includes(_currentUser.uid)) return;
+  const estaBloqueado = _blockedUids.includes(uid);
+  const accion = estaBloqueado ? 'desbloquear' : 'bloquear';
+  if(!confirm(`¿${accion.charAt(0).toUpperCase()+accion.slice(1)} a ${nombre}?`)) return;
+
+  if(estaBloqueado){
+    _blockedUids = _blockedUids.filter(u=>u!==uid);
+  } else {
+    _blockedUids.push(uid);
+  }
+
+  try{
+    await setDoc(doc(_db,'config','bloqueados'), { uids: _blockedUids }, { merge: false });
+    window.showToast(estaBloqueado ? `${nombre} desbloqueado ✓` : `${nombre} bloqueado 🚫`);
+    // Refrescar lista de comentarios
+    const list = document.getElementById('com-list');
+    if(list){
+      list.innerHTML='';
+      window._mostrados=[];
+      window._todosLosDocs && mostrarSiguientes();
+    }
+  }catch(e){
+    window.showToast('Error al '+ accion +'. Inténtalo de nuevo.');
+    // Revertir
+    if(estaBloqueado) _blockedUids.push(uid);
+    else _blockedUids = _blockedUids.filter(u=>u!==uid);
+    console.error(e);
   }
 };
 
@@ -373,6 +418,10 @@ window.enviarComentario = async function(){
   const uid    = _currentUser.uid;
   const esAdmin = _adminUids.includes(uid);
 
+  if(_blockedUids.includes(uid)){
+    window.showToast('Tu cuenta ha sido bloqueada para comentar. 🚫');
+    return;
+  }
   if(!nombre){ window.showToast('No se pudo obtener tu nombre. Recarga la página.'); return; }
   if(!texto){ document.getElementById('com-texto').focus(); return; }
   if(!esAdmin && texto.length>300){ window.showToast('El comentario es demasiado largo.'); return; }
@@ -494,6 +543,8 @@ function actualizarUIAuth(user){
     if(navFavWrap) navFavWrap.style.display = 'flex';
     const adminPiggyPanel = document.getElementById('admin-piggy-panel');
     if(adminPiggyPanel) adminPiggyPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
+    const navStatsBtn = document.getElementById('nav-stats-btn');
+    if(navStatsBtn) navStatsBtn.style.display = _adminUids.includes(user.uid) ? 'flex' : 'none';
     const adminMetasPanel = document.getElementById('admin-metas-panel');
     if(adminMetasPanel) adminMetasPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
     const adminWarn = document.getElementById('admin-warning');
@@ -530,6 +581,8 @@ function actualizarUIAuth(user){
     _favs = []; actualizarUIFavs();
     const adminPiggyHide = document.getElementById('admin-piggy-panel');
     if(adminPiggyHide) adminPiggyHide.style.display = 'none';
+    const navStatsBtnHide = document.getElementById('nav-stats-btn');
+    if(navStatsBtnHide) navStatsBtnHide.style.display = 'none';
     const adminMetasHide = document.getElementById('admin-metas-panel');
     if(adminMetasHide) adminMetasHide.style.display = 'none';
     const adminWarnHide = document.getElementById('admin-warning');
@@ -634,6 +687,7 @@ window.abrirModalFirestoreTemp = function(id){
   const p = _productosTemporada.find(x=>x.id===id);
   if(!p) return;
   window._setModalFavKey && window._setModalFavKey(p.nombre||'');
+  window._registrarVistaProducto && window._registrarVistaProducto(p.nombre||'');
   const overlay = document.getElementById('modal-overlay');
   const imgEl = document.getElementById('modal-img-tag');
   const phEl  = document.getElementById('modal-img-ph');
@@ -812,6 +866,115 @@ window.eliminarProductoTemporada = async function(id, storagePath){
 };
 
 /* ══════════════════════════════
+   ESTADÍSTICAS ADMIN
+══════════════════════════════ */
+
+/* Registrar visita */
+async function registrarVisita(){
+  try{
+    const hoy = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+    const ref  = doc(_db,'stats','visitas');
+    const snap = await getDoc(ref);
+    if(snap.exists()){
+      const d = snap.data();
+      const visitasHoy = (d.dias && d.dias[hoy]) ? d.dias[hoy] + 1 : 1;
+      await setDoc(ref,{
+        total: (d.total||0) + 1,
+        dias: { ...(d.dias||{}), [hoy]: visitasHoy }
+      },{merge:true});
+    } else {
+      await setDoc(ref,{ total:1, dias:{ [hoy]:1 } });
+    }
+  }catch(e){ console.warn('Error visita:', e); }
+}
+registrarVisita();
+
+window.abrirStatsPanel = async function(){
+  const overlay = document.getElementById('stats-panel-overlay');
+  overlay.style.display = 'block';
+  setTimeout(()=> overlay.classList.add('sopen'), 10);
+  document.body.style.overflow = 'hidden';
+  await cargarStats();
+};
+
+window.cerrarStatsPanel = function(){
+  const overlay = document.getElementById('stats-panel-overlay');
+  overlay.classList.remove('sopen');
+  setTimeout(()=>{ overlay.style.display='none'; }, 350);
+  document.body.style.overflow = '';
+};
+
+async function cargarStats(){
+  try{
+    const hoy    = new Date().toISOString().slice(0,10);
+    const ayer   = new Date(Date.now()-86400000).toISOString().slice(0,10);
+    const lunes  = (() => {
+      const d = new Date(); d.setDate(d.getDate() - d.getDay() + 1);
+      return d.toISOString().slice(0,10);
+    })();
+
+    // Visitas
+    const vSnap = await getDoc(doc(_db,'stats','visitas'));
+    if(vSnap.exists()){
+      const vd = vSnap.data();
+      document.getElementById('stat-visitas-hoy').textContent   = (vd.dias&&vd.dias[hoy])||0;
+      document.getElementById('stat-visitas-total').textContent  = vd.total||0;
+    }
+
+    // Comentarios
+    const comSnap = await getDocs(collection(_db,'comentarios'));
+    const coms = comSnap.docs.map(d=>({...d.data(), id:d.id}));
+    const comHoy    = coms.filter(c=>c.ts&&c.ts.toDate().toISOString().slice(0,10)===hoy).length;
+    const comSemana = coms.filter(c=>c.ts&&c.ts.toDate().toISOString().slice(0,10)>=lunes).length;
+    document.getElementById('stat-com-hoy').textContent    = comHoy;
+    document.getElementById('stat-com-semana').textContent = comSemana;
+    document.getElementById('stat-com-total').textContent  = coms.length;
+
+    // Productos más vistos (desde stats/productos_vistos)
+    const pvSnap = await getDoc(doc(_db,'stats','productos_vistos'));
+    const pvEl = document.getElementById('stat-productos-vistos');
+    if(pvSnap.exists()){
+      const pvd = pvSnap.data();
+      const sorted = Object.entries(pvd).sort((a,b)=>b[1]-a[1]).slice(0,5);
+      pvEl.innerHTML = sorted.length
+        ? sorted.map(([name,n],i)=>`<div class="stat-rank-item"><span style="color:var(--text3);margin-right:.4rem;font-size:.75rem;">${i+1}.</span><span class="stat-rank-name">${escapeHTML(name)}</span><span class="stat-rank-val">${n} visitas</span></div>`).join('')
+        : '<p style="font-size:.82rem;color:var(--text3);">Sin datos aún.</p>';
+    } else {
+      pvEl.innerHTML = '<p style="font-size:.82rem;color:var(--text3);">Sin datos aún.</p>';
+    }
+
+    // Favoritos más guardados (contar en docs de usuarios)
+    const usSnap = await getDocs(collection(_db,'usuarios'));
+    const favCount = {};
+    usSnap.docs.forEach(d=>{
+      const favs = d.data().favs||[];
+      favs.forEach(f=>{ favCount[f.name] = (favCount[f.name]||0)+1; });
+    });
+    const favEl = document.getElementById('stat-favs-top');
+    const favSorted = Object.entries(favCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    favEl.innerHTML = favSorted.length
+      ? favSorted.map(([name,n],i)=>`<div class="stat-rank-item"><span style="color:var(--text3);margin-right:.4rem;font-size:.75rem;">${i+1}.</span><span class="stat-rank-name">${escapeHTML(name)}</span><span class="stat-rank-val">❤️ ${n}</span></div>`).join('')
+      : '<p style="font-size:.82rem;color:var(--text3);">Sin favoritos aún.</p>';
+    // Pasar conteo global al collage
+    window._rebuildCollage && window._rebuildCollage(favCount);
+
+  }catch(e){
+    console.error('Error cargando stats:', e);
+  }
+}
+
+/* Registrar vista de producto */
+window._registrarVistaProducto = async function(nombre){
+  try{
+    const ref  = doc(_db,'stats','productos_vistos');
+    const snap = await getDoc(ref);
+    const data = snap.exists() ? snap.data() : {};
+    data[nombre] = (data[nombre]||0) + 1;
+    await setDoc(ref, data);
+  }catch(e){}
+};
+
+/* ══════════════════════════════
    FAVORITOS
 ══════════════════════════════ */
 
@@ -844,6 +1007,8 @@ function actualizarUIFavs(){
   const n = _favs.length;
   if(badge){ badge.textContent = n; badge.style.display = n > 0 ? 'flex' : 'none'; }
   if(wrap)  wrap.style.display = _currentUser ? 'flex' : 'none';
+  // Reconstruir collage con conteo actualizado (solo del usuario actual, aproximación local)
+  if(typeof buildCollage === 'function') buildCollage();
   // Actualizar botones de tarjetas
   document.querySelectorAll('.fav-btn').forEach(btn => {
     const name = btn.dataset.favName;
@@ -1271,6 +1436,7 @@ window.abrirModalFirestore = function(id){
   const p = _productosFirestore.find(x=>x.id===id);
   if(!p) return;
   window._setModalFavKey && window._setModalFavKey(p.nombre||'');
+  window._registrarVistaProducto && window._registrarVistaProducto(p.nombre||'');
   // Reutilizar modal existente
   const overlay = document.getElementById('modal-overlay');
   const imgEl = document.getElementById('modal-img-tag');

@@ -519,8 +519,8 @@ function handleCardClick(e,idx){
  
 /* ── MODAL PRODUCTO ── */
 function openProduct(idx){
-  // Notificar al módulo firebase el producto abierto (para el botón ❤️)
   window._setModalFavKey && window._setModalFavKey(PRODUCTOS[idx]?.nombre||'');
+  window._registrarVistaProducto && window._registrarVistaProducto(PRODUCTOS[idx]?.nombre||'');
   const p=PRODUCTOS[idx];if(!p)return;
   const overlay=document.getElementById('modal-overlay');
   const imgEl=document.getElementById('modal-img-tag'),phEl=document.getElementById('modal-img-ph');
@@ -800,53 +800,96 @@ function buildPiggySVG(pct){
 }
  
 /* ── COLLAGE BUILDER ── */
+
+// Reconstruir collage cuando cambien los favoritos o los productos de Firestore
+window._rebuildCollage = function(favCount){
+  _collageFavCount = favCount || _collageFavCount;
+  buildCollage();
+};
+let _collageFavCount = {}; // {nombre: n_favs}
+
 function buildCollage(){
-  const track=document.getElementById('collage-track');
-  if(!track||!COLLAGE_FOTOS.length)return;
+  const track = document.getElementById('collage-track');
+  if(!track) return;
 
-  const patterns=[
-    [{span:'tall'},{span:'normal'},{span:'normal'}],
-    [{span:'normal'},{span:'normal'},{span:'normal'}],
-    [{span:'normal'},{span:'tall'},{span:'normal'}],
-    [{span:'normal'},{span:'normal'},{span:'normal'}],
-    [{span:'tall'},{span:'normal'},{span:'normal'}],
-    [{span:'normal'},{span:'normal'},{span:'normal'}],
-  ];
+  // Recopilar todos los productos con imagen
+  const allProds = [];
 
-  let cells=[];
-  let photoIdx=0;
-  const totalCols=patterns.length*Math.ceil(24/patterns.length);
-  for(let c=0;c<totalCols;c++){
-    const pat=patterns[c%patterns.length];
-    pat.forEach(cell=>{
-      cells.push({src:COLLAGE_FOTOS[photoIdx%COLLAGE_FOTOS.length],tall:cell.span==='tall'});
-      photoIdx++;
+  // Productos del script.js
+  if(typeof PRODUCTOS !== 'undefined'){
+    PRODUCTOS.forEach(p => {
+      const img = p.imgPrincipal || (p.imagenes && p.imagenes[0]) || '';
+      if(img) allProds.push({ name: p.nombre||'', img });
     });
   }
+  // Productos de Firestore (stock + temporada)
+  if(typeof _productosFirestore !== 'undefined'){
+    _productosFirestore.forEach(p => { if(p.imgUrl) allProds.push({ name: p.nombre||'', img: p.imgUrl }); });
+  }
+  if(typeof _productosTemporada !== 'undefined'){
+    _productosTemporada.forEach(p => { if(p.imgUrl) allProds.push({ name: p.nombre||'', img: p.imgUrl }); });
+  }
 
-  const allCells=[...cells,...cells];
-  track.innerHTML='';
-  allCells.forEach(({src,tall})=>{
-    const div=document.createElement('div');
-    div.className='collage-cell'+(tall?' tall':'');
-    const img=document.createElement('img');
-    img.alt='Carr3D foto';
-    img.loading='lazy';
-    // Ajusta object-position según la proporción natural de la imagen
-    img.onload=function(){
-      const ratio=this.naturalWidth/this.naturalHeight;
-      if(ratio>1.4){
-        // Apaisada dentro de celda cuadrada/vertical: centrar horizontalmente
-        this.style.objectPosition='center center';
-      } else if(ratio<0.75){
-        // Muy vertical dentro de celda: mostrar la parte superior (más interesante)
-        this.style.objectPosition='center top';
-      } else {
-        // Cuadrada o casi: centro perfecto
-        this.style.objectPosition='center center';
-      }
+  // Fallback a COLLAGE_FOTOS si no hay productos con imagen
+  const baseFotos = allProds.length
+    ? allProds.map(p => p.img)
+    : (typeof COLLAGE_FOTOS !== 'undefined' ? COLLAGE_FOTOS : []);
+
+  if(!baseFotos.length) return;
+
+  // Ordenar por favoritos
+  const sorted = [...allProds].sort((a,b) => (_collageFavCount[b.name]||0) - (_collageFavCount[a.name]||0));
+  const sortedImgs = sorted.length ? sorted.map(p=>p.img) : baseFotos;
+
+  // Resto aleatorio (los que no están en los primeros 4)
+  const top4  = sortedImgs.slice(0,4);
+  const rest  = sortedImgs.slice(4);
+  // Mezclar el resto
+  for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
+
+  // Construir cells:
+  // Bloque especial: col1=2x2 (top fav), col2=2alto×1ancho (2º fav), col3=2alto×1ancho (3º fav), col4=2alto×1ancho (4º fav)
+  // Luego el resto en 1x1
+  const cells = [];
+
+  // Celda 2×2 — primer producto (span 2 columnas, 2 filas)
+  if(top4[0]) cells.push({ src: top4[0], wide: true, tall: true });
+
+  // Celdas 2alto×1ancho — productos 2,3,4
+  [top4[1], top4[2], top4[3]].forEach(src => {
+    if(src) cells.push({ src, wide: false, tall: true });
+  });
+
+  // Resto en 1×1
+  const restLoop = rest.length ? rest : baseFotos;
+  let ri = 0;
+  while(cells.length < 40){
+    cells.push({ src: restLoop[ri % restLoop.length], wide: false, tall: false });
+    ri++;
+  }
+
+  // Duplicar para bucle infinito
+  const allCells = [...cells, ...cells];
+
+  // Calcular grid: necesitamos saber cuántas columnas ocupa cada cell
+  // Usamos CSS grid con grid-column: span 2 para la wide
+  track.innerHTML = '';
+  // Cambiar el grid para soportar wide (2 cols)
+  track.style.gridTemplateColumns = 'repeat(auto-flow, 180px)';
+  track.style.gridAutoColumns = '180px';
+
+  allCells.forEach(({ src, wide, tall }) => {
+    const div = document.createElement('div');
+    div.className = 'collage-cell' + (tall ? ' tall' : '');
+    if(wide) div.style.gridColumn = 'span 2';
+    const img = document.createElement('img');
+    img.alt = 'Carr3D producto';
+    img.loading = 'lazy';
+    img.onload = function(){
+      const ratio = this.naturalWidth / this.naturalHeight;
+      this.style.objectPosition = ratio > 1.4 ? 'center center' : ratio < 0.75 ? 'center top' : 'center center';
     };
-    img.src=src;
+    img.src = src;
     div.appendChild(img);
     track.appendChild(div);
   });
