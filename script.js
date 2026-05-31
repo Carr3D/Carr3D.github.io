@@ -519,6 +519,8 @@ function handleCardClick(e,idx){
  
 /* ── MODAL PRODUCTO ── */
 function openProduct(idx){
+  // Notificar al módulo firebase el producto abierto (para el botón ❤️)
+  window._setModalFavKey && window._setModalFavKey(PRODUCTOS[idx]?.nombre||'');
   const p=PRODUCTOS[idx];if(!p)return;
   const overlay=document.getElementById('modal-overlay');
   const imgEl=document.getElementById('modal-img-tag'),phEl=document.getElementById('modal-img-ph');

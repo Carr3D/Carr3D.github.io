@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Carr3D – Impresión 3D 001</title>
+<title>Carr3D – Impresión 3D</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
 <link rel="icon" href="favicon.png">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -102,6 +102,19 @@
 
 <!-- PANEL CARRITO -->
 
+<!-- FAV PANEL -->
+<div id="fav-panel-overlay">
+  <div id="fav-panel">
+    <div class="cp-header">
+      <span class="cp-title">Mis favoritos ❤️</span>
+      <button class="cp-close" onclick="closeFavPanel()">✕</button>
+    </div>
+    <div class="cp-items" id="fav-items">
+      <div class="cp-empty"><div class="cp-empty-icon">❤️</div><span>No tienes favoritos aún</span></div>
+    </div>
+  </div>
+</div>
+
 <div id="cart-panel-overlay">
   <div id="cart-panel">
     <div class="cp-header"><span class="cp-title">Tu carrito 🛒</span><button class="cp-close" onclick="closeCartPanel()">✕</button></div>
@@ -131,6 +144,7 @@
       <div id="modal-colors"></div>
       <div class="modal-actions">
         <button class="btn-filled" id="modal-add-btn">+ Añadir al carrito</button>
+        <button class="modal-fav-btn" id="modal-fav-btn" onclick="toggleFavModal()" title="Guardar en favoritos">❤️</button>
         <button class="btn-soft" onclick="closeModal()">Cerrar</button>
       </div>
     </div>
@@ -158,6 +172,10 @@
     <div class="cart-wrapper">
       <button class="theme-btn" title="Carrito" onclick="openCartPanel()">🛒</button>
       <span id="cart-badge" class="cart-badge" style="display:none">0</span>
+    </div>
+    <div class="cart-wrapper" id="nav-fav-wrap" style="display:none;">
+      <button id="nav-fav-btn" title="Mis favoritos" onclick="openFavPanel()">❤️</button>
+      <span id="fav-badge" class="fav-badge" style="display:none">0</span>
     </div>
     <button class="theme-btn" id="theme-toggle" title="Cambiar tema">🌙</button>
     <button class="nav-cta" onclick="scroll2('#custom')">Pedir ahora</button>
@@ -263,7 +281,7 @@
 
     <!-- MODAL ADMIN PRODUCTO -->
     <div id="admin-prod-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
-      <div style="background:var(--bg1);border-radius:1.25rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:1.5rem;position:relative;">
+      <div style="background:var(--bg2);border-radius:1.25rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:1.5rem;position:relative;">
         <button onclick="cerrarFormAdmin()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text2);">✕</button>
         <h3 id="admin-form-title" style="margin:0 0 1.25rem;font-size:1.1rem;font-weight:800;">Añadir producto</h3>
         <input type="hidden" id="af-doc-id">
@@ -382,7 +400,7 @@
 
 <!-- MODAL ADMIN TEMPORADA -->
 <div id="admin-temp-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:var(--bg1);border-radius:1.25rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:1.5rem;position:relative;">
+  <div style="background:var(--bg2);border-radius:1.25rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:1.5rem;position:relative;">
     <button onclick="cerrarFormTemporada()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text2);">✕</button>
     <h3 id="at-form-title" style="margin:0 0 1.25rem;font-size:1.1rem;font-weight:800;">Añadir producto de temporada</h3>
     <input type="hidden" id="at-doc-id">
@@ -426,7 +444,6 @@
         <div id="at-img-preview" style="display:none;margin-bottom:.5rem;border-radius:.5rem;overflow:hidden;max-height:140px;text-align:center;background:var(--bg3);">
           <img id="at-img-tag" src="" style="max-height:140px;object-fit:contain;">
         </div>
-        <input id="at-img-file" type="file" accept="image/*" onchange="previsualizarImagenTemp(this)" style="font-size:.82rem;">
       </div>
       <div id="at-upload-wrap" style="display:none;">
         <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;">
@@ -629,7 +646,7 @@
 
 <!-- MODAL ADMIN META CUMPLIDA -->
 <div id="admin-meta-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:var(--bg1);border-radius:1.25rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;padding:1.5rem;position:relative;">
+  <div style="background:var(--bg2);border-radius:1.25rem;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;padding:1.5rem;position:relative;">
     <button onclick="cerrarFormMeta()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text2);">✕</button>
     <h3 id="am-form-title" style="margin:0 0 1.25rem;font-size:1.1rem;font-weight:800;">Añadir meta cumplida</h3>
     <input type="hidden" id="am-doc-id">

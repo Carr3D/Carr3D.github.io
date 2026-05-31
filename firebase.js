@@ -98,7 +98,7 @@ function renderCom(docSnap){
       </div>
       ${d.estrellas ? starsHTML(d.estrellas) : ''}
       <p class="com-card-texto">${escapeHTML(d.texto)}</p>
-      <button class="com-replies-toggle" onclick="toggleReplies('${docSnap.id}',this)" style="display:none;">
+      <button class="com-replies-toggle" onclick="toggleReplies('${docSnap.id}',this)">
         💬 <span class="replies-count-label">Responder</span>
       </button>
       <div class="com-replies-area" style="display:none;"></div>
@@ -113,20 +113,10 @@ async function contarRespuestas(comId, labelEl){
   try{
     const snap = await getDocs(collection(_db,'comentarios',comId,'respuestas'));
     const n = snap.size;
-    if(labelEl){
-      labelEl.textContent = n > 0 ? `${n} respuesta${n===1?'':'s'}` : 'Responder';
-      // Mostrar el botón ahora que sabemos el conteo
-      const btn = labelEl.closest('.com-replies-toggle');
-      if(btn) btn.style.display = '';
+    if(labelEl && n > 0){
+      labelEl.textContent = `${n} respuesta${n===1?'':'s'}`;
     }
-  }catch(e){
-    // Si falla, mostrar igual con texto "Responder"
-    if(labelEl){
-      labelEl.textContent = 'Responder';
-      const btn = labelEl.closest('.com-replies-toggle');
-      if(btn) btn.style.display = '';
-    }
-  }
+  }catch(e){}
 }
 
 /* ── Toggle panel de respuestas ── */
@@ -499,6 +489,8 @@ function actualizarUIAuth(user){
     if(adminPanel) adminPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
     const adminTempPanel = document.getElementById('admin-temporada-panel');
     if(adminTempPanel) adminTempPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
+    const navFavWrap = document.getElementById('nav-fav-wrap');
+    if(navFavWrap) navFavWrap.style.display = 'flex';
     const adminPiggyPanel = document.getElementById('admin-piggy-panel');
     if(adminPiggyPanel) adminPiggyPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
     const adminMetasPanel = document.getElementById('admin-metas-panel');
@@ -532,6 +524,9 @@ function actualizarUIAuth(user){
     if(adminPanelHide) adminPanelHide.style.display = 'none';
     const adminTempPanelHide = document.getElementById('admin-temporada-panel');
     if(adminTempPanelHide) adminTempPanelHide.style.display = 'none';
+    const navFavWrapHide = document.getElementById('nav-fav-wrap');
+    if(navFavWrapHide) navFavWrapHide.style.display = 'none';
+    _favs = []; actualizarUIFavs();
     const adminPiggyHide = document.getElementById('admin-piggy-panel');
     if(adminPiggyHide) adminPiggyHide.style.display = 'none';
     const adminMetasHide = document.getElementById('admin-metas-panel');
@@ -600,14 +595,16 @@ function renderTemporadaWeb(){
     div.className='product-card season-small-item';
     div.setAttribute('data-cat', p.categoria||'');
     div.setAttribute('data-precio', parseFloat((p.precio||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||0);
+    const isFavT = _favs && _favs.some(f=>f.name===p.nombre);
     div.innerHTML=`
       ${p.destacado ? badgeHTML(p.destacado) : ''}
       <div class="card-img" style="background:var(--bg3)">
-        ${p.imgUrl?`<img src="${p.imgUrl}" alt="${p.nombre||''}" style="width:100%;height:100%;object-fit:cover;">`:''}
+        ${p.imgUrl ? '<img src="'+p.imgUrl+'" alt="" style="width:100%;height:100%;object-fit:cover;">' : ''}
         <div class="card-overlay">
           <button class="view-btn" onclick="abrirModalFirestoreTemp('${p.id}')">Ver</button>
           <button class="add-btn" onclick="addToCartFirestoreTemp('${p.id}')">+ Carrito</button>
         </div>
+        <button class="fav-btn${isFavT?' active':''}" onclick="event.stopPropagation();toggleFav({name:'${p.nombre.replace(/'/g,"\'")}',price:'${(p.precio||'').replace(/'/g,"\'")}',img:'${(p.imgUrl||'').replace(/'/g,"\'")}'})" title="Favorito">${isFavT?'❤️':'🤍'}</button>
       </div>
       <div class="card-info">
         ${p.categoria?`<div class="card-categoria">${p.categoria}</div>`:''}
@@ -635,6 +632,7 @@ window.addToCartFirestoreTemp = function(id){
 window.abrirModalFirestoreTemp = function(id){
   const p = _productosTemporada.find(x=>x.id===id);
   if(!p) return;
+  window._setModalFavKey && window._setModalFavKey(p.nombre||'');
   const overlay = document.getElementById('modal-overlay');
   const imgEl = document.getElementById('modal-img-tag');
   const phEl  = document.getElementById('modal-img-ph');
@@ -704,7 +702,6 @@ window.abrirFormTemporada = function(seccion, id){
   document.getElementById('at-error').style.display='none';
   document.getElementById('at-upload-wrap').style.display='none';
   document.getElementById('at-img-preview').style.display='none';
-  document.getElementById('at-img-file').value='';
   document.getElementById('at-seccion').value=seccion;
 
   if(id){
@@ -760,7 +757,6 @@ window.guardarProductoTemporada = async function(){
   const desc      = document.getElementById('at-desc').value.trim();
   const docId     = document.getElementById('at-doc-id').value;
   const seccion   = document.getElementById('at-seccion').value;
-  const fileInput = document.getElementById('at-img-file');
   const errEl     = document.getElementById('at-error');
   const saveBtn   = document.getElementById('at-save-btn');
 
@@ -811,6 +807,124 @@ window.eliminarProductoTemporada = async function(id, storagePath){
   }catch(e){
     window.showToast('Error al eliminar.');
     console.error(e);
+  }
+};
+
+/* ══════════════════════════════
+   FAVORITOS
+══════════════════════════════ */
+
+let _favs = []; // [{name, price, img}]
+let _modalFavKey = ''; // clave del producto en el modal abierto
+
+function favKey(item){ return item.name; }
+
+async function cargarFavs(){
+  if(!_currentUser) return;
+  try{
+    const snap = await getDoc(doc(_db,'usuarios',_currentUser.uid));
+    if(snap.exists() && snap.data().favs){
+      _favs = snap.data().favs;
+      actualizarUIFavs();
+    }
+  }catch(e){ console.error('Error favs:', e); }
+}
+
+async function guardarFavs(){
+  if(!_currentUser) return;
+  try{
+    await setDoc(doc(_db,'usuarios',_currentUser.uid), { favs: _favs }, { merge: true });
+  }catch(e){ console.error('Error guardando favs:', e); }
+}
+
+function actualizarUIFavs(){
+  const badge = document.getElementById('fav-badge');
+  const wrap  = document.getElementById('nav-fav-wrap');
+  const n = _favs.length;
+  if(badge){ badge.textContent = n; badge.style.display = n > 0 ? 'flex' : 'none'; }
+  if(wrap)  wrap.style.display = _currentUser ? 'flex' : 'none';
+  // Actualizar botones de tarjetas
+  document.querySelectorAll('.fav-btn').forEach(btn => {
+    const name = btn.dataset.favName;
+    if(name) btn.textContent = _favs.some(f=>f.name===name) ? '❤️' : '🤍';
+  });
+  // Modal
+  const modalFavBtn = document.getElementById('modal-fav-btn');
+  if(modalFavBtn && _modalFavKey){
+    const isF = _favs.some(f=>f.name===_modalFavKey);
+    modalFavBtn.textContent = isF ? '❤️' : '🤍';
+    modalFavBtn.classList.toggle('active', isF);
+  }
+  renderFavPanel();
+}
+
+window.toggleFav = async function(item){
+  if(!_currentUser){ window.showToast('Inicia sesión para guardar favoritos 🔑'); return; }
+  const idx = _favs.findIndex(f=>f.name===item.name);
+  if(idx >= 0){ _favs.splice(idx,1); window.showToast('Eliminado de favoritos'); }
+  else        { _favs.push(item);    window.showToast('¡Añadido a favoritos ❤️'); }
+  actualizarUIFavs();
+  await guardarFavs();
+};
+
+window.toggleFavModal = async function(){
+  if(!_currentUser){ window.showToast('Inicia sesión para guardar favoritos 🔑'); return; }
+  const btn   = document.getElementById('modal-fav-btn');
+  const title = document.getElementById('modal-title').textContent;
+  const price = document.getElementById('modal-price').textContent;
+  const img   = document.getElementById('modal-img-tag').src || '';
+  await window.toggleFav({name: title, price, img});
+};
+
+function renderFavPanel(){
+  const container = document.getElementById('fav-items');
+  if(!container) return;
+  if(!_favs.length){
+    container.innerHTML='<div class="cp-empty"><div class="cp-empty-icon">❤️</div><span>No tienes favoritos aún</span></div>';
+    return;
+  }
+  container.innerHTML='';
+  _favs.forEach((f,i) => {
+    const div = document.createElement('div');
+    div.className = 'fav-item';
+    const thumb = f.img
+      ? `<img src="${f.img}" alt="${escapeHTML(f.name)}" onerror="this.style.display='none'">`
+      : '<span style="font-size:1.4rem;opacity:.4;">📦</span>';
+    div.innerHTML = `
+      <div class="fav-item-thumb">${thumb}</div>
+      <div class="fav-item-info">
+        <div class="fav-item-name">${escapeHTML(f.name)}</div>
+        <div class="fav-item-price">${f.price||''}</div>
+      </div>
+      <button class="fav-item-del" onclick="quitarFav(${i})" title="Quitar">✕</button>`;
+    container.appendChild(div);
+  });
+}
+
+window.quitarFav = async function(i){
+  _favs.splice(i,1);
+  actualizarUIFavs();
+  await guardarFavs();
+};
+
+window.openFavPanel = function(){
+  renderFavPanel();
+  document.getElementById('fav-panel-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+};
+window.closeFavPanel = function(){
+  document.getElementById('fav-panel-overlay').classList.remove('open');
+  document.body.style.overflow='';
+};
+
+/* Exponer _modalFavKey para que openProduct lo actualice */
+window._setModalFavKey = function(name){
+  _modalFavKey = name;
+  const btn = document.getElementById('modal-fav-btn');
+  if(btn){
+    const isF = _favs.some(f=>f.name===name);
+    btn.textContent = isF ? '❤️' : '🤍';
+    btn.classList.toggle('active', isF);
   }
 };
 
@@ -1031,6 +1145,8 @@ async function sincronizarCarrito(uid){
       if(d.carrito){
         window._loadCartFromFirestore && window._loadCartFromFirestore(d.carrito);
       }
+      // Favs
+      if(d.favs){ _favs = d.favs; actualizarUIFavs(); }
       // Tema
       if(d.tema){
         const html = document.documentElement;
@@ -1095,6 +1211,7 @@ function renderProductosWeb(){
     div.setAttribute('data-source','firestore');
     div.setAttribute('data-cat', p.categoria||'');
     div.setAttribute('data-precio', parseFloat((precio).replace(/[^0-9.,]/g,'').replace(',','.'))||0);
+    const isFavFS = _favs && _favs.some(f=>f.name===p.nombre);
     div.innerHTML = `
       ${p.destacado ? badgeHTML(p.destacado) : ''}
       <div class="card-img">${imgHtml}
@@ -1102,6 +1219,7 @@ function renderProductosWeb(){
           <button class="view-btn" onclick="abrirModalFirestore('${p.id}')">Ver detalles</button>
           <button class="add-btn" onclick="addToCartFirestore('${p.id}')">+ Carrito</button>
         </div>
+        <button class="fav-btn${isFavFS?' active':''}" onclick="event.stopPropagation();toggleFav({name:'${p.nombre.replace(/'/g,"\'")}',price:'${(p.precio||'').replace(/'/g,"\'")}',img:'${(p.imgUrl||'').replace(/'/g,"\'")}'})" title="Favorito">${isFavFS?'❤️':'🤍'}</button>
       </div>
       <div class="card-info">
         ${p.categoria?`<div class="card-categoria">${p.categoria}</div>`:''}
@@ -1151,6 +1269,7 @@ window.addToCartFirestore = function(id){
 window.abrirModalFirestore = function(id){
   const p = _productosFirestore.find(x=>x.id===id);
   if(!p) return;
+  window._setModalFavKey && window._setModalFavKey(p.nombre||'');
   // Reutilizar modal existente
   const overlay = document.getElementById('modal-overlay');
   const imgEl = document.getElementById('modal-img-tag');
@@ -1215,7 +1334,6 @@ window.abrirFormAdmin = function(id){
   document.getElementById('af-error').style.display='none';
   document.getElementById('af-upload-wrap').style.display='none';
   document.getElementById('af-img-preview').style.display='none';
-  document.getElementById('af-img-file').value='';
 
   if(id){
     const p = _productosFirestore.find(x=>x.id===id);
@@ -1277,7 +1395,6 @@ window.guardarProductoAdmin = async function(){
   const tiempo    = document.getElementById('af-tiempo').value.trim();
   const desc      = document.getElementById('af-desc').value.trim();
   const docId     = document.getElementById('af-doc-id').value;
-  const fileInput = document.getElementById('af-img-file');
   const errEl     = document.getElementById('af-error');
   const saveBtn   = document.getElementById('af-save-btn');
 
