@@ -364,20 +364,21 @@ window.enviarComentario = async function(){
     window.showToast('Inicia sesión con Google para comentar 🔑');
     return;
   }
-  const nombre   = document.getElementById('com-nombre').value.trim();
+  // Tomar nombre del usuario de Google directamente (el hidden puede estar vacío)
+  const nombre   = (_currentUser.displayName||'').slice(0,30) ||
+                   document.getElementById('com-nombre').value.trim();
   const texto    = document.getElementById('com-texto').value.trim();
-  const avatar   = document.getElementById('com-avatar').value;
   const estrellas= parseInt(document.getElementById('com-estrellas').value)||0;
 
-  if(!nombre){document.getElementById('com-nombre').focus();return;}
-  if(nombre.length>30){window.showToast('El nombre es demasiado largo.');return;}
-  if(!texto){document.getElementById('com-texto').focus();return;}
-  if(!esAdmin && texto.length>300){window.showToast('El comentario es demasiado largo.');return;}
-  if(!estrellas){window.showToast('Por favor selecciona una valoración ⭐');return;}
+  const uid    = _currentUser.uid;
+  const esAdmin = _adminUids.includes(uid);
+
+  if(!nombre){ window.showToast('No se pudo obtener tu nombre. Recarga la página.'); return; }
+  if(!texto){ document.getElementById('com-texto').focus(); return; }
+  if(!esAdmin && texto.length>300){ window.showToast('El comentario es demasiado largo.'); return; }
+  if(!estrellas){ window.showToast('Por favor selecciona una valoración ⭐'); return; }
 
   /* Comprobar límite de 1 comentario por día (no aplica a admins) */
-  const uid = _currentUser.uid;
-  const esAdmin = _adminUids.includes(uid);
   const userRef = doc(_db, 'usuarios', uid);
   if(!esAdmin){
     const userSnap = await getDoc(userRef);
@@ -1462,3 +1463,6 @@ window._guardarCarritoEnFirestore = async function(items){
     console.error('Error guardando carrito:', e);
   }
 };
+
+
+</script>

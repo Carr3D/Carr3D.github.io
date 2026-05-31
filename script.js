@@ -853,6 +853,9 @@ function buildCollage(){
 }
 
 /* ── DOM READY ── */
+if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.scrollTo(0,0);
+
 document.addEventListener('DOMContentLoaded',function(){
   /* Badge tooltips */
   const btt=document.getElementById('badge-tooltip');
@@ -1454,3 +1457,6 @@ window._loadCartFromFirestore=function(items){
   updateBadge();
   renderCartPanel();
 };
+
+
+</script>
