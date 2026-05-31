@@ -1463,6 +1463,3 @@ window._guardarCarritoEnFirestore = async function(items){
     console.error('Error guardando carrito:', e);
   }
 };
-
-
-</script>

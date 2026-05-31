@@ -1457,6 +1457,3 @@ window._loadCartFromFirestore=function(items){
   updateBadge();
   renderCartPanel();
 };
-
-
-</script>
