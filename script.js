@@ -812,7 +812,7 @@ function buildCollage(){
   const track = document.getElementById('collage-track');
   if(!track) return;
 
-  // Recopilar todos los productos con imagen
+  // Recopilar productos con imagen
   const allProds = [];
   if(typeof PRODUCTOS !== 'undefined'){
     PRODUCTOS.forEach(p => {
@@ -835,36 +835,36 @@ function buildCollage(){
   const sorted = [...allProds].sort((a,b) => (_collageFavCount[b.name]||0) - (_collageFavCount[a.name]||0));
   const sortedImgs = sorted.length ? sorted.map(p=>p.img) : baseFotos;
 
-  const top4 = sortedImgs.slice(0,4);
+  const top4 = sortedImgs.slice(0, 4);
   const rest = sortedImgs.slice(4);
   for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
-  const restLoop = rest.length ? rest : baseFotos;
+  const pool = rest.length ? rest : baseFotos;
   let ri = 0;
+  const az = () => pool[ri++ % pool.length];
+  const top = (i) => top4[i] || az();
 
   /*
-   * Patrón por bloque (9 columnas, 3 filas):
+   * Patrón fijo de 9 columnas × 3 filas (se repite):
    *
    * F1: [az][rj][rj][az][az][az][vc][az][az]
    * F2: [az][rj][rj][az][am][az][vc][az][vo]
    * F3: [az][az][az][az][am][az][az][az][vo]
    *
-   * RJ = top4[0] (2×2) en cols 1-2, filas 1-2
-   * AM = top4[1] (1×2) en col 4,    filas 2-3
-   * VC = top4[2] (1×2) en col 6,    filas 1-2
-   * VO = top4[3] (1×2) en col 8,    filas 2-3
-   * AZ = resto  (1×1) en todas las demás celdas
-   *
-   * Usamos posicionamiento explícito con grid-row y grid-column.
-   * El grid NO usa auto-flow para el bloque especial; las celdas
-   * se colocan con coordenadas absolutas dentro de un wrapper.
-   * Para el scroll usamos un grid externo de columnas fijas.
+   * Coordenadas (fila, col) base-1:
+   *   rj = filas 1-2, cols 2-3  (2×2)
+   *   am = filas 2-3, col 5     (1×2)
+   *   vc = filas 1-2, col 7     (1×2)
+   *   vo = filas 2-3, col 9     (1×2)
    */
+
+  const CELL_W = 180;
+  const CELL_H = 140;
+  const GAP    = 4;
+  const COLS   = 9;
 
   function makeImg(src){
     const img = document.createElement('img');
-    img.alt = 'Carr3D';
-    img.loading = 'lazy';
-    img.src = src;
+    img.alt = 'Carr3D'; img.loading = 'lazy'; img.src = src;
     img.onload = function(){
       const r = this.naturalWidth / this.naturalHeight;
       this.style.objectPosition = r < 0.75 ? 'center top' : 'center center';
@@ -872,74 +872,60 @@ function buildCollage(){
     return img;
   }
 
-  function makeCell(src, r1, c1, rowSpan, colSpan){
+  function makeCell(src, row, col, rowSpan, colSpan){
     const div = document.createElement('div');
     div.className = 'collage-cell';
-    div.style.gridRow    = r1 + ' / span ' + rowSpan;
-    div.style.gridColumn = c1 + ' / span ' + colSpan;
+    div.style.gridRow    = row + ' / span ' + rowSpan;
+    div.style.gridColumn = col + ' / span ' + colSpan;
     div.appendChild(makeImg(src));
     return div;
   }
 
-  // Un bloque = 9 cols × 3 filas con posicionamiento explícito
-  // más N columnas extra de azules al final
-  const EXTRA_COLS = 8;
-  const BLOCK_COLS = 9 + EXTRA_COLS; // ancho total del bloque
-
   function buildBlock(){
-    // Wrapper con grid explícito de BLOCK_COLS columnas × 3 filas
     const wrap = document.createElement('div');
+    wrap.className = 'collage-block';
     wrap.style.display = 'grid';
-    wrap.style.gridTemplateRows    = 'repeat(3, 140px)';
-    wrap.style.gridTemplateColumns = 'repeat(' + BLOCK_COLS + ', 180px)';
-    wrap.style.gap = '4px';
+    wrap.style.gridTemplateRows    = 'repeat(3,' + CELL_H + 'px)';
+    wrap.style.gridTemplateColumns = 'repeat(' + COLS + ',' + CELL_W + 'px)';
+    wrap.style.gap = GAP + 'px';
     wrap.style.flexShrink = '0';
 
-    const az = () => restLoop[ri++ % restLoop.length];
-    const t  = (i) => top4[i] || az();
+    // Celdas especiales con posición explícita
+    const especiales = {
+      '1-2':1,'1-3':1,'2-2':1,'2-3':1,  // rj (2×2)
+      '2-5':1,'3-5':1,                    // am (1×2)
+      '1-7':1,'2-7':1,                    // vc (1×2)
+      '2-9':1,'3-9':1,                    // vo (1×2)
+    };
 
-    // RJ: filas 1-2, cols 1-2 (2×2)
-    wrap.appendChild(makeCell(t(0), 1, 2, 2, 2));
-    // AM: filas 2-3, col 5 (1×2)
-    wrap.appendChild(makeCell(t(1), 2, 5, 2, 1));
-    // VC: filas 1-2, col 7 (1×2)
-    wrap.appendChild(makeCell(t(2), 1, 7, 2, 1));
-    // VO: filas 2-3, col 9 (1×2)
-    wrap.appendChild(makeCell(t(3), 2, 9, 2, 1));
+    // Añadir especiales
+    wrap.appendChild(makeCell(top(0), 1, 2, 2, 2)); // rj
+    wrap.appendChild(makeCell(top(1), 2, 5, 2, 1)); // am
+    wrap.appendChild(makeCell(top(2), 1, 7, 2, 1)); // vc
+    wrap.appendChild(makeCell(top(3), 2, 9, 2, 1)); // vo
 
-    // AZ: todas las celdas restantes (3 × BLOCK_COLS - 6 celdas especiales)
-    const especiales = new Set([
-      '1-2','1-3','2-2','2-3', // RJ
-      '2-5','3-5',             // AM
-      '1-7','2-7',             // VC
-      '2-9','3-9',             // VO
-    ]);
+    // Rellenar azules
     for(let row=1; row<=3; row++){
-      for(let col=1; col<=BLOCK_COLS; col++){
-        if(!especiales.has(row+'-'+col)){
-          const div = document.createElement('div');
-          div.className = 'collage-cell';
-          div.style.gridRow    = row;
-          div.style.gridColumn = col;
-          div.appendChild(makeImg(az()));
-          wrap.appendChild(div);
+      for(let col=1; col<=COLS; col++){
+        if(!especiales[row+'-'+col]){
+          wrap.appendChild(makeCell(az(), row, col, 1, 1));
         }
       }
     }
     return wrap;
   }
 
-  // El track ahora es un flex container con los bloques dentro
   track.innerHTML = '';
-  track.style.display        = 'flex';
-  track.style.flexDirection  = 'row';
-  track.style.gap            = '4px';
-  track.style.width          = 'max-content';
+  track.style.display       = 'flex';
+  track.style.flexDirection = 'row';
+  track.style.gap           = GAP + 'px';
+  track.style.width         = 'max-content';
 
-  // 2 bloques para el scroll infinito CSS
+  // 2 copias para scroll infinito
   track.appendChild(buildBlock());
   track.appendChild(buildBlock());
 }
+
 
 /* ── DOM READY ── */
 if('scrollRestoration' in history) history.scrollRestoration = 'manual';
