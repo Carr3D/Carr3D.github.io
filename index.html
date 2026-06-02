@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Carr3D – Impresión 3D 1</title>
+<title>Carr3D –- Impresión 3D 1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <link rel="icon" href="favicon.png">
@@ -330,101 +330,82 @@
     <!-- PANEL ADMIN STOCK -->
     <div id="admin-stock-panel" style="display:none;">
       <div id="admin-stock-bar" onclick="toggleAdminPanel()" style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;background:var(--bg2);border:1.5px solid var(--border);border-radius:.75rem;cursor:pointer;margin-bottom:.5rem;user-select:none;">
-        <span style="font-size:.85rem;font-weight:700;color:var(--accent);">⚙️ Panel admin — Productos permanentes</span>
+        <span style="font-size:.85rem;font-weight:700;color:var(--accent);">⚙️ Panel admin — Conjuntos</span>
         <span id="admin-stock-arrow" style="font-size:.8rem;color:var(--text3);">▼ Expandir</span>
       </div>
       <div id="admin-stock-body" style="display:none;border:1.5px solid var(--border);border-radius:.75rem;overflow:hidden;margin-bottom:1rem;">
-        <!-- Lista de productos admin -->
         <div id="admin-prod-list" style="padding:1rem;display:flex;flex-direction:column;gap:.6rem;max-height:340px;overflow-y:auto;"></div>
-        <!-- Botón añadir -->
         <div style="padding:.75rem 1rem;border-top:1px solid var(--border);background:var(--bg3);">
-          <button onclick="abrirFormAdmin(null)" style="display:flex;align-items:center;gap:.5rem;padding:.5rem 1rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">
-            ＋ Añadir producto
+          <button onclick="abrirFormConjunto(null)" style="display:flex;align-items:center;gap:.5rem;padding:.5rem 1rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">
+            ＋ Añadir conjunto
           </button>
         </div>
       </div>
     </div>
 
-    <!-- MODAL ADMIN PRODUCTO -->
+    <!-- MODAL ADMIN CONJUNTO -->
     <div id="admin-prod-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
-      <div style="background:var(--bg2);border-radius:1.25rem;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:1.5rem;position:relative;">
-        <button onclick="cerrarFormAdmin()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text2);">✕</button>
-        <h3 id="admin-form-title" style="margin:0 0 1.25rem;font-size:1.1rem;font-weight:800;">Añadir producto</h3>
+      <div style="background:var(--bg2);border-radius:1.25rem;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;padding:1.5rem;position:relative;">
+        <button onclick="cerrarFormConjunto()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text2);">✕</button>
+        <h3 id="admin-form-title" style="margin:0 0 1.25rem;font-size:1.1rem;font-weight:800;">Añadir conjunto</h3>
         <input type="hidden" id="af-doc-id">
         <input type="hidden" id="af-img-url">
         <div style="display:flex;flex-direction:column;gap:.9rem;">
           <div>
-            <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Nombre *</label>
-            <input id="af-nombre" class="form-input" type="text" placeholder="Nombre del producto" maxlength="60">
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
-            <div>
-              <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Precio * (ej: €12.50)</label>
-              <input id="af-precio" class="form-input" type="text" placeholder="€0.00">
-            </div>
-            <div>
-              <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Categoría *</label>
-              <input id="af-categoria" class="form-input" type="text" placeholder="LLAVERO, DECO...">
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
-            <div>
-              <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Material</label>
-              <input id="af-material" class="form-input" type="text" placeholder="PLA, PETG...">
-            </div>
-            <div>
-              <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Peso</label>
-              <input id="af-peso" class="form-input" type="text" placeholder="10g">
-            </div>
-          </div>
-          <div>
-            <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Tiempo de producción</label>
-            <input id="af-tiempo" class="form-input" type="text" placeholder="1-2 días">
+            <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Nombre del conjunto *</label>
+            <input id="af-nombre" class="form-input" type="text" placeholder="Ej: Llaveros deportivos" maxlength="60">
           </div>
           <div>
             <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Descripción</label>
-            <textarea id="af-desc" class="form-textarea" style="min-height:70px;" placeholder="Descripción del producto..."></textarea>
-          </div>
-
-          <div>
-            <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Destacado (opcional)</label>
-            <select id="af-destacado" class="form-input" style="cursor:pointer;">
-              <option value="">Sin destacado</option>
-              <option value="nuevo">🆕 Nuevo</option>
-              <option value="pocas">⚠️ Últimas unidades</option>
-              <option value="sale10">🏷️ −10%</option>
-              <option value="sale20">🏷️ −20%</option>
-              <option value="sale25">🏷️ −25%</option>
-              <option value="bulk25">📦 +10 = −25%</option>
-            </select>
+            <textarea id="af-desc" class="form-textarea" style="min-height:70px;" placeholder="Descripción del conjunto..."></textarea>
           </div>
           <div>
-            <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">URL de imagen (opcional)</label>
+            <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">URL imagen de portada (opcional)</label>
             <input id="af-img-file-url" class="form-input" type="url" placeholder="https://i.imgur.com/..." oninput="previsualizarImagen(this)">
-            <div id="af-img-preview" style="display:none;margin-top:.5rem;border-radius:.5rem;overflow:hidden;max-height:140px;text-align:center;background:var(--bg3);">
-              <img id="af-img-tag" src="" style="max-height:140px;object-fit:contain;">
+            <div id="af-img-preview" style="display:none;margin-top:.5rem;border-radius:.5rem;overflow:hidden;max-height:120px;text-align:center;background:var(--bg3);">
+              <img id="af-img-tag" src="" style="max-height:120px;object-fit:contain;">
             </div>
-            <p style="font-size:.75rem;color:var(--text3);margin:.3rem 0 0;">Pega una URL de imagen (Imgur, Google Drive, etc.) o déjalo vacío.</p>
           </div>
-          <!-- Barra de progreso subida -->
-          <div id="af-upload-wrap" style="display:none;">
-            <div style="height:6px;background:var(--border);border-radius:99px;overflow:hidden;">
-              <div id="af-upload-bar" style="height:100%;width:0%;background:var(--accent);transition:width .2s;border-radius:99px;"></div>
-            </div>
-            <p id="af-upload-txt" style="font-size:.75rem;color:var(--text3);margin:.3rem 0 0;">Subiendo imagen…</p>
+          <div style="border-top:1px solid var(--border);padding-top:.9rem;">
+            <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.6rem;">Productos del conjunto</label>
+            <div id="af-productos-lista" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.6rem;"></div>
+            <button type="button" onclick="anadirProductoAlConjunto()" style="display:flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border:1.5px dashed var(--border);border-radius:.6rem;background:none;font-size:.82rem;font-weight:600;color:var(--text3);cursor:pointer;font-family:inherit;" onmouseover="this.style.color='var(--accent)';this.style.borderColor='var(--accent)'" onmouseout="this.style.color='var(--text3)';this.style.borderColor='var(--border)'">＋ Añadir producto</button>
           </div>
-          <!-- Error -->
           <p id="af-error" style="color:red;font-size:.82rem;display:none;margin:0;"></p>
-          <!-- Botones -->
-          <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem;">
-            <button onclick="cerrarFormAdmin()" style="padding:.5rem 1.1rem;border:1.5px solid var(--border);border-radius:.6rem;background:none;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text1);">Cancelar</button>
-            <button id="af-save-btn" onclick="guardarProductoAdmin()" style="padding:.5rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>
+          <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.25rem;">
+            <button onclick="cerrarFormConjunto()" style="padding:.5rem 1.1rem;border:1.5px solid var(--border);border-radius:.6rem;background:none;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text1);">Cancelar</button>
+            <button id="af-save-btn" onclick="guardarConjunto()" style="padding:.5rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="product-grid reveal" id="product-grid"></div>
+    <!-- MODAL VISTA CONJUNTO (pantalla completa) -->
+    <div id="conjunto-overlay">
+      <div id="conjunto-modal">
+        <div id="conjunto-header">
+          <button id="conjunto-back" onclick="cerrarConjunto()">← Volver</button>
+          <span id="conjunto-title-header"></span>
+        </div>
+        <div id="conjunto-body">
+          <div id="conjunto-hero">
+            <div id="conjunto-hero-img">
+              <img id="conjunto-hero-img-tag" src="" alt="" style="display:none;">
+              <span style="font-size:3rem;">📦</span>
+            </div>
+            <div id="conjunto-desc-block">
+              <h2 id="conjunto-nombre"></h2>
+              <p id="conjunto-desc"></p>
+            </div>
+          </div>
+          <h3 id="conjunto-prods-title">Productos del conjunto</h3>
+          <div id="conjunto-prods-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="product-grid" id="product-grid"></div>
+    <div class="conjunto-grid reveal" id="conjunto-grid"></div>
   </div>
 </section>
 
@@ -850,6 +831,7 @@
     <!-- Contenido dinámico -->
     <div id="info-modal-body" style="padding:1.5rem;"></div>
   </div>
+</div>
 <script src="script.js"></script>
 <script type="module" src="firebase.js"></script>
 </body>

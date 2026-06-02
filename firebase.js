@@ -1343,149 +1343,78 @@ window._guardarTemaEnFirestore = async function(tema){
 let _productosFirestore = []; // cache local
 
 /* Escuchar cambios en tiempo real en la colección productos */
+/* ══════════════════════════════
+   CONJUNTOS DE PRODUCTOS
+══════════════════════════════ */
+
 function iniciarEscuchaProductos(){
   onSnapshot(
-    query(collection(_db,'productos'), orderBy('nombre','asc')),
+    query(collection(_db,'conjuntos'), orderBy('nombre','asc')),
     snap => {
       _productosFirestore = snap.docs.map(d=>({id:d.id,...d.data()}));
-      renderProductosWeb();
+      renderConjuntosWeb();
       if(_currentUser && _adminUids.includes(_currentUser.uid)){
         renderAdminProdList();
       }
     },
-    err => console.error('Error productos:', err)
+    err => console.error('Error conjuntos:', err)
   );
 }
 iniciarEscuchaProductos();
 
-/* Renderizar productos de Firestore en el grid de la web */
-function renderProductosWeb(){
-  const grid = document.getElementById('product-grid');
+function renderConjuntosWeb(){
+  const grid = document.getElementById('conjunto-grid');
   if(!grid) return;
-  // Quitar solo las tarjetas de Firestore (tienen data-source="firestore")
-  grid.querySelectorAll('[data-source="firestore"]').forEach(el=>el.remove());
-  _productosFirestore.forEach((p,i)=>{
-    const img = p.imgUrl || '';
-    const svg = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="80" fill="none" stroke="#e8541a" stroke-width="2"/><circle cx="100" cy="100" r="50" fill="#fde8dc"/></svg>`;
-    const precio = p.precio||'€0.00';
-    const nombre = p.nombre||'Producto';
-    const imgHtml = img
-      ? `<img src="${img}" alt="${nombre}" onerror="this.style.display='none'">`
-      : `<div class="card-img-placeholder">${svg}</div>`;
+  grid.innerHTML = '';
+  _productosFirestore.forEach(c=>{
     const div = document.createElement('div');
-    div.className = 'product-card';
+    div.className = 'conjunto-card';
     div.setAttribute('data-source','firestore');
-    div.setAttribute('data-cat', p.categoria||'');
-    div.setAttribute('data-precio', parseFloat((precio).replace(/[^0-9.,]/g,'').replace(',','.'))||0);
-    const isFavFS = _favs && _favs.some(f=>f.name===p.nombre);
+    const prods = c.productos || [];
+    const imgHtml = c.imgUrl
+      ? `<img src="${c.imgUrl}" alt="${escapeHTML(c.nombre||'')}">`
+      : `<span style="font-size:3rem;">📦</span>`;
     div.innerHTML = `
-      ${p.destacado ? badgeHTML(p.destacado) : ''}
-      <div class="card-img">${imgHtml}
-        <div class="card-overlay">
-          <button class="view-btn" onclick="abrirModalFirestore('${p.id}')">Ver detalles</button>
-          <button class="add-btn" onclick="addToCartFirestore('${p.id}')">+ Carrito</button>
-        </div>
-        <button class="fav-btn${isFavFS?' active':''}" onclick="event.stopPropagation();toggleFav({name:'${p.nombre.replace(/'/g,"\'")}',price:'${(p.precio||'').replace(/'/g,"\'")}',img:'${(p.imgUrl||'').replace(/'/g,"\'")}'})" title="Favorito">${isFavFS?'❤️':'🤍'}</button>
-      </div>
-      <div class="card-info">
-        ${p.categoria?`<div class="card-categoria">${p.categoria}</div>`:''}
-        <div class="card-name">${nombre}</div>
-        <div class="card-meta">
-          <span class="card-price">${precio}</span>
-          <span class="card-mat-pill">${(p.materiales||[]).join(' · ')||'PLA'}</span>
+      <div class="conjunto-card-img">${imgHtml}</div>
+      <div class="conjunto-card-body">
+        <div class="conjunto-card-nombre">${escapeHTML(c.nombre||'')}</div>
+        <p class="conjunto-card-desc">${escapeHTML((c.descripcion||'').slice(0,80))}${(c.descripcion||'').length>80?'…':''}</p>
+        <div class="conjunto-card-meta">
+          <span class="conjunto-card-count">${prods.length} producto${prods.length===1?'':'s'}</span>
+          <button class="conjunto-card-btn" onclick="event.stopPropagation();window.abrirConjunto&&window.abrirConjunto('${c.id}')">Ver conjunto →</button>
         </div>
       </div>`;
+    div.onclick = (e) => { if(!e.target.closest('.conjunto-card-btn')) window.abrirConjunto&&window.abrirConjunto(c.id); };
     grid.appendChild(div);
   });
-  // Actualizar filtros con las nuevas categorías
-  actualizarFiltroConFirestore();
 }
 
-function actualizarFiltroConFirestore(){
-  const sel = document.getElementById('material-filter');
-  if(!sel) return;
-  const cats = new Set();
-  // Categorías del script.js
-  if(typeof PRODUCTOS !== 'undefined'){
-    PRODUCTOS.filter(p=>p.seccion==='stock').forEach(p=>{if(p.categoria)cats.add(p.categoria);});
-  }
-  // Categorías de Firestore
-  _productosFirestore.forEach(p=>{if(p.categoria)cats.add(p.categoria);});
-  const current = sel.value;
-  sel.innerHTML = '<option value="">Todas las categorías</option>';
-  [...cats].sort().forEach(c=>{
-    sel.innerHTML += `<option value="${c}"${c===current?' selected':''}>${c}</option>`;
-  });
-}
-
-window.addToCartFirestore = function(id){
-  const p = _productosFirestore.find(x=>x.id===id);
-  if(!p) return;
-  const precio = parseFloat((p.precio||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||0;
-  const ex = cartItems.find(i=>i.name===p.nombre);
-  if(ex){ex.qty++;}else{cartItems.push({name:p.nombre,price:precio,img:p.imgUrl||'',svg:'',descuentoEscalonado:null,qty:1});}
-  updateBadge();
-  const b=document.getElementById('cart-badge');
-  b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump');
-  setTimeout(()=>b.classList.remove('bump'),300);
-  window.showToast((p.nombre||'Producto')+' añadido 🎉');
-  window._guardarCarritoEnFirestore && window._guardarCarritoEnFirestore(cartItems);
-};
-
-window.abrirModalFirestore = function(id){
-  const p = _productosFirestore.find(x=>x.id===id);
-  if(!p) return;
-  window._setModalFavKey && window._setModalFavKey(p.nombre||'');
-  window._registrarVistaProducto && window._registrarVistaProducto(p.nombre||'');
-  // Reutilizar modal existente
-  const overlay = document.getElementById('modal-overlay');
-  const imgEl = document.getElementById('modal-img-tag');
-  const phEl  = document.getElementById('modal-img-ph');
-  if(p.imgUrl){
-    imgEl.src = p.imgUrl; imgEl.style.display='block'; phEl.style.display='none';
-    imgEl.onerror=()=>{imgEl.style.display='none';phEl.style.display='flex';};
-  } else {
-    imgEl.style.display='none'; phEl.style.display='flex';
-  }
-  document.getElementById('modal-kicker').textContent = (p.materiales||['PLA']).join(' · ');
-  document.getElementById('modal-title').textContent  = p.nombre||'';
-  document.getElementById('modal-price').textContent  = p.precio||'';
-  document.getElementById('modal-desc').textContent   = p.descripcion||'';
-  const specsEl = document.getElementById('modal-specs'); specsEl.innerHTML='';
-  [['Material',(p.materiales||[]).join(' · ')],['Peso',p.peso],['Tiempo de producción',p.tiempoProduccion]]
-    .forEach(s=>{if(s[1])specsEl.innerHTML+=`<div class="modal-spec"><span>${s[0]}</span><span>${s[1]}</span></div>`;});
-  document.getElementById('modal-colors').innerHTML='';
-  document.getElementById('modal-add-btn').onclick=()=>{addToCartFirestore(id);closeModal();};
-  overlay.classList.add('open'); document.body.style.overflow='hidden';
-};
-
-/* ── Lista admin ── */
 function renderAdminProdList(){
   const list = document.getElementById('admin-prod-list');
   if(!list) return;
   if(!_productosFirestore.length){
-    list.innerHTML='<p style="color:var(--text3);font-size:.85rem;text-align:center;padding:.5rem 0;">No hay productos. Añade el primero.</p>';
+    list.innerHTML='<p style="color:var(--text3);font-size:.85rem;text-align:center;padding:.5rem 0;">No hay conjuntos. Añade el primero.</p>';
     return;
   }
   list.innerHTML='';
-  _productosFirestore.forEach(p=>{
+  _productosFirestore.forEach(c=>{
     const div = document.createElement('div');
     div.className='admin-prod-row';
+    const nProds = (c.productos||[]).length;
     div.innerHTML=`
-      ${p.imgUrl?`<img src="${p.imgUrl}" alt="${p.nombre}">`:'<div style="width:38px;height:38px;background:var(--bg3);border-radius:.4rem;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📦</div>'}
+      ${c.imgUrl?`<img src="${c.imgUrl}" alt="${escapeHTML(c.nombre||'')}">`:'<div style="width:38px;height:38px;background:var(--bg3);border-radius:.4rem;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📦</div>'}
       <div class="admin-prod-row-info">
-        <div class="admin-prod-row-name">${p.nombre||'—'}</div>
-        <div class="admin-prod-row-meta">${p.precio||''} · ${p.categoria||''}</div>
+        <div class="admin-prod-row-name">${escapeHTML(c.nombre||'—')}</div>
+        <div class="admin-prod-row-meta">${nProds} producto${nProds===1?'':'s'}</div>
       </div>
       <div class="admin-prod-row-btns">
-        <button onclick="abrirFormAdmin('${p.id}')">✏️ Editar</button>
-        <button class="btn-del" onclick="eliminarProductoAdmin('${p.id}','${(p.imgStoragePath||'').replace(/'/g,"\'")}')">🗑️</button>
+        <button onclick="abrirFormConjunto('${c.id}')">✏️ Editar</button>
+        <button class="btn-del" onclick="eliminarConjunto('${c.id}')">🗑️</button>
       </div>`;
     list.appendChild(div);
   });
 }
 
-/* ── Toggle panel ── */
 window.toggleAdminPanel = function(){
   const body  = document.getElementById('admin-stock-body');
   const arrow = document.getElementById('admin-stock-arrow');
@@ -1495,108 +1424,215 @@ window.toggleAdminPanel = function(){
   if(open) renderAdminProdList();
 };
 
-/* ── Abrir formulario ── */
-window.abrirFormAdmin = function(id){
+/* ── Vista conjunto modal pantalla completa ── */
+window.abrirConjunto = function(id){
+  const c = _productosFirestore.find(x=>x.id===id);
+  if(!c) return;
+  const overlay  = document.getElementById('conjunto-overlay');
+  const heroImg  = document.getElementById('conjunto-hero-img-tag');
+  const heroIcon = heroImg ? heroImg.nextElementSibling : null;
+  if(heroImg){
+    if(c.imgUrl){ heroImg.src=c.imgUrl; heroImg.style.display='block'; if(heroIcon) heroIcon.style.display='none'; }
+    else        { heroImg.style.display='none'; if(heroIcon) heroIcon.style.display='block'; }
+  }
+  document.getElementById('conjunto-title-header').textContent = c.nombre||'';
+  document.getElementById('conjunto-nombre').textContent       = c.nombre||'';
+  document.getElementById('conjunto-desc').textContent         = c.descripcion||'';
+  const grid = document.getElementById('conjunto-prods-grid');
+  grid.innerHTML = '';
+  const prods = c.productos || [];
+  if(!prods.length){
+    grid.innerHTML = '<p style="color:var(--text3);">Este conjunto no tiene productos aún.</p>';
+  } else {
+    prods.forEach(p=>{
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      const isFav = _favs && _favs.some(f=>f.name===p.nombre);
+      const imgHtml = p.imgUrl
+        ? `<img src="${p.imgUrl}" alt="${escapeHTML(p.nombre||'')}">`
+        : `<div class="card-img-placeholder"><svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="80" fill="none" stroke="#e8541a" stroke-width="2"/><circle cx="100" cy="100" r="50" fill="#fde8dc"/></svg></div>`;
+      const pName = (p.nombre||'').replace(/'/g,"\'");
+      const pPrice = (p.precio||'').replace(/'/g,"\'");
+      const pImg = (p.imgUrl||'').replace(/'/g,"\'");
+      card.innerHTML = `
+        ${p.destacado ? badgeHTML(p.destacado) : ''}
+        <div class="card-img">${imgHtml}
+          <div class="card-overlay">
+            <button class="view-btn" onclick="abrirModalProductoConjunto('${id}','${pName}')">Ver detalles</button>
+            <button class="add-btn" onclick="addToCartConjuntoBtn(this)">+ Carrito</button>
+          </div>
+          <button class="fav-btn${isFav?' active':''}" onclick="event.stopPropagation();toggleFav({name:'${pName}',price:'${pPrice}',img:'${pImg}'})" title="Favorito">${isFav?'❤️':'🤍'}</button>
+        </div>
+        <div class="card-info">
+          ${p.categoria?`<div class="card-categoria">${escapeHTML(p.categoria)}</div>`:''}
+          <div class="card-name">${escapeHTML(p.nombre||'')}</div>
+          <div class="card-meta">
+            <span class="card-price">${escapeHTML(p.precio||'')}</span>
+            <span class="card-mat-pill">${escapeHTML((p.materiales||['PLA']).join(' · '))}</span>
+          </div>
+        </div>`;
+      // Guardar datos del producto en el botón add
+      const addBtn = card.querySelector('.add-btn');
+      addBtn._prodData = p;
+      grid.appendChild(card);
+    });
+  }
+  overlay.classList.add('open');
+  document.body.style.overflow='hidden';
+  window._registrarVistaProducto && window._registrarVistaProducto(c.nombre||'');
+};
+
+window.cerrarConjunto = function(){
+  document.getElementById('conjunto-overlay').classList.remove('open');
+  document.body.style.overflow='';
+};
+
+window.addToCartConjuntoBtn = function(btn){
+  const p = btn._prodData;
+  if(!p) return;
+  addToCartConjunto(p);
+};
+
+window.addToCartConjunto = function(p){
+  const precio = parseFloat((p.precio||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||0;
+  const ex = cartItems.find(i=>i.name===p.nombre);
+  if(ex){ex.qty++;}else{cartItems.push({name:p.nombre,price:precio,img:p.imgUrl||'',svg:'',descuentoEscalonado:null,qty:1});}
+  updateBadge();
+  window.showToast((p.nombre||'Producto')+' añadido 🎉');
+  window._guardarCarritoEnFirestore && window._guardarCarritoEnFirestore(cartItems);
+};
+
+window.abrirModalProductoConjunto = function(conjuntoId, nombreProd){
+  const c = _productosFirestore.find(x=>x.id===conjuntoId);
+  if(!c) return;
+  const p = (c.productos||[]).find(x=>x.nombre===nombreProd);
+  if(!p) return;
+  const overlay = document.getElementById('modal-overlay');
+  const imgEl = document.getElementById('modal-img-tag');
+  const phEl  = document.getElementById('modal-img-ph');
+  if(p.imgUrl){ imgEl.src=p.imgUrl; imgEl.style.display='block'; phEl.style.display='none'; imgEl.onerror=()=>{imgEl.style.display='none';phEl.style.display='flex';}; }
+  else        { imgEl.style.display='none'; phEl.style.display='flex'; }
+  document.getElementById('modal-kicker').textContent = (p.materiales||['PLA']).join(' · ');
+  document.getElementById('modal-title').textContent  = p.nombre||'';
+  document.getElementById('modal-price').textContent  = p.precio||'';
+  document.getElementById('modal-desc').textContent   = p.descripcion||'';
+  const specsEl=document.getElementById('modal-specs'); specsEl.innerHTML='';
+  [['Material',(p.materiales||[]).join(' · ')],['Peso',p.peso],['Tiempo',p.tiempoProduccion]].forEach(s=>{
+    if(s[1]) specsEl.innerHTML+=`<div class="modal-spec"><span>${s[0]}</span><span>${s[1]}</span></div>`;
+  });
+  document.getElementById('modal-colors').innerHTML='';
+  document.getElementById('modal-add-btn').onclick=()=>{ addToCartConjunto(p); closeModal(); };
+  window._setModalFavKey && window._setModalFavKey(p.nombre||'');
+  overlay.classList.add('open'); document.body.style.overflow='hidden';
+};
+
+/* ── Admin form conjunto ── */
+let _afProductos = [];
+
+window.abrirFormConjunto = function(id){
   const overlay = document.getElementById('admin-prod-overlay');
   document.getElementById('af-error').style.display='none';
-  document.getElementById('af-upload-wrap').style.display='none';
   document.getElementById('af-img-preview').style.display='none';
-
+  const urlInput = document.getElementById('af-img-file-url');
+  if(urlInput) urlInput.value='';
+  _afProductos = [];
   if(id){
-    const p = _productosFirestore.find(x=>x.id===id);
-    if(!p) return;
-    document.getElementById('admin-form-title').textContent = 'Editar producto';
-    document.getElementById('af-doc-id').value    = id;
-    document.getElementById('af-nombre').value    = p.nombre||'';
-    document.getElementById('af-precio').value    = p.precio||'';
-    document.getElementById('af-categoria').value = p.categoria||'';
-    document.getElementById('af-material').value  = (p.materiales||[]).join(', ');
-    document.getElementById('af-peso').value      = p.peso||'';
-    document.getElementById('af-tiempo').value    = p.tiempoProduccion||'';
-    document.getElementById('af-desc').value      = p.descripcion||'';
-    document.getElementById('af-img-url').value   = p.imgUrl||'';
-    document.getElementById('af-destacado').value = p.destacado||'';
-    const afUrlInput = document.getElementById('af-img-file-url');
-    if(afUrlInput) afUrlInput.value = p.imgUrl||'';
-    if(p.imgUrl){
-      document.getElementById('af-img-tag').src = p.imgUrl;
-      document.getElementById('af-img-preview').style.display='block';
-    }
+    const c = _productosFirestore.find(x=>x.id===id);
+    if(!c) return;
+    document.getElementById('admin-form-title').textContent = 'Editar conjunto';
+    document.getElementById('af-doc-id').value   = id;
+    document.getElementById('af-nombre').value   = c.nombre||'';
+    document.getElementById('af-desc').value     = c.descripcion||'';
+    document.getElementById('af-img-url').value  = c.imgUrl||'';
+    if(urlInput) urlInput.value = c.imgUrl||'';
+    if(c.imgUrl){ document.getElementById('af-img-tag').src=c.imgUrl; document.getElementById('af-img-preview').style.display='block'; }
+    _afProductos = JSON.parse(JSON.stringify(c.productos||[]));
   } else {
-    document.getElementById('admin-form-title').textContent = 'Añadir producto';
-    document.getElementById('af-doc-id').value='';
-    document.getElementById('af-nombre').value='';
-    document.getElementById('af-precio').value='';
-    document.getElementById('af-categoria').value='';
-    document.getElementById('af-material').value='';
-    document.getElementById('af-peso').value='';
-    document.getElementById('af-tiempo').value='';
-    document.getElementById('af-desc').value='';
-    document.getElementById('af-img-url').value='';
+    document.getElementById('admin-form-title').textContent = 'Añadir conjunto';
+    ['af-doc-id','af-nombre','af-desc','af-img-url'].forEach(i=>{ const el=document.getElementById(i); if(el) el.value=''; });
   }
+  renderAfProductos();
   overlay.style.display='flex';
   document.body.style.overflow='hidden';
 };
 
-window.cerrarFormAdmin = function(){
+window.cerrarFormConjunto = function(){
   document.getElementById('admin-prod-overlay').style.display='none';
   document.body.style.overflow='';
 };
 
-/* ── Previsualizar imagen ── */
-window.previsualizarImagen = function(input){
-  const url = input.value.trim();
-  const tag  = document.getElementById('af-img-tag');
-  const prev = document.getElementById('af-img-preview');
-  if(url){ tag.src = url; prev.style.display='block'; }
-  else   { prev.style.display='none'; }
+function renderAfProductos(){
+  const lista = document.getElementById('af-productos-lista');
+  if(!lista) return;
+  lista.innerHTML='';
+  _afProductos.forEach((p,i)=>{
+    const div = document.createElement('div');
+    div.style.cssText='background:var(--bg3);border:1px solid var(--border);border-radius:.6rem;padding:.75rem;display:flex;flex-direction:column;gap:.5rem;';
+    div.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:.82rem;font-weight:700;color:var(--text2);">Producto ${i+1}</span>
+        <button onclick="_afQuitarProducto(${i})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:.9rem;padding:2px 5px;">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+        <input class="form-input" style="font-size:.82rem;" placeholder="Nombre *" value="${escapeHTML(p.nombre||'')}" oninput="_afActualizar(${i},'nombre',this.value)">
+        <input class="form-input" style="font-size:.82rem;" placeholder="Precio (€12.50)" value="${escapeHTML(p.precio||'')}" oninput="_afActualizar(${i},'precio',this.value)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+        <input class="form-input" style="font-size:.82rem;" placeholder="Categoría" value="${escapeHTML(p.categoria||'')}" oninput="_afActualizar(${i},'categoria',this.value)">
+        <input class="form-input" style="font-size:.82rem;" placeholder="Material (PLA,PETG)" value="${escapeHTML((p.materiales||[]).join(', '))}" oninput="_afActualizar(${i},'materialesStr',this.value)">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+        <input class="form-input" style="font-size:.82rem;" placeholder="Peso (10g)" value="${escapeHTML(p.peso||'')}" oninput="_afActualizar(${i},'peso',this.value)">
+        <input class="form-input" style="font-size:.82rem;" placeholder="Tiempo prod." value="${escapeHTML(p.tiempoProduccion||'')}" oninput="_afActualizar(${i},'tiempoProduccion',this.value)">
+      </div>
+      <input class="form-input" style="font-size:.82rem;" placeholder="URL imagen" value="${escapeHTML(p.imgUrl||'')}" oninput="_afActualizar(${i},'imgUrl',this.value)">
+      <textarea class="form-textarea" style="font-size:.82rem;min-height:50px;" placeholder="Descripción" oninput="_afActualizar(${i},'descripcion',this.value)">${escapeHTML(p.descripcion||'')}</textarea>
+      <select class="form-input" style="font-size:.82rem;cursor:pointer;" onchange="_afActualizar(${i},'destacado',this.value)">
+        <option value="" ${!p.destacado?'selected':''}>Sin destacado</option>
+        <option value="nuevo" ${p.destacado==='nuevo'?'selected':''}>🆕 Nuevo</option>
+        <option value="pocas" ${p.destacado==='pocas'?'selected':''}>⚠️ Últimas unidades</option>
+        <option value="sale10" ${p.destacado==='sale10'?'selected':''}>🏷️ −10%</option>
+        <option value="sale20" ${p.destacado==='sale20'?'selected':''}>🏷️ −20%</option>
+        <option value="sale25" ${p.destacado==='sale25'?'selected':''}>🏷️ −25%</option>
+        <option value="bulk25" ${p.destacado==='bulk25'?'selected':''}>📦 +10 = −25%</option>
+      </select>`;
+    lista.appendChild(div);
+  });
+}
+
+window.anadirProductoAlConjunto = function(){
+  _afProductos.push({nombre:'',precio:'',categoria:'',materiales:['PLA'],peso:'',tiempoProduccion:'',descripcion:'',imgUrl:'',destacado:''});
+  renderAfProductos();
+};
+window._afQuitarProducto = function(i){ _afProductos.splice(i,1); renderAfProductos(); };
+window._afActualizar = function(i,campo,val){
+  if(campo==='materialesStr') _afProductos[i].materiales = val.split(',').map(s=>s.trim()).filter(Boolean);
+  else _afProductos[i][campo] = val;
 };
 
-/* ── Guardar producto ── */
-window.guardarProductoAdmin = async function(){
-  const nombre    = document.getElementById('af-nombre').value.trim();
-  const precio    = document.getElementById('af-precio').value.trim();
-  const categoria = document.getElementById('af-categoria').value.trim();
-  const material  = document.getElementById('af-material').value.trim();
-  const peso      = document.getElementById('af-peso').value.trim();
-  const tiempo    = document.getElementById('af-tiempo').value.trim();
-  const desc      = document.getElementById('af-desc').value.trim();
-  const docId     = document.getElementById('af-doc-id').value;
-  const errEl     = document.getElementById('af-error');
-  const saveBtn   = document.getElementById('af-save-btn');
-
-  if(!nombre||!precio||!categoria){
-    errEl.textContent='Nombre, precio y categoría son obligatorios.';
-    errEl.style.display='block'; return;
-  }
+window.guardarConjunto = async function(){
+  const nombre = document.getElementById('af-nombre').value.trim();
+  const desc   = document.getElementById('af-desc').value.trim();
+  const imgUrl = (document.getElementById('af-img-file-url')||{}).value?.trim()||document.getElementById('af-img-url').value||'';
+  const docId  = document.getElementById('af-doc-id').value;
+  const errEl  = document.getElementById('af-error');
+  const saveBtn= document.getElementById('af-save-btn');
+  if(!nombre){ errEl.textContent='El nombre es obligatorio.'; errEl.style.display='block'; return; }
+  const prodsValidos = _afProductos.filter(p=>p.nombre&&p.precio);
+  if(!prodsValidos.length){ errEl.textContent='Añade al menos un producto con nombre y precio.'; errEl.style.display='block'; return; }
   errEl.style.display='none';
   saveBtn.disabled=true; saveBtn.textContent='Guardando…';
-
   try{
-    const imgUrl = (document.getElementById('af-img-file-url')||{}).value?.trim()
-                || document.getElementById('af-img-url').value||'';
-    const imgStoragePath = '';
-
-    const destacado = document.getElementById('af-destacado').value || '';
-    const data = {
-      nombre, precio, categoria,
-      materiales: material ? material.split(',').map(s=>s.trim()).filter(Boolean) : ['PLA'],
-      peso, tiempoProduccion: tiempo, descripcion: desc,
-      imgUrl, imgStoragePath,
-      destacado,
-      seccion: 'stock',
-      updatedAt: serverTimestamp(),
-    };
-
+    const data = { nombre, descripcion:desc, imgUrl, productos:prodsValidos, updatedAt:serverTimestamp() };
     if(docId){
-      await setDoc(doc(_db,'productos',docId), data, {merge:true});
-      window.showToast('Producto actualizado ✓');
+      await setDoc(doc(_db,'conjuntos',docId), data, {merge:true});
+      window.showToast('Conjunto actualizado ✓');
     } else {
       data.createdAt = serverTimestamp();
-      await addDoc(collection(_db,'productos'), data);
-      window.showToast('Producto añadido ✓');
+      await addDoc(collection(_db,'conjuntos'), data);
+      window.showToast('Conjunto añadido ✓');
     }
-    cerrarFormAdmin();
+    cerrarFormConjunto();
   }catch(e){
     errEl.textContent='Error: '+e.message;
     errEl.style.display='block';
@@ -1605,17 +1641,14 @@ window.guardarProductoAdmin = async function(){
   saveBtn.disabled=false; saveBtn.textContent='Guardar';
 };
 
-/* ── Eliminar producto ── */
-window.eliminarProductoAdmin = async function(id, storagePath){
-  if(!confirm('¿Eliminar este producto? Esta acción no se puede deshacer.')) return;
+window.eliminarConjunto = async function(id){
+  if(!confirm('¿Eliminar este conjunto y todos sus productos?')) return;
   try{
-    await deleteDoc(doc(_db,'productos',id));
-    window.showToast('Producto eliminado 🗑️');
-  }catch(e){
-    window.showToast('Error al eliminar.');
-    console.error(e);
-  }
+    await deleteDoc(doc(_db,'conjuntos',id));
+    window.showToast('Conjunto eliminado 🗑️');
+  }catch(e){ window.showToast('Error al eliminar.'); console.error(e); }
 };
+
 
 window._guardarCarritoEnFirestore = async function(items){
   if(!_currentUser) return;
