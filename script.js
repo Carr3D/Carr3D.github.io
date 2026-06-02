@@ -875,8 +875,6 @@ function buildCollage(){
   // Usamos CSS grid con grid-column: span 2 para la wide
   track.innerHTML = '';
   // Cambiar el grid para soportar wide (2 cols)
-  track.style.gridTemplateColumns = 'repeat(auto-flow, 180px)';
-  track.style.gridAutoColumns = '180px';
 
   allCells.forEach(({ src, wide, tall }) => {
     const div = document.createElement('div');
@@ -999,28 +997,14 @@ document.addEventListener('DOMContentLoaded',function(){
   const ro=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.08});
   document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
   /* Counters */
-  function runCounters(){
+  const so=new IntersectionObserver(entries=>{
+    if(!entries[0].isIntersecting)return;so.disconnect();
     document.querySelectorAll('[data-target]').forEach(el=>{
-      if(el.dataset.animated)return;
-      el.dataset.animated='1';
-      const t=+el.dataset.target,sf=el.dataset.suf;let c=0;const st=Math.max(1,t/55);
+      const t=+el.dataset.target,sf=el.dataset.suf;let c=0;const st=t/55;
       const ti=setInterval(()=>{c=Math.min(c+st,t);el.textContent=Math.floor(c)+sf;if(c>=t)clearInterval(ti);},18);
     });
-  }
-  const statsEl=document.getElementById('stats');
-  if(statsEl){
-    const so=new IntersectionObserver(entries=>{
-      if(!entries[0].isIntersecting)return;
-      so.disconnect();
-      runCounters();
-    },{threshold:.1});
-    so.observe(statsEl);
-    /* Si ya es visible al cargar, esperamos al siguiente frame para que el layout esté listo */
-    requestAnimationFrame(()=>{
-      const r=statsEl.getBoundingClientRect();
-      if(r.top < window.innerHeight && r.bottom > 0){ runCounters(); }
-    });
-  }
+  },{threshold:.5});
+  so.observe(document.getElementById('stats'));
 /* ── Validación en tiempo real: formulario personalizado ── */
   const orderForm=document.querySelector('.order-form');
   if(orderForm){
