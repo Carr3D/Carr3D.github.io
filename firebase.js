@@ -632,6 +632,7 @@ function renderTemporadaWeb(){
     const imgBlock = p.imgUrl
       ? `<img src="${p.imgUrl}" alt="${p.nombre||''}" style="width:100%;height:100%;object-fit:cover;">`
       : `<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:3rem;">📦</div>`;
+    const isFavP = _favs && _favs.some(f=>f.name===p.nombre);
     div.innerHTML=`
       <div class="season-feat-img">${imgBlock}</div>
       <div class="season-feat-info">
@@ -639,8 +640,21 @@ function renderTemporadaWeb(){
         <h3 class="season-feat-title">${p.nombre||''}</h3>
         <p class="season-feat-desc">${p.descripcion||''}</p>
         <div class="season-feat-price">${p.precio||''}</div>
-        <button class="btn-filled" onclick="addToCartFirestoreTemp('${p.id}')">Añadir al carrito</button>
+        <div style="display:flex;gap:.75rem;align-items:center;">
+          <button class="btn-filled" onclick="addToCartFirestoreTemp('${p.id}')">Añadir al carrito</button>
+        </div>
       </div>`;
+    // Botón fav añadido con createElement para evitar problemas de comillas
+    const favBtn = document.createElement('button');
+    favBtn.className = 'modal-fav-btn fav-btn' + (isFavP ? ' active' : '');
+    favBtn.dataset.favName = p.nombre || '';
+    favBtn.title = 'Favorito';
+    favBtn.textContent = isFavP ? '❤️' : '🤍';
+    favBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFav({ name: p.nombre||'', price: p.precio||'', img: p.imgUrl||'' });
+    });
+    div.querySelector('.season-feat-info > div').appendChild(favBtn);
     sfw.appendChild(div);
   });
 
