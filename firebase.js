@@ -873,19 +873,12 @@ window.eliminarProductoTemporada = async function(id, storagePath){
 /* Registrar visita */
 async function registrarVisita(){
   try{
-    const hoy = new Date().toISOString().slice(0,10); // YYYY-MM-DD
+    const hoy = new Date().toISOString().slice(0,10);
     const ref  = doc(_db,'stats','visitas');
-    const snap = await getDoc(ref);
-    if(snap.exists()){
-      const d = snap.data();
-      const visitasHoy = (d.dias && d.dias[hoy]) ? d.dias[hoy] + 1 : 1;
-      await setDoc(ref,{
-        total: (d.total||0) + 1,
-        dias: { ...(d.dias||{}), [hoy]: visitasHoy }
-      },{merge:true});
-    } else {
-      await setDoc(ref,{ total:1, dias:{ [hoy]:1 } });
-    }
+    const campo = 'dias.' + hoy;
+    const data = { total: 1 };
+    data[campo] = 1;
+    await setDoc(ref, data, { merge: true });
   }catch(e){ console.warn('Error visita:', e); }
 }
 registrarVisita();
