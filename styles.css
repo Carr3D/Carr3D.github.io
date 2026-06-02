@@ -734,4 +734,4 @@ footer{background:var(--text);color:var(--bg);}
 @media(max-width:700px){
   #conjunto-hero{grid-template-columns:1fr;}
   #conjunto-hero-img{aspect-ratio:16/9;}
-}
+} 
