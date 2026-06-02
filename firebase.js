@@ -35,6 +35,7 @@ getRedirectResult(_auth).then(result => {
 /* ── ESTADO USUARIO ── */
 let _currentUser = null;
 let _adminUids = [];
+let _blockedUids = [];
 
 async function cargarAdmins(){
   try{
