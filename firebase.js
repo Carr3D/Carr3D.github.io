@@ -640,7 +640,7 @@ function renderTemporadaWeb(){
         <h3 class="season-feat-title">${p.nombre||''}</h3>
         <p class="season-feat-desc">${p.descripcion||''}</p>
         <div class="season-feat-price">${p.precio||''}</div>
-        <div style="display:flex;gap:.75rem;align-items:center;">
+        <div class="feat-actions" style="display:flex;gap:.75rem;align-items:center;">
           <button class="btn-filled" onclick="addToCartFirestoreTemp('${p.id}')">Añadir al carrito</button>
         </div>
       </div>`;
@@ -654,7 +654,7 @@ function renderTemporadaWeb(){
       e.stopPropagation();
       toggleFav({ name: p.nombre||'', price: p.precio||'', img: p.imgUrl||'' });
     });
-    div.querySelector('.season-feat-info > div').appendChild(favBtn);
+    div.querySelector('.feat-actions').appendChild(favBtn);
     sfw.appendChild(div);
   });
 
