@@ -715,7 +715,7 @@ footer{background:var(--text);color:var(--bg);}
 .conjunto-card-count{font-size:.78rem;color:var(--text3);font-weight:600;}
 .conjunto-card-btn{background:var(--accent);color:#fff;border:none;border-radius:99px;padding:6px 16px;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;}
 /* Modal conjunto pantalla completa */
-#conjunto-overlay{position:fixed;inset:0;background:var(--bg1);z-index:3500;display:none;flex-direction:column;}
+#conjunto-overlay{position:fixed;inset:0;background:var(--bg);z-index:3500;display:none;flex-direction:column;}
 #conjunto-overlay.open{display:flex;}
 #conjunto-modal{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
 #conjunto-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:1rem var(--px);display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:10;}
