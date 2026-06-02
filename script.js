@@ -135,90 +135,6 @@
    ================================================================ */
  
 const PRODUCTOS = [
-  /* Productos constantes */
-  {
-     nombre: 'Llavaro perro tejido',
-     imgPrincipal: 'productos/constante/llavero_perro_cosido.png',
-     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="80" fill="none" stroke="#e8541a" stroke-width="2"/><circle cx="100" cy="100" r="50" fill="#fde8dc"/></svg>`,
-     precio: '€2.00',
-     categoria: 'LLAVERO',
-     materiales: ['PLA'],
-     colores: ['#e99573','#e8541a'],
-     descripcion: 'Llavero de un perro con acabado de tejido',
-     peso: '10g',
-     tiempoProduccion: '1 día',
-     seccion: 'stock',
-     descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
-  },
-  {
-     nombre: 'Llavero gato tejido',
-     imgPrincipal: 'productos/constante/llavero_gato_cosido.png',
-     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="80" fill="none" stroke="#e8541a" stroke-width="2"/><circle cx="100" cy="100" r="50" fill="#fde8dc"/></svg>`,
-     precio: '€2.00',
-     categoria: 'LLAVERO',
-     materiales: ['PLA'],
-     colores: ['#e99573','#e8541a'],
-     descripcion: 'Llavero de un gato con acabado de tejido',
-     peso: '10g',
-     tiempoProduccion: '1 día',
-     seccion: 'stock',
-     descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
-   },
-   {
-     nombre: 'Llavero baca tejida',
-     imgPrincipal: 'productos/constante/llavero_baca_cosida.png',
-     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="80" fill="none" stroke="#e8541a" stroke-width="2"/><circle cx="100" cy="100" r="50" fill="#fde8dc"/></svg>`,
-     precio: '€2.00',
-     categoria: 'LLAVERO',
-     materiales: ['PLA'],
-     colores: ['#e99573','#e8541a'],
-     descripcion: 'Llavero de una baca con acabado de tejido',
-     peso: '10g',
-     tiempoProduccion: '1 día',
-     seccion: 'stock',
-     descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
-   },
-   {
-     nombre: 'Llavero capibara tejido',
-     imgPrincipal: 'productos/constante/llavero_capibara_cosido.png',
-     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="80" fill="none" stroke="#e8541a" stroke-width="2"/><circle cx="100" cy="100" r="50" fill="#fde8dc"/></svg>`,
-     precio: '€2.00',
-     categoria: 'LLAVERO',
-     materiales: ['PLA'],
-     colores: ['#e99573','#e8541a'],
-     descripcion: 'Llavero de un capibara con acabado de tejido',
-     peso: '10g',
-     tiempoProduccion: '1 día',
-     seccion: 'stock',
-     descuentoEscalonado: { unidades: 10, porcentaje: 0.25 },
-   },
-   {
-     nombre: 'Peine mariposa',
-     imgPrincipal: 'productos/constante/peine_mariposa.png',
-     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="80" fill="none" stroke="#e8541a" stroke-width="2"/><circle cx="100" cy="100" r="50" fill="#fde8dc"/></svg>`,
-     precio: '€2.00',
-     categoria: 'CUCHILLO',
-     materiales: ['PLA'],
-     colores: [],
-     descripcion: 'Juguete de peine parecido a los cuchillos mariposa',
-     peso: '10g',
-     tiempoProduccion: '1 día',
-     seccion: 'stock',
-   },
-   /* Producto temporada principal */
-   {
-     nombre: 'World Cup',
-     imgPrincipal: 'productos/temporada/world_cup.png',
-     svgPlaceholder: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="100,30 160,80 140,150 60,150 40,80" fill="none" stroke="#FFD700" stroke-width="2.5"/><circle cx="100" cy="100" r="30" fill="#FFD700" opacity="0.2"/></svg>`,
-     precio: '€30.00',
-     categoria: 'Decoración',
-     materiales: ['PLA'],
-     colores: ['#FFD700'],
-     descripcion: 'Edición limitada de la copa del mundo a tamaño real',
-     peso: '250g',
-     tiempoProduccion: '2-3 días',
-     seccion: 'temporada-principal',
-   },
 ];
  
 /* Procesar descuentos */
@@ -311,14 +227,8 @@ const METAS_CUMPLIDAS = [
    ================================================================ */
 
 const COLLAGE_FOTOS = [
-  /* ── Añade tus fotos aquí ── */
-  'productos/constante/llavero_perro_cosido.png',
-  'productos/constante/llavero_gato_cosido.png',
-  'productos/constante/llavero_baca_cosida.png',
-  'productos/constante/llavero_capibara_cosido.png',
-  'productos/constante/peine_mariposa.png',
-  'productos/temporada/world_cup.png',
 ];
+
  
 const BADGE_MAP = {
   nuevo:   {cls:'badge-new',  txt:'Nuevo',          tip:'¡Producto recién añadido al catálogo!'},
@@ -403,7 +313,7 @@ function seasonSmallHTML(p,idx){
 }
 function seasonFeaturedHTML(p,idx){
   const imgBlock=p.imgPrincipal?('<img src="'+p.imgPrincipal+'" alt="'+safeQ(p.nombre)+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'"><div class="season-feat-img-placeholder" style="display:none;">'+p.svgPlaceholder+'</div>'):'<div class="season-feat-img-placeholder">'+p.svgPlaceholder+'</div>';
-  return '<div class="season-featured"><div class="season-feat-img">'+imgBlock+'</div><div class="season-feat-info"><span class="season-tag">Edición limitada · '+matsLabel(p.materiales)+'</span><h3 class="season-feat-title">'+p.nombre+'</h3><p class="season-feat-desc">'+p.descripcion+'</p><div class="season-feat-price">'+p.precio+'</div><div style="display:flex;gap:.75rem;align-items:center;"><button class="btn-filled" onclick="addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">Añadir al carrito</button><button class="season-fav-btn fav-btn" data-fav-name="'+safeQ(p.nombre)+'" onclick="window.toggleFav&&toggleFav({name:\''+safeQ(p.nombre)+'\',price:\''+safeQ(p.precio)+'\',img:\''+safeQ(p.imgPrincipal||'')+'\'})">🤍</button></div></div></div>';
+  return '<div class="season-featured"><div class="season-feat-img">'+imgBlock+'</div><div class="season-feat-info"><span class="season-tag">Edición limitada · '+matsLabel(p.materiales)+'</span><h3 class="season-feat-title">'+p.nombre+'</h3><p class="season-feat-desc">'+p.descripcion+'</p><div class="season-feat-price">'+p.precio+'</div><button class="btn-filled" onclick="addToCart(\''+safeQ(p.nombre)+'\',\''+safeQ(p.precio)+'\',\''+safeQ(p.imgPrincipal||'')+'\','+idx+')">Añadir al carrito</button></div></div>';
 }
  
 /* ── FILTRO ── */
@@ -812,14 +722,17 @@ function buildCollage(){
   const track = document.getElementById('collage-track');
   if(!track) return;
 
-  // Recopilar productos con imagen
+  // Recopilar todos los productos con imagen
   const allProds = [];
+
+  // Productos del script.js
   if(typeof PRODUCTOS !== 'undefined'){
     PRODUCTOS.forEach(p => {
       const img = p.imgPrincipal || (p.imagenes && p.imagenes[0]) || '';
       if(img) allProds.push({ name: p.nombre||'', img });
     });
   }
+  // Productos de Firestore (stock + temporada)
   if(typeof _productosFirestore !== 'undefined'){
     _productosFirestore.forEach(p => { if(p.imgUrl) allProds.push({ name: p.nombre||'', img: p.imgUrl }); });
   }
@@ -827,105 +740,70 @@ function buildCollage(){
     _productosTemporada.forEach(p => { if(p.imgUrl) allProds.push({ name: p.nombre||'', img: p.imgUrl }); });
   }
 
+  // Fallback a COLLAGE_FOTOS si no hay productos con imagen
   const baseFotos = allProds.length
     ? allProds.map(p => p.img)
     : (typeof COLLAGE_FOTOS !== 'undefined' ? COLLAGE_FOTOS : []);
+
   if(!baseFotos.length) return;
 
+  // Ordenar por favoritos
   const sorted = [...allProds].sort((a,b) => (_collageFavCount[b.name]||0) - (_collageFavCount[a.name]||0));
   const sortedImgs = sorted.length ? sorted.map(p=>p.img) : baseFotos;
 
-  const top4 = sortedImgs.slice(0, 4);
-  const rest = sortedImgs.slice(4);
+  // Resto aleatorio (los que no están en los primeros 4)
+  const top4  = sortedImgs.slice(0,4);
+  const rest  = sortedImgs.slice(4);
+  // Mezclar el resto
   for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
-  const pool = rest.length ? rest : baseFotos;
+
+  // Construir cells:
+  // Bloque especial: col1=2x2 (top fav), col2=2alto×1ancho (2º fav), col3=2alto×1ancho (3º fav), col4=2alto×1ancho (4º fav)
+  // Luego el resto en 1x1
+  const cells = [];
+
+  // Celda 2×2 — primer producto (span 2 columnas, 2 filas)
+  if(top4[0]) cells.push({ src: top4[0], wide: true, tall: true });
+
+  // Celdas 2alto×1ancho — productos 2,3,4
+  [top4[1], top4[2], top4[3]].forEach(src => {
+    if(src) cells.push({ src, wide: false, tall: true });
+  });
+
+  // Resto en 1×1
+  const restLoop = rest.length ? rest : baseFotos;
   let ri = 0;
-  const az = () => pool[ri++ % pool.length];
-  const top = (i) => top4[i] || az();
-
-  /*
-   * Patrón fijo de 9 columnas × 3 filas (se repite):
-   *
-   * F1: [az][rj][rj][az][az][az][vc][az][az]
-   * F2: [az][rj][rj][az][am][az][vc][az][vo]
-   * F3: [az][az][az][az][am][az][az][az][vo]
-   *
-   * Coordenadas (fila, col) base-1:
-   *   rj = filas 1-2, cols 2-3  (2×2)
-   *   am = filas 2-3, col 5     (1×2)
-   *   vc = filas 1-2, col 7     (1×2)
-   *   vo = filas 2-3, col 9     (1×2)
-   */
-
-  const CELL_W = 180;
-  const CELL_H = 140;
-  const GAP    = 4;
-  const COLS   = 9;
-
-  function makeImg(src){
-    const img = document.createElement('img');
-    img.alt = 'Carr3D'; img.loading = 'lazy'; img.src = src;
-    img.onload = function(){
-      const r = this.naturalWidth / this.naturalHeight;
-      this.style.objectPosition = r < 0.75 ? 'center top' : 'center center';
-    };
-    return img;
+  while(cells.length < 40){
+    cells.push({ src: restLoop[ri % restLoop.length], wide: false, tall: false });
+    ri++;
   }
 
-  function makeCell(src, row, col, rowSpan, colSpan){
-    const div = document.createElement('div');
-    div.className = 'collage-cell';
-    div.style.gridRow    = row + ' / span ' + rowSpan;
-    div.style.gridColumn = col + ' / span ' + colSpan;
-    div.appendChild(makeImg(src));
-    return div;
-  }
+  // Duplicar para bucle infinito
+  const allCells = [...cells, ...cells];
 
-  function buildBlock(){
-    const wrap = document.createElement('div');
-    wrap.className = 'collage-block';
-    wrap.style.display = 'grid';
-    wrap.style.gridTemplateRows    = 'repeat(3,' + CELL_H + 'px)';
-    wrap.style.gridTemplateColumns = 'repeat(' + COLS + ',' + CELL_W + 'px)';
-    wrap.style.gap = GAP + 'px';
-    wrap.style.flexShrink = '0';
-
-    // Celdas especiales con posición explícita
-    const especiales = {
-      '1-2':1,'1-3':1,'2-2':1,'2-3':1,  // rj (2×2)
-      '2-5':1,'3-5':1,                    // am (1×2)
-      '1-7':1,'2-7':1,                    // vc (1×2)
-      '2-9':1,'3-9':1,                    // vo (1×2)
-    };
-
-    // Añadir especiales
-    wrap.appendChild(makeCell(top(0), 1, 2, 2, 2)); // rj
-    wrap.appendChild(makeCell(top(1), 2, 5, 2, 1)); // am
-    wrap.appendChild(makeCell(top(2), 1, 7, 2, 1)); // vc
-    wrap.appendChild(makeCell(top(3), 2, 9, 2, 1)); // vo
-
-    // Rellenar azules
-    for(let row=1; row<=3; row++){
-      for(let col=1; col<=COLS; col++){
-        if(!especiales[row+'-'+col]){
-          wrap.appendChild(makeCell(az(), row, col, 1, 1));
-        }
-      }
-    }
-    return wrap;
-  }
-
+  // Calcular grid: necesitamos saber cuántas columnas ocupa cada cell
+  // Usamos CSS grid con grid-column: span 2 para la wide
   track.innerHTML = '';
-  track.style.display       = 'flex';
-  track.style.flexDirection = 'row';
-  track.style.gap           = GAP + 'px';
-  track.style.width         = 'max-content';
+  // Cambiar el grid para soportar wide (2 cols)
+  track.style.gridTemplateColumns = 'repeat(auto-flow, 180px)';
+  track.style.gridAutoColumns = '180px';
 
-  // 2 copias para scroll infinito
-  track.appendChild(buildBlock());
-  track.appendChild(buildBlock());
+  allCells.forEach(({ src, wide, tall }) => {
+    const div = document.createElement('div');
+    div.className = 'collage-cell' + (tall ? ' tall' : '');
+    if(wide) div.style.gridColumn = 'span 2';
+    const img = document.createElement('img');
+    img.alt = 'Carr3D producto';
+    img.loading = 'lazy';
+    img.onload = function(){
+      const ratio = this.naturalWidth / this.naturalHeight;
+      this.style.objectPosition = ratio > 1.4 ? 'center center' : ratio < 0.75 ? 'center top' : 'center center';
+    };
+    img.src = src;
+    div.appendChild(img);
+    track.appendChild(div);
+  });
 }
-
 
 /* ── DOM READY ── */
 if('scrollRestoration' in history) history.scrollRestoration = 'manual';
