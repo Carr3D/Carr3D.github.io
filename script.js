@@ -832,7 +832,6 @@ function buildCollage(){
     : (typeof COLLAGE_FOTOS !== 'undefined' ? COLLAGE_FOTOS : []);
   if(!baseFotos.length) return;
 
-  // Ordenar por favoritos
   const sorted = [...allProds].sort((a,b) => (_collageFavCount[b.name]||0) - (_collageFavCount[a.name]||0));
   const sortedImgs = sorted.length ? sorted.map(p=>p.img) : baseFotos;
 
@@ -840,36 +839,28 @@ function buildCollage(){
   const rest = sortedImgs.slice(4);
   for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
   const restLoop = rest.length ? rest : baseFotos;
+  let ri = 0;
 
-  /* ── Construcción del bloque base ──────────────────────────────
+  /*
+   * Patrón por bloque (9 columnas, 3 filas):
    *
-   * El grid CSS tiene 3 filas y auto-flow:column.
-   * Con ese flujo, las celdas se colocan columna a columna.
+   * F1: [az][rj][rj][az][az][az][vc][az][az]
+   * F2: [az][rj][rj][az][am][az][vc][az][vo]
+   * F3: [az][az][az][az][am][az][az][az][vo]
    *
-   * Bloque base (se repite x2 para el scroll infinito):
+   * RJ = top4[0] (2×2) en cols 1-2, filas 1-2
+   * AM = top4[1] (1×2) en col 4,    filas 2-3
+   * VC = top4[2] (1×2) en col 6,    filas 1-2
+   * VO = top4[3] (1×2) en col 8,    filas 2-3
+   * AZ = resto  (1×1) en todas las demás celdas
    *
-   *  Col 0-1 (span 2): [ 2×2 top1 ]   fila 0-1
-   *                    [ 1×1 azul ]    fila 2  col 0
-   *                    [ 1×1 azul ]    fila 2  col 1
-   *  Col 2:            [ 1×2 top2 ]    fila 0-1
-   *                    [ 1×1 azul ]    fila 2
-   *  Col 3:            [ 1×2 top3 ]    fila 0-1
-   *                    [ 1×1 azul ]    fila 2
-   *  Col 4:            [ 1×2 top4 ]    fila 0-1
-   *                    [ 1×1 azul ]    fila 2
-   *  Col 5..N:         [ 1×1 azul ] x3 por columna
-   *
-   * Para que grid-auto-flow:column los coloque así, el orden de
-   * inserción debe ser: span2×2 primero (ocupa cols 0-1 filas 0-1),
-   * luego los span×2 de una sola col (cols 2,3,4 filas 0-1),
-   * y los 1×1 rellenan automáticamente los huecos restantes.
-   * ──────────────────────────────────────────────────────────── */
+   * Usamos posicionamiento explícito con grid-row y grid-column.
+   * El grid NO usa auto-flow para el bloque especial; las celdas
+   * se colocan con coordenadas absolutas dentro de un wrapper.
+   * Para el scroll usamos un grid externo de columnas fijas.
+   */
 
-  function makeCell(src, rowSpan, colSpan){
-    const div = document.createElement('div');
-    div.className = 'collage-cell';
-    if(rowSpan > 1) div.style.gridRow = 'span ' + rowSpan;
-    if(colSpan > 1) div.style.gridColumn = 'span ' + colSpan;
+  function makeImg(src){
     const img = document.createElement('img');
     img.alt = 'Carr3D';
     img.loading = 'lazy';
@@ -878,31 +869,76 @@ function buildCollage(){
       const r = this.naturalWidth / this.naturalHeight;
       this.style.objectPosition = r < 0.75 ? 'center top' : 'center center';
     };
-    div.appendChild(img);
+    return img;
+  }
+
+  function makeCell(src, r1, c1, rowSpan, colSpan){
+    const div = document.createElement('div');
+    div.className = 'collage-cell';
+    div.style.gridRow    = r1 + ' / span ' + rowSpan;
+    div.style.gridColumn = c1 + ' / span ' + colSpan;
+    div.appendChild(makeImg(src));
     return div;
   }
 
-  // Cuántas celdas 1×1 de relleno queremos por bloque
-  // (5 huecos en fila-3 de cols 0-4) + (N cols extra × 3 filas)
-  const EXTRA_COLS = 10; // columnas adicionales de azules
-  let ri = 0;
-  function nextSmall(){ return makeCell(restLoop[ri++ % restLoop.length], 1, 1); }
+  // Un bloque = 9 cols × 3 filas con posicionamiento explícito
+  // más N columnas extra de azules al final
+  const EXTRA_COLS = 8;
+  const BLOCK_COLS = 9 + EXTRA_COLS; // ancho total del bloque
 
-  function appendBlock(container){
-    // 1. Celda 2×2 (top1)
-    container.appendChild(makeCell(top4[0] || restLoop[ri++ % restLoop.length], 2, 2));
-    // 2. Tres celdas 1×2 (top2, top3, top4)
-    for(let i=1;i<4;i++){
-      container.appendChild(makeCell(top4[i] || restLoop[ri++ % restLoop.length], 2, 1));
+  function buildBlock(){
+    // Wrapper con grid explícito de BLOCK_COLS columnas × 3 filas
+    const wrap = document.createElement('div');
+    wrap.style.display = 'grid';
+    wrap.style.gridTemplateRows    = 'repeat(3, 140px)';
+    wrap.style.gridTemplateColumns = 'repeat(' + BLOCK_COLS + ', 180px)';
+    wrap.style.gap = '4px';
+    wrap.style.flexShrink = '0';
+
+    const az = () => restLoop[ri++ % restLoop.length];
+    const t  = (i) => top4[i] || az();
+
+    // RJ: filas 1-2, cols 1-2 (2×2)
+    wrap.appendChild(makeCell(t(0), 1, 2, 2, 2));
+    // AM: filas 2-3, col 5 (1×2)
+    wrap.appendChild(makeCell(t(1), 2, 5, 2, 1));
+    // VC: filas 1-2, col 7 (1×2)
+    wrap.appendChild(makeCell(t(2), 1, 7, 2, 1));
+    // VO: filas 2-3, col 9 (1×2)
+    wrap.appendChild(makeCell(t(3), 2, 9, 2, 1));
+
+    // AZ: todas las celdas restantes (3 × BLOCK_COLS - 6 celdas especiales)
+    const especiales = new Set([
+      '1-2','1-3','2-2','2-3', // RJ
+      '2-5','3-5',             // AM
+      '1-7','2-7',             // VC
+      '2-9','3-9',             // VO
+    ]);
+    for(let row=1; row<=3; row++){
+      for(let col=1; col<=BLOCK_COLS; col++){
+        if(!especiales.has(row+'-'+col)){
+          const div = document.createElement('div');
+          div.className = 'collage-cell';
+          div.style.gridRow    = row;
+          div.style.gridColumn = col;
+          div.appendChild(makeImg(az()));
+          wrap.appendChild(div);
+        }
+      }
     }
-    // 3. Relleno 1×1: 5 huecos de fila-3 (cols 0-4) + EXTRA_COLS*3
-    const smallCount = 5 + EXTRA_COLS * 3;
-    for(let s=0; s<smallCount; s++) container.appendChild(nextSmall());
+    return wrap;
   }
 
+  // El track ahora es un flex container con los bloques dentro
   track.innerHTML = '';
-  appendBlock(track); // bloque original
-  appendBlock(track); // copia para scroll infinito
+  track.style.display        = 'flex';
+  track.style.flexDirection  = 'row';
+  track.style.gap            = '4px';
+  track.style.width          = 'max-content';
+
+  // 2 bloques para el scroll infinito CSS
+  track.appendChild(buildBlock());
+  track.appendChild(buildBlock());
 }
 
 /* ── DOM READY ── */
