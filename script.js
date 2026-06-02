@@ -814,15 +814,12 @@ function buildCollage(){
 
   // Recopilar todos los productos con imagen
   const allProds = [];
-
-  // Productos del script.js
   if(typeof PRODUCTOS !== 'undefined'){
     PRODUCTOS.forEach(p => {
       const img = p.imgPrincipal || (p.imagenes && p.imagenes[0]) || '';
       if(img) allProds.push({ name: p.nombre||'', img });
     });
   }
-  // Productos de Firestore (stock + temporada)
   if(typeof _productosFirestore !== 'undefined'){
     _productosFirestore.forEach(p => { if(p.imgUrl) allProds.push({ name: p.nombre||'', img: p.imgUrl }); });
   }
@@ -830,67 +827,82 @@ function buildCollage(){
     _productosTemporada.forEach(p => { if(p.imgUrl) allProds.push({ name: p.nombre||'', img: p.imgUrl }); });
   }
 
-  // Fallback a COLLAGE_FOTOS si no hay productos con imagen
   const baseFotos = allProds.length
     ? allProds.map(p => p.img)
     : (typeof COLLAGE_FOTOS !== 'undefined' ? COLLAGE_FOTOS : []);
-
   if(!baseFotos.length) return;
 
   // Ordenar por favoritos
   const sorted = [...allProds].sort((a,b) => (_collageFavCount[b.name]||0) - (_collageFavCount[a.name]||0));
   const sortedImgs = sorted.length ? sorted.map(p=>p.img) : baseFotos;
 
-  // Resto aleatorio (los que no están en los primeros 4)
-  const top4  = sortedImgs.slice(0,4);
-  const rest  = sortedImgs.slice(4);
-  // Mezclar el resto
+  const top4 = sortedImgs.slice(0,4);
+  const rest = sortedImgs.slice(4);
   for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
-
-  // Construir cells:
-  // Bloque especial: col1=2x2 (top fav), col2=2alto×1ancho (2º fav), col3=2alto×1ancho (3º fav), col4=2alto×1ancho (4º fav)
-  // Luego el resto en 1x1
-  const cells = [];
-
-  // Celda 2×2 — primer producto (span 2 columnas, 2 filas)
-  if(top4[0]) cells.push({ src: top4[0], wide: true, tall: true });
-
-  // Celdas 2alto×1ancho — productos 2,3,4
-  [top4[1], top4[2], top4[3]].forEach(src => {
-    if(src) cells.push({ src, wide: false, tall: true });
-  });
-
-  // Resto en 1×1
   const restLoop = rest.length ? rest : baseFotos;
-  let ri = 0;
-  while(cells.length < 40){
-    cells.push({ src: restLoop[ri % restLoop.length], wide: false, tall: false });
-    ri++;
+
+  /* ── Construcción del bloque base ──────────────────────────────
+   *
+   * El grid CSS tiene 3 filas y auto-flow:column.
+   * Con ese flujo, las celdas se colocan columna a columna.
+   *
+   * Bloque base (se repite x2 para el scroll infinito):
+   *
+   *  Col 0-1 (span 2): [ 2×2 top1 ]   fila 0-1
+   *                    [ 1×1 azul ]    fila 2  col 0
+   *                    [ 1×1 azul ]    fila 2  col 1
+   *  Col 2:            [ 1×2 top2 ]    fila 0-1
+   *                    [ 1×1 azul ]    fila 2
+   *  Col 3:            [ 1×2 top3 ]    fila 0-1
+   *                    [ 1×1 azul ]    fila 2
+   *  Col 4:            [ 1×2 top4 ]    fila 0-1
+   *                    [ 1×1 azul ]    fila 2
+   *  Col 5..N:         [ 1×1 azul ] x3 por columna
+   *
+   * Para que grid-auto-flow:column los coloque así, el orden de
+   * inserción debe ser: span2×2 primero (ocupa cols 0-1 filas 0-1),
+   * luego los span×2 de una sola col (cols 2,3,4 filas 0-1),
+   * y los 1×1 rellenan automáticamente los huecos restantes.
+   * ──────────────────────────────────────────────────────────── */
+
+  function makeCell(src, rowSpan, colSpan){
+    const div = document.createElement('div');
+    div.className = 'collage-cell';
+    if(rowSpan > 1) div.style.gridRow = 'span ' + rowSpan;
+    if(colSpan > 1) div.style.gridColumn = 'span ' + colSpan;
+    const img = document.createElement('img');
+    img.alt = 'Carr3D';
+    img.loading = 'lazy';
+    img.src = src;
+    img.onload = function(){
+      const r = this.naturalWidth / this.naturalHeight;
+      this.style.objectPosition = r < 0.75 ? 'center top' : 'center center';
+    };
+    div.appendChild(img);
+    return div;
   }
 
-  // Duplicar para bucle infinito
-  const allCells = [...cells, ...cells];
+  // Cuántas celdas 1×1 de relleno queremos por bloque
+  // (5 huecos en fila-3 de cols 0-4) + (N cols extra × 3 filas)
+  const EXTRA_COLS = 10; // columnas adicionales de azules
+  let ri = 0;
+  function nextSmall(){ return makeCell(restLoop[ri++ % restLoop.length], 1, 1); }
 
-  // Calcular grid: necesitamos saber cuántas columnas ocupa cada cell
-  // Usamos CSS grid con grid-column: span 2 para la wide
+  function appendBlock(container){
+    // 1. Celda 2×2 (top1)
+    container.appendChild(makeCell(top4[0] || restLoop[ri++ % restLoop.length], 2, 2));
+    // 2. Tres celdas 1×2 (top2, top3, top4)
+    for(let i=1;i<4;i++){
+      container.appendChild(makeCell(top4[i] || restLoop[ri++ % restLoop.length], 2, 1));
+    }
+    // 3. Relleno 1×1: 5 huecos de fila-3 (cols 0-4) + EXTRA_COLS*3
+    const smallCount = 5 + EXTRA_COLS * 3;
+    for(let s=0; s<smallCount; s++) container.appendChild(nextSmall());
+  }
+
   track.innerHTML = '';
-  // Cambiar el grid para soportar wide (2 cols)
-
-  allCells.forEach(({ src, wide, tall }) => {
-    const div = document.createElement('div');
-    div.className = 'collage-cell' + (tall ? ' tall' : '');
-    if(wide) div.style.gridColumn = 'span 2';
-    const img = document.createElement('img');
-    img.alt = 'Carr3D producto';
-    img.loading = 'lazy';
-    img.onload = function(){
-      const ratio = this.naturalWidth / this.naturalHeight;
-      this.style.objectPosition = ratio > 1.4 ? 'center center' : ratio < 0.75 ? 'center top' : 'center center';
-    };
-    img.src = src;
-    div.appendChild(img);
-    track.appendChild(div);
-  });
+  appendBlock(track); // bloque original
+  appendBlock(track); // copia para scroll infinito
 }
 
 /* ── DOM READY ── */
