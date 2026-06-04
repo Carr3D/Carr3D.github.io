@@ -92,7 +92,8 @@ function renderCom(docSnap){
     ? `<span class="com-admin-badge">Admin</span>`
     : '';
   const bloqueado = d.uid && _blockedUids.includes(d.uid);
-  const btnEliminar = esYoAdmin && !esAdmin
+  const esElAutor = _currentUser && _currentUser.uid === d.uid;
+  const btnEliminar = (esYoAdmin || esElAutor)
     ? `<button class="com-delete-btn" title="Eliminar comentario" onclick="eliminarComentario('${docSnap.id}',this)">🗑️</button>`
     : '';
   const btnBloquear = esYoAdmin && !esAdmin && d.uid
@@ -219,8 +220,9 @@ function renderReplies(comId, area, desde){
     div.appendChild(avatarDiv);
     div.appendChild(bodyDiv);
 
-    // Botón eliminar (solo admin)
-    if(esYoAdmin){
+    // Botón eliminar (admin o autor propio)
+    const esElAutorReply = _currentUser && _currentUser.uid === rd.uid;
+    if(esYoAdmin || esElAutorReply){
       const delBtn = document.createElement('button');
       delBtn.className = 'com-reply-del';
       delBtn.title = 'Eliminar';
@@ -717,9 +719,10 @@ window.abrirModalFirestoreTemp = function(id){
   document.getElementById('modal-price').textContent=p.precio||'';
   document.getElementById('modal-desc').textContent=p.descripcion||'';
   const specsEl=document.getElementById('modal-specs'); specsEl.innerHTML='';
-  [['Material',(p.materiales||[]).join(' · ')],['Peso',p.peso],['Tiempo de producción',p.tiempoProduccion]]
+  [['Material',(p.materiales||[]).join(' · ')],['Tiempo de producción',p.tiempoProduccion]]
     .forEach(s=>{if(s[1])specsEl.innerHTML+=`<div class="modal-spec"><span>${s[0]}</span><span>${s[1]}</span></div>`;});
-  document.getElementById('modal-colors').innerHTML='';
+  const coloresTemp=(p.colores||[]).length?coloresHTML(p.colores,'modal-color-dot'):'<span style="font-size:.85rem;font-weight:600;color:var(--text2)">Todos los colores disponibles</span>';
+  document.getElementById('modal-colors').innerHTML=`<div class="modal-spec"><span>Colores disponibles</span><div class="modal-colors-row">${coloresTemp}</div></div>`;
   document.getElementById('modal-add-btn').onclick=()=>{addToCartFirestoreTemp(id);closeModal();};
   overlay.classList.add('open'); document.body.style.overflow='hidden';
 };
@@ -797,7 +800,7 @@ window.abrirFormTemporada = function(seccion, id){
     }
   } else {
     document.getElementById('at-form-title').textContent = seccion==='temporada-principal'?'Añadir producto principal':'Añadir producto secundario';
-    ['at-doc-id','at-nombre','at-precio','at-categoria','at-material','at-peso','at-tiempo','at-desc','at-img-url'].forEach(id=>document.getElementById(id).value='');
+    ['at-doc-id','at-nombre','at-precio','at-categoria','at-material','at-peso','at-tiempo','at-desc','at-img-url','at-img-file-url'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
     const atDestReset = document.getElementById('at-destacado'); if(atDestReset) atDestReset.value='';
   }
   overlay.style.display='flex';
@@ -1382,8 +1385,9 @@ function renderConjuntosWeb(){
     const imgHtml = c.imgUrl
       ? `<img src="${c.imgUrl}" alt="${escapeHTML(c.nombre||'')}">`
       : `<span style="font-size:3rem;">📦</span>`;
+    const badgeEl = (typeof badgeHTML==='function') ? badgeHTML(c.destacado, c.descuentoEscalonado) : '';
     div.innerHTML = `
-      <div class="conjunto-card-img">${imgHtml}</div>
+      <div class="conjunto-card-img" style="position:relative;">${imgHtml}${badgeEl?`<div style="position:absolute;top:.5rem;left:.5rem;">${badgeEl}</div>`:''}</div>
       <div class="conjunto-card-body">
         <div class="conjunto-card-nombre">${escapeHTML(c.nombre||'')}</div>
         <p class="conjunto-card-desc">${escapeHTML((c.descripcion||'').slice(0,80))}${(c.descripcion||'').length>80?'…':''}</p>
@@ -1446,9 +1450,13 @@ window.abrirConjunto = function(id){
   document.getElementById('conjunto-title-header').textContent = c.nombre||'';
   document.getElementById('conjunto-nombre').textContent       = c.nombre||'';
   document.getElementById('conjunto-desc').textContent         = c.descripcion||'';
+  // Badge del conjunto en la cabecera
+  const conjBadgeEl = document.getElementById('conjunto-badge-header');
+  if(conjBadgeEl) conjBadgeEl.innerHTML = (typeof badgeHTML==='function') ? badgeHTML(c.destacado, c.descuentoEscalonado) : '';
   const grid = document.getElementById('conjunto-prods-grid');
   grid.innerHTML = '';
   const prods = c.productos || [];
+  const conjDE = c.descuentoEscalonado || null; // descuento escalonado del conjunto
   if(!prods.length){
     grid.innerHTML = '<p style="color:var(--text3);">Este conjunto no tiene productos aún.</p>';
   } else {
@@ -1462,8 +1470,10 @@ window.abrirConjunto = function(id){
       const pName = (p.nombre||'').replace(/'/g,"\'");
       const pPrice = (p.precio||'').replace(/'/g,"\'");
       const pImg = (p.imgUrl||'').replace(/'/g,"\'");
+      // El badge individual del producto (si tiene), o el del conjunto
+      const cardBadge = p.destacado ? badgeHTML(p.destacado) : (conjDE ? badgeHTML(null, conjDE) : '');
       card.innerHTML = `
-        ${p.destacado ? badgeHTML(p.destacado) : ''}
+        ${cardBadge}
         <div class="card-img">${imgHtml}
           <div class="card-overlay">
             <button class="view-btn" onclick="abrirModalProductoConjunto('${id}','${pName}')">Ver detalles</button>
@@ -1479,9 +1489,9 @@ window.abrirConjunto = function(id){
             <span class="card-mat-pill">${escapeHTML((p.materiales||['PLA']).join(' · '))}</span>
           </div>
         </div>`;
-      // Guardar datos del producto en el botón add
+      // Guardar datos del producto (con conjuntoId y descuento del conjunto)
       const addBtn = card.querySelector('.add-btn');
-      addBtn._prodData = p;
+      addBtn._prodData = {...p, conjuntoId: id, descuentoConjunto: conjDE};
       grid.appendChild(card);
     });
   }
@@ -1503,8 +1513,14 @@ window.addToCartConjuntoBtn = function(btn){
 
 window.addToCartConjunto = function(p){
   const precio = parseFloat((p.precio||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||0;
-  const ex = cartItems.find(i=>i.name===p.nombre);
-  if(ex){ex.qty++;}else{cartItems.push({name:p.nombre,price:precio,img:p.imgUrl||'',svg:'',descuentoEscalonado:null,qty:1});}
+  const ex = cartItems.find(i=>i.name===p.nombre && i.conjuntoId===(p.conjuntoId||null));
+  if(ex){ex.qty++;}else{cartItems.push({
+    name:p.nombre, price:precio, img:p.imgUrl||'', svg:'',
+    descuentoEscalonado: null, // no se usa para el cálculo cross-item
+    conjuntoId: p.conjuntoId||null,
+    descuentoConjunto: p.descuentoConjunto||null,
+    qty:1
+  });}
   updateBadge();
   window.showToast((p.nombre||'Producto')+' añadido 🎉');
   window._guardarCarritoEnFirestore && window._guardarCarritoEnFirestore(cartItems);
@@ -1525,12 +1541,13 @@ window.abrirModalProductoConjunto = function(conjuntoId, nombreProd){
   document.getElementById('modal-price').textContent  = p.precio||'';
   document.getElementById('modal-desc').textContent   = p.descripcion||'';
   const specsEl=document.getElementById('modal-specs'); specsEl.innerHTML='';
-  [['Material',(p.materiales||[]).join(' · ')],['Peso',p.peso],['Tiempo',p.tiempoProduccion]].forEach(s=>{
+  [['Material',(p.materiales||[]).join(' · ')],['Tiempo',p.tiempoProduccion]].forEach(s=>{
     if(s[1]) specsEl.innerHTML+=`<div class="modal-spec"><span>${s[0]}</span><span>${s[1]}</span></div>`;
   });
-  document.getElementById('modal-colors').innerHTML='';
+  document.getElementById('modal-colors').innerHTML=(()=>{const c=(p.colores||[]).length?coloresHTML(p.colores,'modal-color-dot'):'<span style="font-size:.85rem;font-weight:600;color:var(--text2)">Todos los colores disponibles</span>';return `<div class="modal-spec"><span>Colores disponibles</span><div class="modal-colors-row">${c}</div></div>`;})();
   document.getElementById('modal-add-btn').onclick=()=>{ addToCartConjunto(p); closeModal(); };
   window._setModalFavKey && window._setModalFavKey(p.nombre||'');
+  overlay.style.zIndex = '99999';
   overlay.classList.add('open'); document.body.style.overflow='hidden';
 };
 
@@ -1554,10 +1571,14 @@ window.abrirFormConjunto = function(id){
     document.getElementById('af-img-url').value  = c.imgUrl||'';
     if(urlInput) urlInput.value = c.imgUrl||'';
     if(c.imgUrl){ document.getElementById('af-img-tag').src=c.imgUrl; document.getElementById('af-img-preview').style.display='block'; }
+    document.getElementById('af-destacado').value = c.destacado||'';
+    const de = c.descuentoEscalonado||{};
+    document.getElementById('af-bulk-unidades').value = de.unidades||'';
+    document.getElementById('af-bulk-pct').value = de.porcentaje ? Math.round(de.porcentaje*100) : '';
     _afProductos = JSON.parse(JSON.stringify(c.productos||[]));
   } else {
     document.getElementById('admin-form-title').textContent = 'Añadir conjunto';
-    ['af-doc-id','af-nombre','af-desc','af-img-url'].forEach(i=>{ const el=document.getElementById(i); if(el) el.value=''; });
+    ['af-doc-id','af-nombre','af-desc','af-img-url','af-destacado','af-bulk-unidades','af-bulk-pct'].forEach(i=>{ const el=document.getElementById(i); if(el) el.value=''; });
   }
   renderAfProductos();
   overlay.style.display='flex';
@@ -1630,8 +1651,18 @@ window.guardarConjunto = async function(){
   if(!prodsValidos.length){ errEl.textContent='Añade al menos un producto con nombre y precio.'; errEl.style.display='block'; return; }
   errEl.style.display='none';
   saveBtn.disabled=true; saveBtn.textContent='Guardando…';
+  // Destacado y descuento escalonado del conjunto
+  const destacadoConj = document.getElementById('af-destacado').value||'';
+  const bulkU = parseInt(document.getElementById('af-bulk-unidades').value)||0;
+  const bulkP = parseFloat(document.getElementById('af-bulk-pct').value)||0;
+  let descuentoEscalonado = null;
+  if(bulkU>0 && bulkP>0){
+    descuentoEscalonado = { unidades: bulkU, porcentaje: bulkP/100 };
+  } else if(destacadoConj==='bulk25'){
+    descuentoEscalonado = { unidades: 10, porcentaje: 0.25 };
+  }
   try{
-    const data = { nombre, descripcion:desc, imgUrl, productos:prodsValidos, updatedAt:serverTimestamp() };
+    const data = { nombre, descripcion:desc, imgUrl, productos:prodsValidos, destacado:destacadoConj, descuentoEscalonado, updatedAt:serverTimestamp() };
     if(docId){
       await setDoc(doc(_db,'conjuntos',docId), data, {merge:true});
       window.showToast('Conjunto actualizado ✓');

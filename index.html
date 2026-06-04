@@ -103,7 +103,7 @@
 <!-- PANEL CARRITO -->
 
 <!-- STATS PANEL -->
-<div id="stats-panel-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:4000;">
+<div id="stats-panel-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:4000;" onclick="if(event.target===this)cerrarStatsPanel()">
   <div id="stats-panel" style="position:fixed;top:0;right:0;height:100%;width:min(480px,100%);background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:4001;">
     <div class="cp-header">
       <span class="cp-title">📊 Estadísticas</span>
@@ -310,20 +310,9 @@
       <p class="section-sub">Piezas listas para enviar en 24–48 horas. Stock renovado cada semana.</p>
     </div>
     <div class="filter-bar reveal">
-      <span class="filter-label">Categoría</span>
-      <select class="filter-select" id="material-filter"></select>
-      <div class="filter-sep"></div>
-      <span class="filter-label">Precio</span>
-      <div class="price-range-wrap">
-        <div class="price-inputs">
-          <input type="number" class="price-input" id="price-min" placeholder="Min" min="0" step="0.5" oninput="onPriceInput()">
-          <span class="price-dash">—</span>
-          <input type="number" class="price-input" id="price-max" placeholder="Max" min="0" step="0.5" oninput="onPriceInput()">
-          <span class="price-symbol">€</span>
-        </div>
-        <input type="range" class="price-slider" id="price-slider-max" min="0" max="50" value="50" step="0.5" oninput="onSliderInput(this.value)">
-      </div>
-      <button class="filter-reset hidden" id="price-reset" onclick="resetPriceFilter()" title="Limpiar filtro de precio">✕</button>
+      <span class="filter-label">🔍</span>
+      <input type="search" id="product-search" class="filter-search-input" placeholder="Buscar producto..." oninput="applyFilter()" autocomplete="off" style="flex:1;min-width:0;padding:.45rem .9rem;border:1.5px solid var(--border);border-radius:99px;background:var(--bg1);color:var(--text1);font-size:.88rem;font-family:inherit;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      <button class="filter-reset hidden" id="search-reset" onclick="document.getElementById('product-search').value='';applyFilter()" title="Limpiar búsqueda">✕</button>
       <span class="filter-count" id="filter-count"></span>
     </div>
     <!-- PANEL ADMIN STOCK -->
@@ -365,6 +354,28 @@
               <img id="af-img-tag" src="" style="max-height:120px;object-fit:contain;">
             </div>
           </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+            <div>
+              <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Destacado del conjunto</label>
+              <select id="af-destacado" class="form-input" style="cursor:pointer;">
+                <option value="">Sin destacado</option>
+                <option value="nuevo">&#x1F195; Nuevo</option>
+                <option value="pocas">&#x26A0;&#xFE0F; &#xDA;ltimas unidades</option>
+                <option value="sale10">&#x1F3F7;&#xFE0F; &#x2212;10%</option>
+                <option value="sale20">&#x1F3F7;&#xFE0F; &#x2212;20%</option>
+                <option value="sale25">&#x1F3F7;&#xFE0F; &#x2212;25%</option>
+                <option value="bulk25">&#x1F4E6; +10 = &#x2212;25%</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Desc. escalonado personalizado</label>
+              <div style="display:flex;gap:.4rem;">
+                <input id="af-bulk-unidades" class="form-input" type="number" min="1" placeholder="Uds (ej: 10)" style="font-size:.82rem;">
+                <input id="af-bulk-pct" class="form-input" type="number" min="1" max="100" placeholder="% (ej: 25)" style="font-size:.82rem;">
+              </div>
+              <p style="font-size:.72rem;color:var(--text3);margin:.25rem 0 0;">Solo si quieres un umbral distinto al de bulk25</p>
+            </div>
+          </div>
           <div style="border-top:1px solid var(--border);padding-top:.9rem;">
             <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.6rem;">Productos del conjunto</label>
             <div id="af-productos-lista" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.6rem;"></div>
@@ -385,6 +396,7 @@
         <div id="conjunto-header">
           <button id="conjunto-back" onclick="cerrarConjunto()">← Volver</button>
           <span id="conjunto-title-header"></span>
+          <span id="conjunto-badge-header" style="margin-left:.5rem;"></span>
         </div>
         <div id="conjunto-body">
           <div id="conjunto-hero">
@@ -486,8 +498,9 @@
         <textarea id="at-desc" class="form-textarea" style="min-height:70px;" placeholder="Descripción del producto..."></textarea>
       </div>
       <div>
-        <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Imagen</label>
-        <div id="at-img-preview" style="display:none;margin-bottom:.5rem;border-radius:.5rem;overflow:hidden;max-height:140px;text-align:center;background:var(--bg3);">
+        <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Imagen (URL)</label>
+        <input id="at-img-file-url" class="form-input" type="url" placeholder="https://i.imgur.com/..." oninput="previsualizarImagenTemp(this)">
+        <div id="at-img-preview" style="display:none;margin-top:.5rem;margin-bottom:.25rem;border-radius:.5rem;overflow:hidden;max-height:140px;text-align:center;background:var(--bg3);">
           <img id="at-img-tag" src="" style="max-height:140px;object-fit:contain;">
         </div>
       </div>
