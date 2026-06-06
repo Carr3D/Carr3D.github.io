@@ -552,6 +552,7 @@ function actualizarUIAuth(user){
     if(adminPanel) adminPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
     const adminTempPanel = document.getElementById('admin-temporada-panel');
     if(adminTempPanel) adminTempPanel.style.display = _adminUids.includes(user.uid) ? 'block' : 'none';
+    renderTemporadaWeb(); // re-evaluar visibilidad sección para admin
     const navFavWrap = document.getElementById('nav-fav-wrap');
     if(navFavWrap) navFavWrap.style.display = 'flex';
     const adminPiggyPanel = document.getElementById('admin-piggy-panel');
@@ -668,9 +669,11 @@ function renderTemporadaWeb(){
   if(!wrap || !section) return;
 
   wrap.innerHTML = '';
+  const esAdmin = !!(_currentUser && _adminUids.length && _adminUids.includes(_currentUser.uid));
   const hayContenido = _coleccionesTemp.length > 0 && _productosTemporada.length > 0;
-  section.style.display = hayContenido ? '' : 'none';
-  if(!hayContenido) return;
+  section.style.display = (hayContenido || esAdmin) ? '' : 'none';
+  if(!hayContenido && !esAdmin) return;
+  if(!hayContenido) return; // admin ve la sección pero el wrap queda vacío (solo panel admin)
 
   _coleccionesTemp.forEach(col => {
     const principales  = _productosTemporada.filter(p=>p.coleccionId===col.id && p.seccion==='temporada-principal');
