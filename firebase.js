@@ -79,7 +79,6 @@ function starsHTML(n){
 function renderCom(docSnap){
   const d = docSnap.data();
   const esAdmin = d.uid && _adminUids.includes(d.uid);
-  const esYoAdmin = _currentUser && _adminUids.includes(_currentUser.uid);
   const fotoUrl = d.photoURL || '';
   const inicial = (d.nombre||'?')[0].toUpperCase();
   const fotoHtml = fotoUrl
