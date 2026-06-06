@@ -272,20 +272,20 @@
     <div class="hero-glow"></div>
     <div id="seq-container">
       <img id="seq-img-bg" src="" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(18px) brightness(.85);transform:scale(1.08);z-index:0;opacity:0;transition:opacity .3s;">
-      <img id="seq-img" src="" alt="Pieza 3D impresa" style="position:relative;z-index:1;">
+      <img id="seq-img" src="" alt="Pieza 3D impresa" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1;">
       <div id="seq-placeholder">
         <div class="icon">📷</div>
         <p>Guarda tus imágenes como<br><code>img/frame_001.jpg</code> → <code>frame_045.jpg</code></p>
       </div>
     </div>
-    <div class="hero-text-overlay">
+    <div class="hero-text-overlay" style="z-index:2;">
       <p class="hero-eyebrow">Impresión 3D artesanal</p>
       <h1 class="hero-title">Carr<span class="three">3D</span></h1>
       <p class="hero-sub">Objetos únicos, creados capa a capa con precisión y cariño.</p>
     </div>
-    <div id="frame-counter">1 / 45</div>
-    <div class="hero-scroll-hint">Desliza para ver <span class="scroll-arrow">↓</span></div>
-    <div id="hero-cta">
+    <div id="frame-counter" style="z-index:2;">1 / 45</div>
+    <div class="hero-scroll-hint" style="z-index:2;">Desliza para ver <span class="scroll-arrow">↓</span></div>
+    <div id="hero-cta" style="z-index:2;">
       <button class="btn-filled" onclick="scroll2('#stock')">Ver catálogo</button>
       <button class="btn-soft" onclick="scroll2('#custom')">Pedir personalizado</button>
     </div>
