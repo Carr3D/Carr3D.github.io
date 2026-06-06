@@ -855,15 +855,20 @@ document.addEventListener('DOMContentLoaded',function(){
   const TOTAL=45,PREFIX='img/frame_',EXT='.jpg';
   const frames=[];
   for(let i=1;i<=TOTAL;i++){const img=new Image();img.src=PREFIX+String(i).padStart(3,'0')+EXT;frames.push(img);}
-  const wr=document.getElementById('hero-sticky-wrapper'),si=document.getElementById('seq-img'),pl=document.getElementById('seq-placeholder'),ct=document.getElementById('frame-counter'),hc=document.getElementById('hero-cta');
+  const wr=document.getElementById('hero-sticky-wrapper'),si=document.getElementById('seq-img'),siBg=document.getElementById('seq-img-bg'),pl=document.getElementById('seq-placeholder'),ct=document.getElementById('frame-counter'),hc=document.getElementById('hero-cta');
+  // Mostrar fondo borroso solo en móvil
+  function updateBgVisibility(){ if(siBg) siBg.style.opacity = window.innerWidth < 768 ? '1' : '0'; }
+  updateBgVisibility();
+  window.addEventListener('resize', updateBgVisibility, {passive:true});
   let cf=-1;
   function updateSeq(){
     const r=wr.getBoundingClientRect(),sc=-r.top,tot=r.height-window.innerHeight,prog=Math.max(0,Math.min(1,sc/tot)),idx=Math.min(Math.floor(prog*TOTAL),TOTAL-1);
     prog>0.88?hc.classList.add('visible'):hc.classList.remove('visible');
     if(idx===cf&&cf!==-1)return;cf=idx;ct.textContent=(idx+1)+' / '+TOTAL;
     const img=frames[idx];
-    if(img&&img.complete&&img.naturalWidth>0){si.src=img.src;si.style.display='block';pl.style.display='none';}
-    else{img.onload=()=>{si.src=img.src;si.style.display='block';pl.style.display='none';};pl.style.display='flex';}
+    function setSrc(src){ si.src=src; si.style.display='block'; pl.style.display='none'; if(siBg) siBg.src=src; }
+    if(img&&img.complete&&img.naturalWidth>0){setSrc(img.src);}
+    else{img.onload=()=>{setSrc(img.src);};pl.style.display='flex';}
   }
   window.addEventListener('scroll',updateSeq,{passive:true});updateSeq();
   /* Render productos */
@@ -882,11 +887,31 @@ document.addEventListener('DOMContentLoaded',function(){
   /* Reveal */
   const ro=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.08});
   document.querySelectorAll('.reveal').forEach(el=>ro.observe(el));
+
+  /* ── Contador objetos en stock ── */
+  window.actualizarStatStock = function(){
+    const el = document.getElementById('stat-stock-num');
+    if(!el) return;
+    let total = 0;
+    // Productos hardcodeados en stock
+    if(typeof PRODUCTOS !== 'undefined')
+      total += PRODUCTOS.filter(p=>p.seccion==='stock').length;
+    // Productos dentro de conjuntos de Firestore (cada producto individual cuenta)
+    if(typeof window._productosFirestore !== 'undefined')
+      window._productosFirestore.forEach(c=>{ total += (c.productos||[]).length; });
+    // Productos de temporada secundarios (los principales son destacados, no unidades)
+    if(typeof window._productosTemporada !== 'undefined')
+      total += window._productosTemporada.filter(p=>p.seccion==='temporada-secundaria').length;
+    el.dataset.target = total;
+    el.textContent = total; // actualizar número real inmediatamente
+  };
+  window.actualizarStatStock();
+
   /* Counters */
   const so=new IntersectionObserver(entries=>{
     if(!entries[0].isIntersecting)return;so.disconnect();
     document.querySelectorAll('[data-target]').forEach(el=>{
-      const t=+el.dataset.target,sf=el.dataset.suf;let c=0;const st=t/55;
+      const t=+el.dataset.target,sf=el.dataset.suf||'';let c=0;const st=Math.max(t/55,1);
       const ti=setInterval(()=>{c=Math.min(c+st,t);el.textContent=Math.floor(c)+sf;if(c>=t)clearInterval(ti);},18);
     });
   },{threshold:.5});

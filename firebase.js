@@ -92,7 +92,8 @@ function renderCom(docSnap){
     ? `<span class="com-admin-badge">Admin</span>`
     : '';
   const bloqueado = d.uid && _blockedUids.includes(d.uid);
-  const esElAutor = _currentUser && _currentUser.uid === d.uid;
+  const esYoAdmin = !!(_currentUser && _adminUids.length && _adminUids.includes(_currentUser.uid));
+  const esElAutor = !!(_currentUser && d.uid && _currentUser.uid === d.uid && !esYoAdmin);
   const btnEliminar = (esYoAdmin || esElAutor)
     ? `<button class="com-delete-btn" title="Eliminar comentario" onclick="eliminarComentario('${docSnap.id}',this)">🗑️</button>`
     : '';
@@ -406,6 +407,14 @@ onSnapshot(
   }
 );
 
+// Re-renderiza todos los comentarios ya cargados (se llama cuando cambia el usuario)
+window._reRenderComentarios = function(){
+  if(!_todosLosDocs.length) return;
+  _list.innerHTML='';
+  _mostrados=[];
+  mostrarSiguientes();
+};
+
 /* ── ENVIAR COMENTARIO ── */
 window.enviarComentario = async function(){
   if(!_currentUser){
@@ -508,6 +517,8 @@ onAuthStateChanged(_auth, async user => {
   } else {
     window._clearCartLocal && window._clearCartLocal();
   }
+  // Re-renderizar comentarios para actualizar botones según el usuario actual
+  window._reRenderComentarios && window._reRenderComentarios();
 });
 
 function actualizarUIAuth(user){
@@ -599,93 +610,153 @@ function actualizarUIAuth(user){
 ══════════════════════════════ */
 
 let _productosTemporada = [];
+window._productosTemporada = _productosTemporada;
 
 function iniciarEscuchaTemporada(){
   onSnapshot(
     query(collection(_db,'productos_temporada'), orderBy('nombre','asc')),
     snap => {
       _productosTemporada = snap.docs.map(d=>({id:d.id,...d.data()}));
+      window._productosTemporada = _productosTemporada;
       renderTemporadaWeb();
       if(_currentUser && _adminUids.includes(_currentUser.uid)){
         renderAdminTemporadaList();
+        poblarSelectorColeccion();
       }
+      window._rebuildCollage && window._rebuildCollage();
+      window.actualizarStatStock && window.actualizarStatStock();
     },
     err => console.error('Error temporada:', err)
   );
 }
 iniciarEscuchaTemporada();
 
+/* ══════════════════════════════════════════════════
+   EDICIÓN LIMITADA — multi-colección
+   ══════════════════════════════════════════════════ */
+let _coleccionesTemp = []; // [{id, nombre, orden}]
+
+// Escucha colecciones_temporada
+onSnapshot(
+  query(collection(_db,'colecciones_temporada'), orderBy('orden','asc')),
+  snap => {
+    _coleccionesTemp = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderTemporadaWeb();
+    if(_currentUser && _adminUids.includes(_currentUser.uid)){
+      renderAdminTemporadaList();
+      poblarSelectorColeccion();
+    }
+  },
+  err => console.error('Error colecciones_temporada:', err)
+);
+
+// Escucha productos_temporada
+onSnapshot(
+  query(collection(_db,'productos_temporada'), orderBy('nombre','asc')),
+  snap => {
+    _productosTemporada = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderTemporadaWeb();
+    if(_currentUser && _adminUids.includes(_currentUser.uid)){
+      renderAdminTemporadaList();
+    }
+  },
+  err => console.error('Error productos_temporada:', err)
+);
+
 function renderTemporadaWeb(){
-  const sfw = document.getElementById('season-featured-wrap');
-  const ssm = document.getElementById('season-smalls');
-  if(!sfw || !ssm) return;
+  const wrap = document.getElementById('season-colecciones-wrap');
+  const section = document.getElementById('season');
+  if(!wrap || !section) return;
 
-  // Quitar solo los de Firestore
-  sfw.querySelectorAll('[data-source="firestore"]').forEach(el=>el.remove());
-  ssm.querySelectorAll('[data-source="firestore"]').forEach(el=>el.remove());
+  wrap.innerHTML = '';
+  const hayContenido = _coleccionesTemp.length > 0 && _productosTemporada.length > 0;
+  section.style.display = hayContenido ? '' : 'none';
+  if(!hayContenido) return;
 
-  const principal   = _productosTemporada.filter(p=>p.seccion==='temporada-principal');
-  const secundarios = _productosTemporada.filter(p=>p.seccion==='temporada-secundaria');
+  _coleccionesTemp.forEach(col => {
+    const principales  = _productosTemporada.filter(p=>p.coleccionId===col.id && p.seccion==='temporada-principal');
+    const secundarios  = _productosTemporada.filter(p=>p.coleccionId===col.id && p.seccion==='temporada-secundaria');
+    if(!principales.length && !secundarios.length) return; // colección vacía, no mostrar
 
-  principal.forEach(p=>{
-    const div = document.createElement('div');
-    div.setAttribute('data-source','firestore');
-    div.className='season-featured';
-    const imgBlock = p.imgUrl
-      ? `<img src="${p.imgUrl}" alt="${p.nombre||''}" style="width:100%;height:100%;object-fit:cover;">`
-      : `<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:3rem;">📦</div>`;
-    const isFavP = _favs && _favs.some(f=>f.name===p.nombre);
-    div.innerHTML=`
-      <div class="season-feat-img">${imgBlock}</div>
-      <div class="season-feat-info">
-        <span class="season-tag">Edición limitada · ${(p.materiales||['PLA']).join(' · ')}</span>
-        <h3 class="season-feat-title">${p.nombre||''}</h3>
-        <p class="season-feat-desc">${p.descripcion||''}</p>
-        <div class="season-feat-price">${p.precio||''}</div>
-        <div class="feat-actions" style="display:flex;gap:.75rem;align-items:center;">
-          <button class="btn-filled" onclick="addToCartFirestoreTemp('${p.id}')">Añadir al carrito</button>
-        </div>
-      </div>`;
-    // Botón fav añadido con createElement para evitar problemas de comillas
-    const favBtn = document.createElement('button');
-    favBtn.className = 'modal-fav-btn fav-btn' + (isFavP ? ' active' : '');
-    favBtn.dataset.favName = p.nombre || '';
-    favBtn.title = 'Favorito';
-    favBtn.textContent = isFavP ? '❤️' : '🤍';
-    favBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleFav({ name: p.nombre||'', price: p.precio||'', img: p.imgUrl||'' });
+    const colWrap = document.createElement('div');
+    colWrap.style.cssText = 'margin-bottom:3rem;';
+    colWrap.innerHTML = `<div class="reveal" style="margin-bottom:1.25rem;"><h3 style="font-size:1.4rem;font-weight:800;color:var(--text1);margin:0;">${escapeHTML(col.nombre)}</h3></div>`;
+
+    const grid = document.createElement('div');
+    grid.className = 'season-grid reveal';
+
+    // Producto destacado (principal)
+    const sfw = document.createElement('div');
+    sfw.id = 'season-featured-wrap-'+col.id;
+
+    principales.forEach(p=>{
+      const div = document.createElement('div');
+      div.setAttribute('data-source','firestore');
+      div.className='season-featured';
+      const imgBlock = p.imgUrl
+        ? `<img src="${p.imgUrl}" alt="${escapeHTML(p.nombre||'')}" style="width:100%;height:100%;object-fit:cover;">`
+        : `<div style="width:100%;height:100%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:3rem;">📦</div>`;
+      const isFavP = _favs && _favs.some(f=>f.name===p.nombre);
+      div.innerHTML=`
+        <div class="season-feat-img">${imgBlock}</div>
+        <div class="season-feat-info">
+          <span class="season-tag">Edición limitada · ${(p.materiales||['PLA']).join(' · ')}</span>
+          <h3 class="season-feat-title">${escapeHTML(p.nombre||'')}</h3>
+          <p class="season-feat-desc">${escapeHTML(p.descripcion||'')}</p>
+          <div class="season-feat-price">${escapeHTML(p.precio||'')}</div>
+          <div class="feat-actions" style="display:flex;gap:.75rem;align-items:center;">
+            <button class="btn-filled" onclick="addToCartFirestoreTemp('${p.id}')">Añadir al carrito</button>
+          </div>
+        </div>`;
+      const favBtn = document.createElement('button');
+      favBtn.className = 'modal-fav-btn fav-btn' + (isFavP ? ' active' : '');
+      favBtn.dataset.favName = p.nombre || '';
+      favBtn.title = 'Favorito';
+      favBtn.textContent = isFavP ? '❤️' : '🤍';
+      favBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleFav({ name: p.nombre||'', price: p.precio||'', img: p.imgUrl||'' });
+      });
+      div.querySelector('.feat-actions').appendChild(favBtn);
+      sfw.appendChild(div);
     });
-    div.querySelector('.feat-actions').appendChild(favBtn);
-    sfw.appendChild(div);
-  });
 
-  secundarios.forEach(p=>{
-    const div = document.createElement('div');
-    div.setAttribute('data-source','firestore');
-    div.className='product-card season-small-item';
-    div.setAttribute('data-cat', p.categoria||'');
-    div.setAttribute('data-precio', parseFloat((p.precio||'0').replace(/[^0-9.,]/g,'').replace(',','.'))||0);
-    const isFavT = _favs && _favs.some(f=>f.name===p.nombre);
-    div.innerHTML=`
-      ${p.destacado ? badgeHTML(p.destacado) : ''}
-      <div class="card-img" style="background:var(--bg3)">
-        ${p.imgUrl ? '<img src="'+p.imgUrl+'" alt="" style="width:100%;height:100%;object-fit:cover;">' : ''}
-        <div class="card-overlay">
-          <button class="view-btn" onclick="abrirModalFirestoreTemp('${p.id}')">Ver</button>
-          <button class="add-btn" onclick="addToCartFirestoreTemp('${p.id}')">+ Carrito</button>
+    // Productos secundarios
+    const ssm = document.createElement('div');
+    ssm.className = 'season-smalls';
+    ssm.id = 'season-smalls-'+col.id;
+
+    secundarios.forEach(p=>{
+      const div = document.createElement('div');
+      div.setAttribute('data-source','firestore');
+      div.className='product-card season-small-item';
+      div.setAttribute('data-cat', p.categoria||'');
+      const isFavT = _favs && _favs.some(f=>f.name===p.nombre);
+      div.innerHTML=`
+        ${p.destacado ? badgeHTML(p.destacado) : ''}
+        <div class="card-img" style="background:var(--bg3)">
+          ${p.imgUrl ? '<img src="'+p.imgUrl+'" alt="" style="width:100%;height:100%;object-fit:cover;">' : ''}
+          <div class="card-overlay">
+            <button class="view-btn" onclick="abrirModalFirestoreTemp('${p.id}')">Ver</button>
+            <button class="add-btn" onclick="addToCartFirestoreTemp('${p.id}')">+ Carrito</button>
+          </div>
+          <button class="fav-btn${isFavT?' active':''}" onclick="event.stopPropagation();toggleFav({name:'${p.nombre.replace(/'/g,"\\'")}',price:'${(p.precio||'').replace(/'/g,"\\'")}',img:'${(p.imgUrl||'').replace(/'/g,"\\'")}'})" title="Favorito">${isFavT?'❤️':'🤍'}</button>
         </div>
-        <button class="fav-btn${isFavT?' active':''}" onclick="event.stopPropagation();toggleFav({name:'${p.nombre.replace(/'/g,"\'")}',price:'${(p.precio||'').replace(/'/g,"\'")}',img:'${(p.imgUrl||'').replace(/'/g,"\'")}'})" title="Favorito">${isFavT?'❤️':'🤍'}</button>
-      </div>
-      <div class="card-info">
-        ${p.categoria?`<div class="card-categoria">${p.categoria}</div>`:''}
-        <div class="card-name">${p.nombre||''}</div>
-        <div class="card-meta">
-          <span class="card-price">${p.precio||''}</span>
-          <span class="card-mat-pill">${(p.materiales||['PLA']).join(' · ')}</span>
-        </div>
-      </div>`;
-    ssm.appendChild(div);
+        <div class="card-info">
+          ${p.categoria?`<div class="card-categoria">${escapeHTML(p.categoria)}</div>`:''}
+          <div class="card-name">${escapeHTML(p.nombre||'')}</div>
+          <div class="card-meta">
+            <span class="card-price">${escapeHTML(p.precio||'')}</span>
+            <span class="card-mat-pill">${(p.materiales||['PLA']).join(' · ')}</span>
+          </div>
+        </div>`;
+      ssm.appendChild(div);
+    });
+
+    grid.appendChild(sfw);
+    grid.appendChild(ssm);
+    colWrap.appendChild(grid);
+    wrap.appendChild(colWrap);
   });
 }
 
@@ -727,61 +798,152 @@ window.abrirModalFirestoreTemp = function(id){
   overlay.classList.add('open'); document.body.style.overflow='hidden';
 };
 
-/* ── Lista admin temporada ── */
+/* ── Admin: lista de colecciones y productos ── */
 function renderAdminTemporadaList(){
-  const listP = document.getElementById('admin-temp-principal-list');
-  const listS = document.getElementById('admin-temp-secundarios-list');
-  if(!listP||!listS) return;
+  const listEl = document.getElementById('admin-temp-colecciones-list');
+  if(!listEl) return;
+  listEl.innerHTML = '';
 
-  const principales  = _productosTemporada.filter(p=>p.seccion==='temporada-principal');
-  const secundarios  = _productosTemporada.filter(p=>p.seccion==='temporada-secundaria');
+  if(!_coleccionesTemp.length){
+    listEl.innerHTML='<p style="color:var(--text3);font-size:.82rem;">Sin colecciones. Crea una para empezar.</p>';
+    return;
+  }
 
-  [listP, listS].forEach(l=>l.innerHTML='');
-
-  const buildRow = (p) => {
-    const div = document.createElement('div');
-    div.className='admin-prod-row';
-    div.innerHTML=`
-      ${p.imgUrl?`<img src="${p.imgUrl}" alt="${p.nombre}">`:'<div style="width:38px;height:38px;background:var(--bg3);border-radius:.4rem;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">📦</div>'}
-      <div class="admin-prod-row-info">
-        <div class="admin-prod-row-name">${p.nombre||'—'}</div>
-        <div class="admin-prod-row-meta">${p.precio||''} · ${p.seccion}</div>
+  _coleccionesTemp.forEach(col=>{
+    const prods = _productosTemporada.filter(p=>p.coleccionId===col.id);
+    const colDiv = document.createElement('div');
+    colDiv.style.cssText='border:1.5px solid var(--border);border-radius:.75rem;overflow:hidden;margin-bottom:.5rem;';
+    colDiv.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;background:var(--bg2);">
+        <span style="font-size:.85rem;font-weight:800;color:var(--text1);">📁 ${escapeHTML(col.nombre)}</span>
+        <div style="display:flex;gap:.4rem;">
+          <button onclick="abrirFormColeccionTemp('${col.id}')" style="font-size:.75rem;padding:.25rem .6rem;border:1px solid var(--border);border-radius:.4rem;background:none;cursor:pointer;color:var(--text2);">✏️ Editar</button>
+          <button onclick="eliminarColeccionTemp('${col.id}')" style="font-size:.75rem;padding:.25rem .6rem;border:1px solid var(--border);border-radius:.4rem;background:none;cursor:pointer;color:red;">🗑️</button>
+        </div>
       </div>
-      <div class="admin-prod-row-btns">
-        <button onclick="abrirFormTemporada('${p.seccion}','${p.id}')">✏️ Editar</button>
-        <button class="btn-del" onclick="eliminarProductoTemporada('${p.id}','${(p.imgStoragePath||'').replace(/'/g,"\'")}')">🗑️</button>
+      <div style="padding:.5rem .85rem;background:var(--bg3);display:flex;flex-direction:column;gap:.35rem;" id="admin-col-prods-${col.id}">
+        ${prods.length ? '' : '<p style="font-size:.78rem;color:var(--text3);margin:0;">Sin productos</p>'}
       </div>`;
-    return div;
-  };
+    const prodsWrap = colDiv.querySelector(`#admin-col-prods-${col.id}`);
+    prods.forEach(p=>{
+      const row = document.createElement('div');
+      row.className='admin-prod-row';
+      row.innerHTML=`
+        ${p.imgUrl?`<img src="${p.imgUrl}" alt="${escapeHTML(p.nombre)}" style="width:32px;height:32px;object-fit:cover;border-radius:.3rem;">`:'<div style="width:32px;height:32px;background:var(--bg2);border-radius:.3rem;display:flex;align-items:center;justify-content:center;font-size:.9rem;">📦</div>'}
+        <div class="admin-prod-row-info">
+          <div class="admin-prod-row-name">${escapeHTML(p.nombre||'—')}</div>
+          <div class="admin-prod-row-meta">${escapeHTML(p.precio||'')} · ${p.seccion==='temporada-principal'?'⭐ Destacado':'Producto'}</div>
+        </div>
+        <div class="admin-prod-row-btns">
+          <button onclick="abrirFormTemporada('${p.seccion}','${p.id}')">✏️</button>
+          <button class="btn-del" onclick="eliminarProductoTemporada('${p.id}','${(p.imgStoragePath||'').replace(/'/g,"\\'")}')">🗑️</button>
+        </div>`;
+      prodsWrap.appendChild(row);
+    });
+    listEl.appendChild(colDiv);
+  });
+}
 
-  if(!principales.length) listP.innerHTML='<p style="color:var(--text3);font-size:.82rem;">Sin producto principal.</p>';
-  else principales.forEach(p=>listP.appendChild(buildRow(p)));
-
-  if(!secundarios.length) listS.innerHTML='<p style="color:var(--text3);font-size:.82rem;">Sin productos secundarios.</p>';
-  else secundarios.forEach(p=>listS.appendChild(buildRow(p)));
+function poblarSelectorColeccion(){
+  const sel = document.getElementById('at-coleccion');
+  if(!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Selecciona colección —</option>';
+  _coleccionesTemp.forEach(col=>{
+    const opt = document.createElement('option');
+    opt.value = col.id;
+    opt.textContent = col.nombre;
+    sel.appendChild(opt);
+  });
+  if(current) sel.value = current;
 }
 
 window.toggleAdminTemporadaPanel = function(){
   const body  = document.getElementById('admin-temporada-body');
   const arrow = document.getElementById('admin-temporada-arrow');
   const open  = body.style.display==='none';
-  body.style.display = open?'block':'none';
+  body.style.display = open?'flex':'none';
   arrow.textContent  = open?'▲ Cerrar':'▼ Expandir';
-  if(open) renderAdminTemporadaList();
+  if(open){ renderAdminTemporadaList(); poblarSelectorColeccion(); }
 };
 
+/* ── Colección temp: crear / editar / eliminar ── */
+window.abrirFormColeccionTemp = function(id){
+  const overlay = document.getElementById('admin-coleccion-temp-overlay');
+  document.getElementById('act-error').style.display='none';
+  if(id){
+    const col = _coleccionesTemp.find(c=>c.id===id);
+    if(!col) return;
+    document.getElementById('act-form-title').textContent='Editar colección';
+    document.getElementById('act-id').value=id;
+    document.getElementById('act-nombre').value=col.nombre||'';
+    document.getElementById('act-orden').value=col.orden??0;
+  } else {
+    document.getElementById('act-form-title').textContent='Nueva colección';
+    document.getElementById('act-id').value='';
+    document.getElementById('act-nombre').value='';
+    document.getElementById('act-orden').value=_coleccionesTemp.length;
+  }
+  overlay.style.display='flex';
+  document.body.style.overflow='hidden';
+};
+
+window.cerrarFormColeccionTemp = function(){
+  document.getElementById('admin-coleccion-temp-overlay').style.display='none';
+  document.body.style.overflow='';
+};
+
+window.guardarColeccionTemp = async function(){
+  const nombre  = document.getElementById('act-nombre').value.trim();
+  const orden   = parseInt(document.getElementById('act-orden').value)||0;
+  const id      = document.getElementById('act-id').value;
+  const errEl   = document.getElementById('act-error');
+  const saveBtn = document.getElementById('act-save-btn');
+  if(!nombre){ errEl.textContent='El nombre es obligatorio.'; errEl.style.display='block'; return; }
+  errEl.style.display='none';
+  saveBtn.disabled=true; saveBtn.textContent='Guardando…';
+  try{
+    const data = { nombre, orden, updatedAt: serverTimestamp() };
+    if(id){
+      await setDoc(doc(_db,'colecciones_temporada',id), data, {merge:true});
+      window.showToast('Colección actualizada ✓');
+    } else {
+      data.createdAt = serverTimestamp();
+      await addDoc(collection(_db,'colecciones_temporada'), data);
+      window.showToast('Colección creada ✓');
+    }
+    cerrarFormColeccionTemp();
+  }catch(e){
+    errEl.textContent='Error: '+e.message; errEl.style.display='block'; console.error(e);
+  }
+  saveBtn.disabled=false; saveBtn.textContent='Guardar';
+};
+
+window.eliminarColeccionTemp = async function(id){
+  const col = _coleccionesTemp.find(c=>c.id===id);
+  const prods = _productosTemporada.filter(p=>p.coleccionId===id);
+  if(!confirm(`¿Eliminar la colección "${col?.nombre||''}"? ${prods.length?`Sus ${prods.length} producto(s) quedarán sin colección asignada.`:''}`)) return;
+  try{
+    await deleteDoc(doc(_db,'colecciones_temporada',id));
+    window.showToast('Colección eliminada 🗑️');
+  }catch(e){ window.showToast('Error al eliminar.'); console.error(e); }
+};
+
+/* ── Producto temp: form ── */
 window.abrirFormTemporada = function(seccion, id){
   const overlay = document.getElementById('admin-temp-overlay');
   document.getElementById('at-error').style.display='none';
   document.getElementById('at-upload-wrap').style.display='none';
   document.getElementById('at-img-preview').style.display='none';
   document.getElementById('at-seccion').value=seccion;
+  poblarSelectorColeccion();
 
   if(id){
     const p=_productosTemporada.find(x=>x.id===id);
     if(!p) return;
     document.getElementById('at-form-title').textContent='Editar producto de temporada';
     document.getElementById('at-doc-id').value=id;
+    document.getElementById('at-coleccion').value=p.coleccionId||'';
     document.getElementById('at-nombre').value=p.nombre||'';
     document.getElementById('at-precio').value=p.precio||'';
     document.getElementById('at-categoria').value=p.categoria||'';
@@ -793,14 +955,15 @@ window.abrirFormTemporada = function(seccion, id){
     const atDest = document.getElementById('at-destacado');
     if(atDest) atDest.value = p.destacado||'';
     const atUrlInput = document.getElementById('at-img-file-url');
-    if(atUrlInput) atUrlInput.value = p.imgUrl||'';
+    if(atUrlInput){ atUrlInput.value = p.imgUrl||''; }
     if(p.imgUrl){
       document.getElementById('at-img-tag').src=p.imgUrl;
       document.getElementById('at-img-preview').style.display='block';
     }
   } else {
-    document.getElementById('at-form-title').textContent = seccion==='temporada-principal'?'Añadir producto principal':'Añadir producto secundario';
-    ['at-doc-id','at-nombre','at-precio','at-categoria','at-material','at-peso','at-tiempo','at-desc','at-img-url','at-img-file-url'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('at-form-title').textContent = seccion==='temporada-principal'?'Añadir producto destacado':'Añadir producto';
+    ['at-doc-id','at-nombre','at-precio','at-categoria','at-material','at-peso','at-tiempo','at-desc','at-img-url','at-img-file-url'].forEach(fid=>{ const el=document.getElementById(fid); if(el) el.value=''; });
+    document.getElementById('at-coleccion').value='';
     const atDestReset = document.getElementById('at-destacado'); if(atDestReset) atDestReset.value='';
   }
   overlay.style.display='flex';
@@ -830,11 +993,16 @@ window.guardarProductoTemporada = async function(){
   const desc      = document.getElementById('at-desc').value.trim();
   const docId     = document.getElementById('at-doc-id').value;
   const seccion   = document.getElementById('at-seccion').value;
+  const coleccionId = document.getElementById('at-coleccion').value;
   const errEl     = document.getElementById('at-error');
   const saveBtn   = document.getElementById('at-save-btn');
 
   if(!nombre||!precio||!categoria){
     errEl.textContent='Nombre, precio y categoría son obligatorios.';
+    errEl.style.display='block'; return;
+  }
+  if(!coleccionId){
+    errEl.textContent='Selecciona una colección.';
     errEl.style.display='block'; return;
   }
   errEl.style.display='none';
@@ -843,14 +1011,12 @@ window.guardarProductoTemporada = async function(){
   try{
     const imgUrl = (document.getElementById('at-img-file-url')||{}).value?.trim()
                 || document.getElementById('at-img-url').value||'';
-    const imgStoragePath = '';
-
-    const destacadoT = document.getElementById('at-destacado') ? document.getElementById('at-destacado').value || '' : '';
+    const destacadoT = document.getElementById('at-destacado') ? document.getElementById('at-destacado').value||'' : '';
     const data={
-      nombre, precio, categoria, seccion,
+      nombre, precio, categoria, seccion, coleccionId,
       materiales: material?material.split(',').map(s=>s.trim()).filter(Boolean):['PLA'],
       peso, tiempoProduccion:tiempo, descripcion:desc,
-      imgUrl, imgStoragePath,
+      imgUrl, imgStoragePath:'',
       destacado: destacadoT,
       updatedAt:serverTimestamp(),
     };
@@ -882,6 +1048,8 @@ window.eliminarProductoTemporada = async function(id, storagePath){
     console.error(e);
   }
 };
+
+
 
 /* ══════════════════════════════
    ESTADÍSTICAS ADMIN
@@ -1352,6 +1520,7 @@ window._guardarTemaEnFirestore = async function(tema){
 ══════════════════════════════ */
 
 let _productosFirestore = []; // cache local
+window._productosFirestore = _productosFirestore;
 
 /* Escuchar cambios en tiempo real en la colección productos */
 /* ══════════════════════════════
@@ -1363,10 +1532,13 @@ function iniciarEscuchaProductos(){
     query(collection(_db,'conjuntos'), orderBy('nombre','asc')),
     snap => {
       _productosFirestore = snap.docs.map(d=>({id:d.id,...d.data()}));
+      window._productosFirestore = _productosFirestore;
       renderConjuntosWeb();
       if(_currentUser && _adminUids.includes(_currentUser.uid)){
         renderAdminProdList();
       }
+      window._rebuildCollage && window._rebuildCollage();
+      window.actualizarStatStock && window.actualizarStatStock();
     },
     err => console.error('Error conjuntos:', err)
   );

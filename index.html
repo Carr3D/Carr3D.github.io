@@ -271,7 +271,8 @@
   <div id="hero-sticky">
     <div class="hero-glow"></div>
     <div id="seq-container">
-      <img id="seq-img" src="" alt="Pieza 3D impresa">
+      <img id="seq-img-bg" src="" alt="" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:blur(18px) brightness(.85);transform:scale(1.08);z-index:0;opacity:0;transition:opacity .3s;">
+      <img id="seq-img" src="" alt="Pieza 3D impresa" style="position:relative;z-index:1;">
       <div id="seq-placeholder">
         <div class="icon">📷</div>
         <p>Guarda tus imágenes como<br><code>img/frame_001.jpg</code> → <code>frame_045.jpg</code></p>
@@ -294,7 +295,7 @@
 <!-- STATS -->
 <div id="stats">
   <div class="stats-grid">
-    <div class="stat"><div class="stat-num" data-target="50" data-suf="+">0+</div><div class="stat-label">Objetos vendidos</div></div>
+    <div class="stat"><div class="stat-num" id="stat-stock-num" data-suf="">0</div><div class="stat-label">Objetos en stock</div></div>
     <div class="stat"><div class="stat-num" data-target="48" data-suf="h">0h</div><div class="stat-label">Tiempo de entrega</div></div>
     <div class="stat"><div class="stat-num" data-target="1" data-suf="">0</div><div class="stat-label">Materiales disponibles</div></div>
     <div class="stat"><div class="stat-num" data-target="100" data-suf="%">0%</div><div class="stat-label">Clientes satisfechos</div></div>
@@ -421,38 +422,29 @@
 </section>
 
 <!-- TEMPORADA -->
-<section id="season">
+<section id="season" style="display:none;">
   <div class="section-wrap">
     <div class="reveal">
       <p class="section-kicker">02 — Edición limitada</p>
-      <h2 class="section-title">Colección mundial '26</h2>
+      <h2 class="section-title">Colecciones de temporada</h2>
     </div>
     <!-- PANEL ADMIN TEMPORADA -->
     <div id="admin-temporada-panel" style="display:none;margin-bottom:.75rem;">
       <div onclick="toggleAdminTemporadaPanel()" style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;background:var(--bg2);border:1.5px solid var(--border);border-radius:.75rem;cursor:pointer;user-select:none;">
-        <span style="font-size:.85rem;font-weight:700;color:var(--accent);">⚙️ Panel admin — Temporada</span>
+        <span style="font-size:.85rem;font-weight:700;color:var(--accent);">⚙️ Panel admin — Edición limitada</span>
         <span id="admin-temporada-arrow" style="font-size:.8rem;color:var(--text3);">▼ Expandir</span>
       </div>
-      <div id="admin-temporada-body" style="display:none;border:1.5px solid var(--border);border-radius:.75rem;overflow:hidden;margin-top:.5rem;">
-        <!-- Principal -->
-        <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border);background:var(--bg3);">
-          <p style="font-size:.78rem;font-weight:800;color:var(--text2);margin:0 0 .5rem;text-transform:uppercase;letter-spacing:.05em;">⭐ Producto principal</p>
-          <div id="admin-temp-principal-list" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.5rem;"></div>
-          <button onclick="abrirFormTemporada('temporada-principal',null)" style="display:flex;align-items:center;gap:.5rem;padding:.4rem .85rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;">＋ Añadir principal</button>
-        </div>
-        <!-- Secundarios -->
-        <div style="padding:.75rem 1rem;background:var(--bg3);">
-          <p style="font-size:.78rem;font-weight:800;color:var(--text2);margin:0 0 .5rem;text-transform:uppercase;letter-spacing:.05em;">🎨 Productos secundarios</p>
-          <div id="admin-temp-secundarios-list" style="display:flex;flex-direction:column;gap:.5rem;max-height:240px;overflow-y:auto;margin-bottom:.5rem;"></div>
-          <button onclick="abrirFormTemporada('temporada-secundaria',null)" style="display:flex;align-items:center;gap:.5rem;padding:.4rem .85rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;">＋ Añadir secundario</button>
+      <div id="admin-temporada-body" style="display:none;border:1.5px solid var(--border);border-radius:.75rem;overflow:hidden;margin-top:.5rem;padding:.75rem 1rem;background:var(--bg3);display:flex;flex-direction:column;gap:.75rem;">
+        <div id="admin-temp-colecciones-list" style="display:flex;flex-direction:column;gap:.5rem;"></div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button onclick="abrirFormColeccionTemp()" style="display:flex;align-items:center;gap:.5rem;padding:.4rem .85rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;">＋ Nueva colección</button>
+          <button onclick="abrirFormTemporada('temporada-principal',null)" style="display:flex;align-items:center;gap:.5rem;padding:.4rem .85rem;background:var(--bg2);color:var(--text1);border:1.5px solid var(--border);border-radius:.6rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;">＋ Añadir destacado</button>
+          <button onclick="abrirFormTemporada('temporada-secundaria',null)" style="display:flex;align-items:center;gap:.5rem;padding:.4rem .85rem;background:var(--bg2);color:var(--text1);border:1.5px solid var(--border);border-radius:.6rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;">＋ Añadir producto</button>
         </div>
       </div>
     </div>
-
-    <div class="season-grid reveal">
-      <div id="season-featured-wrap"></div>
-      <div class="season-smalls" id="season-smalls"></div>
-    </div>
+    <!-- Colecciones renderizadas dinámicamente -->
+    <div id="season-colecciones-wrap"></div>
   </div>
 </section>
 
@@ -465,6 +457,10 @@
     <input type="hidden" id="at-seccion">
     <input type="hidden" id="at-img-url">
     <div style="display:flex;flex-direction:column;gap:.9rem;">
+      <div>
+        <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Colección *</label>
+        <select id="at-coleccion" class="form-input" style="cursor:pointer;"><option value="">— Selecciona colección —</option></select>
+      </div>
       <div>
         <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Nombre *</label>
         <input id="at-nombre" class="form-input" type="text" placeholder="Nombre del producto" maxlength="60">
@@ -514,6 +510,30 @@
       <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem;">
         <button onclick="cerrarFormTemporada()" style="padding:.5rem 1.1rem;border:1.5px solid var(--border);border-radius:.6rem;background:none;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text1);">Cancelar</button>
         <button id="at-save-btn" onclick="guardarProductoTemporada()" style="padding:.5rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADMIN COLECCIÓN TEMPORADA -->
+<div id="admin-coleccion-temp-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--bg2);border-radius:1.25rem;width:100%;max-width:400px;padding:1.5rem;position:relative;">
+    <button onclick="cerrarFormColeccionTemp()" style="position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text2);">✕</button>
+    <h3 id="act-form-title" style="margin:0 0 1.25rem;font-size:1.1rem;font-weight:800;">Nueva colección</h3>
+    <input type="hidden" id="act-id">
+    <div style="display:flex;flex-direction:column;gap:.9rem;">
+      <div>
+        <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Nombre de la colección *</label>
+        <input id="act-nombre" class="form-input" type="text" placeholder='Ej: "Mundial '26" o "Verano"' maxlength="60">
+      </div>
+      <div>
+        <label style="font-size:.8rem;font-weight:700;color:var(--text2);display:block;margin-bottom:.3rem;">Orden (número, menor = arriba)</label>
+        <input id="act-orden" class="form-input" type="number" min="0" placeholder="0">
+      </div>
+      <p id="act-error" style="color:red;font-size:.82rem;display:none;margin:0;"></p>
+      <div style="display:flex;gap:.75rem;justify-content:flex-end;">
+        <button onclick="cerrarFormColeccionTemp()" style="padding:.5rem 1.1rem;border:1.5px solid var(--border);border-radius:.6rem;background:none;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text1);">Cancelar</button>
+        <button id="act-save-btn" onclick="guardarColeccionTemp()" style="padding:.5rem 1.2rem;background:var(--accent);color:#fff;border:none;border-radius:.6rem;font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;">Guardar</button>
       </div>
     </div>
   </div>
