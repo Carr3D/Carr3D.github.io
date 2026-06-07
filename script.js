@@ -707,12 +707,14 @@ function buildCollage(){
       if(img) allProds.push({ name: p.nombre||'', img });
     });
   }
-  // Productos de Firestore (stock + temporada)
-  if(typeof _productosFirestore !== 'undefined'){
-    _productosFirestore.forEach(p => { if(p.imgUrl) allProds.push({ name: p.nombre||'', img: p.imgUrl }); });
+  // Productos de Firestore — iterar productos individuales dentro de cada conjunto
+  if(typeof window._productosFirestore !== 'undefined'){
+    window._productosFirestore.forEach(conjunto => {
+      (conjunto.productos||[]).forEach(p => { if(p.imgUrl) allProds.push({ name: p.nombre||'', img: p.imgUrl }); });
+    });
   }
-  if(typeof _productosTemporada !== 'undefined'){
-    _productosTemporada.forEach(p => { if(p.imgUrl) allProds.push({ name: p.nombre||'', img: p.imgUrl }); });
+  if(typeof window._productosTemporada !== 'undefined'){
+    window._productosTemporada.forEach(p => { if(p.imgUrl) allProds.push({ name: p.nombre||'', img: p.imgUrl }); });
   }
 
   // Fallback a COLLAGE_FOTOS si no hay productos con imagen
