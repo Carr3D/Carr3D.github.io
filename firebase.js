@@ -948,9 +948,9 @@ window.abrirFormTemporada = function(seccion, id){
     document.getElementById('at-coleccion').value=p.coleccionId||'';
     document.getElementById('at-nombre').value=p.nombre||'';
     document.getElementById('at-precio').value=p.precio||'';
-    document.getElementById('at-categoria').value=p.categoria||'';
     document.getElementById('at-material').value=(p.materiales||[]).join(', ');
-    document.getElementById('at-peso').value=p.peso||'';
+    const atColores = document.getElementById('at-colores');
+    if(atColores) atColores.value = (p.colores||[]).join(', ');
     document.getElementById('at-tiempo').value=p.tiempoProduccion||'';
     document.getElementById('at-desc').value=p.descripcion||'';
     document.getElementById('at-img-url').value=p.imgUrl||'';
@@ -964,7 +964,7 @@ window.abrirFormTemporada = function(seccion, id){
     }
   } else {
     document.getElementById('at-form-title').textContent = seccion==='temporada-principal'?'Añadir producto destacado':'Añadir producto';
-    ['at-doc-id','at-nombre','at-precio','at-categoria','at-material','at-peso','at-tiempo','at-desc','at-img-url','at-img-file-url'].forEach(fid=>{ const el=document.getElementById(fid); if(el) el.value=''; });
+    ['at-doc-id','at-nombre','at-precio','at-material','at-colores','at-tiempo','at-desc','at-img-url','at-img-file-url'].forEach(fid=>{ const el=document.getElementById(fid); if(el) el.value=''; });
     document.getElementById('at-coleccion').value='';
     const atDestReset = document.getElementById('at-destacado'); if(atDestReset) atDestReset.value='';
   }
@@ -988,19 +988,18 @@ window.previsualizarImagenTemp = function(input){
 window.guardarProductoTemporada = async function(){
   const nombre    = document.getElementById('at-nombre').value.trim();
   const precio    = document.getElementById('at-precio').value.trim();
-  const categoria = document.getElementById('at-categoria').value.trim();
   const material  = document.getElementById('at-material').value.trim();
-  const peso      = document.getElementById('at-peso').value.trim();
+  const coloresStr= (document.getElementById('at-colores')||{}).value||'';
   const tiempo    = document.getElementById('at-tiempo').value.trim();
   const desc      = document.getElementById('at-desc').value.trim();
   const docId     = document.getElementById('at-doc-id').value;
-  const seccion   = document.getElementById('at-seccion').value;
+  const seccion   = document.getElementById('at-seccion').value || 'temporada-secundaria';
   const coleccionId = document.getElementById('at-coleccion').value;
   const errEl     = document.getElementById('at-error');
   const saveBtn   = document.getElementById('at-save-btn');
 
-  if(!nombre||!precio||!categoria){
-    errEl.textContent='Nombre, precio y categoría son obligatorios.';
+  if(!nombre||!precio){
+    errEl.textContent='Nombre y precio son obligatorios.';
     errEl.style.display='block'; return;
   }
   if(!coleccionId){
@@ -1014,10 +1013,12 @@ window.guardarProductoTemporada = async function(){
     const imgUrl = (document.getElementById('at-img-file-url')||{}).value?.trim()
                 || document.getElementById('at-img-url').value||'';
     const destacadoT = document.getElementById('at-destacado') ? document.getElementById('at-destacado').value||'' : '';
+    const colores = coloresStr ? coloresStr.split(',').map(s=>s.trim()).filter(Boolean) : [];
     const data={
-      nombre, precio, categoria, seccion, coleccionId,
+      nombre, precio, seccion, coleccionId,
       materiales: material?material.split(',').map(s=>s.trim()).filter(Boolean):['PLA'],
-      peso, tiempoProduccion:tiempo, descripcion:desc,
+      colores,
+      tiempoProduccion:tiempo, descripcion:desc,
       imgUrl, imgStoragePath:'',
       destacado: destacadoT,
       updatedAt:serverTimestamp(),
