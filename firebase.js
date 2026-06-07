@@ -670,14 +670,14 @@ function renderTemporadaWeb(){
 
   wrap.innerHTML = '';
   const esAdmin = !!(_currentUser && _adminUids.length && _adminUids.includes(_currentUser.uid));
-  const hayContenido = _coleccionesTemp.length > 0 && _productosTemporada.length > 0;
-  section.style.display = (hayContenido || esAdmin) ? '' : 'none';
-  if(!hayContenido && !esAdmin) return;
-  if(!hayContenido) return; // admin ve la sección pero el wrap queda vacío (solo panel admin)
+  const hayColecciones = _coleccionesTemp.length > 0;
+  const hayProductos   = _productosTemporada.length > 0;
+  section.style.display = (hayColecciones || esAdmin) ? '' : 'none';
+  if(!hayColecciones) return;
 
   _coleccionesTemp.forEach(col => {
     const principales  = _productosTemporada.filter(p=>p.coleccionId===col.id && p.seccion==='temporada-principal');
-    const secundarios  = _productosTemporada.filter(p=>p.coleccionId===col.id && p.seccion==='temporada-secundaria');
+    const secundarios  = _productosTemporada.filter(p=>p.coleccionId===col.id && (p.seccion==='temporada-secundaria' || !p.seccion));
     if(!principales.length && !secundarios.length) return; // colección vacía, no mostrar
 
     const colWrap = document.createElement('div');
