@@ -1781,13 +1781,10 @@ function renderAfProductos(){
         <input class="form-input" style="font-size:.82rem;" placeholder="Precio (€12.50)" value="${escapeHTML(p.precio||'')}" oninput="_afActualizar(${i},'precio',this.value)">
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
-        <input class="form-input" style="font-size:.82rem;" placeholder="Categoría" value="${escapeHTML(p.categoria||'')}" oninput="_afActualizar(${i},'categoria',this.value)">
         <input class="form-input" style="font-size:.82rem;" placeholder="Material (PLA,PETG)" value="${escapeHTML((p.materiales||[]).join(', '))}" oninput="_afActualizar(${i},'materialesStr',this.value)">
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
-        <input class="form-input" style="font-size:.82rem;" placeholder="Peso (10g)" value="${escapeHTML(p.peso||'')}" oninput="_afActualizar(${i},'peso',this.value)">
         <input class="form-input" style="font-size:.82rem;" placeholder="Tiempo prod." value="${escapeHTML(p.tiempoProduccion||'')}" oninput="_afActualizar(${i},'tiempoProduccion',this.value)">
       </div>
+      <input class="form-input" style="font-size:.82rem;" placeholder="Colores (rojo, azul...) — vacío = todos" value="${escapeHTML((p.colores||[]).join(', '))}" oninput="_afActualizar(${i},'coloresStr',this.value)">
       <input class="form-input" style="font-size:.82rem;" placeholder="URL imagen" value="${escapeHTML(p.imgUrl||'')}" oninput="_afActualizar(${i},'imgUrl',this.value)">
       <textarea class="form-textarea" style="font-size:.82rem;min-height:50px;" placeholder="Descripción" oninput="_afActualizar(${i},'descripcion',this.value)">${escapeHTML(p.descripcion||'')}</textarea>
       <select class="form-input" style="font-size:.82rem;cursor:pointer;" onchange="_afActualizar(${i},'destacado',this.value)">
@@ -1804,12 +1801,13 @@ function renderAfProductos(){
 }
 
 window.anadirProductoAlConjunto = function(){
-  _afProductos.push({nombre:'',precio:'',categoria:'',materiales:['PLA'],peso:'',tiempoProduccion:'',descripcion:'',imgUrl:'',destacado:''});
+  _afProductos.push({nombre:'',precio:'',materiales:['PLA'],colores:[],tiempoProduccion:'',descripcion:'',imgUrl:'',destacado:''});
   renderAfProductos();
 };
 window._afQuitarProducto = function(i){ _afProductos.splice(i,1); renderAfProductos(); };
 window._afActualizar = function(i,campo,val){
   if(campo==='materialesStr') _afProductos[i].materiales = val.split(',').map(s=>s.trim()).filter(Boolean);
+  else if(campo==='coloresStr') _afProductos[i].colores = val.split(',').map(s=>s.trim()).filter(Boolean);
   else _afProductos[i][campo] = val;
 };
 
