@@ -635,12 +635,14 @@ iniciarEscuchaTemporada();
    EDICIÓN LIMITADA — multi-colección
    ══════════════════════════════════════════════════ */
 let _coleccionesTemp = []; // [{id, nombre, orden}]
+window._coleccionesTemp = _coleccionesTemp;
 
 // Escucha colecciones_temporada
 onSnapshot(
   query(collection(_db,'colecciones_temporada'), orderBy('orden','asc')),
   snap => {
     _coleccionesTemp = snap.docs.map(d=>({id:d.id,...d.data()}));
+    window._coleccionesTemp = _coleccionesTemp;
     renderTemporadaWeb();
     if(_currentUser && _adminUids.includes(_currentUser.uid)){
       renderAdminTemporadaList();
